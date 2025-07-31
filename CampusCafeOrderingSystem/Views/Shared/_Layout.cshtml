@@ -1,4 +1,14 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using CampusCafeOrderingSystem.Models
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    var user = User.Identity;
+    string role = User.IsInRole("Admin") ? "Admin"
+                : User.IsInRole("Vendor") ? "Vendor"
+                : "Customer";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,41 +17,105 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CampusCafeOrderingSystem.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #F9F9F9;
+            color: #333;
+        }
+
+        .navbar {
+            background-color: #4CAF50;
+        }
+
+            .navbar .nav-link, .navbar .navbar-brand {
+                color: white !important;
+                font-weight: 500;
+            }
+
+                .navbar .nav-link:hover {
+                    background-color: #8BC34A;
+                    color: white !important;
+                }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 0;
+        }
+
+            footer a {
+                color: #C8E6C9;
+            }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+            .btn-primary:hover {
+                background-color: #45A049;
+                border-color: #45A049;
+            }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CampusCafeOrderingSystem</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Home"  asp-action="Index">CampusCafe</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                       
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                if (role == "Customer")
+                                {
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Browse">菜单浏览</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="MyOrders">我的订单</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Points">我的积分</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Feedback">反馈与帮助</a></li>
+                                }
+                                else if (role == "Vendor")
+                                {
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Manage">菜单管理</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="TodayOrders">今日订单</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Reports">报表分析</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Capacity">容量设置</a></li>
+                                }
+                                else if (role == "Admin")
+                                {
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ManageUsers">用户管理</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Vendors">商家管理</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Reports">数据报表</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ReviewCenter">审核中心</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Settings">设置</a></li>
+                                }
+                            }
+                        
+
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="text-center">
         <div class="container">
-            &copy; 2025 - CampusCafeOrderingSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            十二组 - 校园订餐系统 &copy; 2025 |  <a asp-controller="Home" asp-action="Privacy">隐私政策</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

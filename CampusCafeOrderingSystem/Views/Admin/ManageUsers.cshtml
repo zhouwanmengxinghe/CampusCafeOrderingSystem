@@ -1,0 +1,32 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityUser>
+
+<h2>User Role Assignment</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Assign Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    <form asp-action="AssignRole" method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <select name="role" class="form-select">
+                            <option value="Customer">Customer</option>
+                            <option value="Vendor">Vendor</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <button type="submit" class="btn btn-success mt-1">Assign</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
