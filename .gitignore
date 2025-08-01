@@ -1,0 +1,37 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Debugging symbols
+*.pdb
+
+# Executables
+*.dll
+*.exe
+
+# Logs and temporary files
+*.log
+*.bak
+*.tmp
+
+# NuGet packages
+packages/
+
+# Rider
+.idea/
+*.iml
+
+# Resharper
+*.DotSettings
+
+# VS Code
+.vscode/
+
+# Other
+*.DS_Store
+Thumbs.db
