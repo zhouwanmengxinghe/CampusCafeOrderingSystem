@@ -76,6 +76,20 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(newAdmin, "Admin");
         }
     }
+
+    // Create default vendor account
+    var vendorEmail = "vendor@campuscafe.com";
+    var vendorPassword = "Vendor123!";
+    var vendorUser = await userManager.FindByEmailAsync(vendorEmail);
+    if (vendorUser == null)
+    {
+        var newVendor = new IdentityUser { UserName = vendorEmail, Email = vendorEmail, EmailConfirmed = true };
+        var result = await userManager.CreateAsync(newVendor, vendorPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newVendor, "Vendor");
+        }
+    }
 }
 
 app.Run();

@@ -1,57 +1,57 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\",
+  "WorkspaceRootPath": "D:\\Coffee\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\scaffoldingreadme.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\scaffoldingreadme.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\scaffoldingreadme.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\views\\admin\\manageusers.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\views\\admin\\manageusers.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\views\\admin\\manageusers.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\views\\shared\\_loginpartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\views\\shared\\_loginpartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\views\\shared\\_loginpartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\campuscafeorderingsystem.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\campuscafeorderingsystem.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\campuscafeorderingsystem.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\areas\\identity\\pages\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\areas\\identity\\pages\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\areas\\identity\\pages\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\data\\migrations\\20250731041243_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\data\\migrations\\20250731041243_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\data\\migrations\\20250731041243_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|f:\\programming project\\caffe program\\project\\campuscafeorderingsystem\\campuscafeorderingsystem\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|d:\\coffee\\campuscafeorderingsystem\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E58F728-F271-4431-8849-9F0920BCF580}|CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj|solutionrelative:campuscafeorderingsystem\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -62,101 +62,91 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 7,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "AdminController.cs",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
-              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
-              "RelativeToolTip": "CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-31T07:02:34.701Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ManageUsers.cshtml",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
-              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
-              "RelativeToolTip": "CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-31T06:42:00.294Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ScaffoldingReadMe.txt",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
-              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
-              "RelativeToolTip": "CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2025-07-31T06:17:33.905Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "CampusCafeOrderingSystem",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
-              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj*",
-              "RelativeToolTip": "CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj*",
-              "ViewState": "AgIAAAAAAAAAAAAAAADwvxcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-07-31T06:07:16.592Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "_LoginPartial.cshtml",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
-              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
-              "RelativeToolTip": "CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-31T05:51:35.636Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AdminController.cs",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
+              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
+              "RelativeToolTip": "CampusCafeOrderingSystem\\Controllers\\AdminController.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-31T07:02:34.701Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ManageUsers.cshtml",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
+              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
+              "RelativeToolTip": "CampusCafeOrderingSystem\\Views\\Admin\\ManageUsers.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-07-31T06:42:00.294Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ScaffoldingReadMe.txt",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
+              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
+              "RelativeToolTip": "CampusCafeOrderingSystem\\ScaffoldingReadMe.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-07-31T06:17:33.905Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "CampusCafeOrderingSystem.csproj",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
+              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
+              "RelativeToolTip": "CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvxcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-07-31T06:07:16.592Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "_LoginPartial.cshtml",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
+              "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
+              "RelativeToolTip": "CampusCafeOrderingSystem\\Views\\Shared\\_LoginPartial.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-07-31T05:51:35.636Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
               "Title": "_Layout.cshtml",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Shared\\_Layout.cshtml",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Shared\\_Layout.cshtml",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Views\\Shared\\_Layout.cshtml",
               "ViewState": "AgIAAHsAAAAAAAAAAAAAADkAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-31T05:32:46.94Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-31T05:32:46.94Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Program.cs",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Program.cs",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Program.cs",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Program.cs",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Program.cs",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Program.cs",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -167,48 +157,45 @@
               "$type": "Document",
               "DocumentIndex": 7,
               "Title": "_ViewStart.cshtml",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Areas\\Identity\\Pages\\_ViewStart.cshtml",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Areas\\Identity\\Pages\\_ViewStart.cshtml",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Areas\\Identity\\Pages\\_ViewStart.cshtml",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Areas\\Identity\\Pages\\_ViewStart.cshtml",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Areas\\Identity\\Pages\\_ViewStart.cshtml",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Areas\\Identity\\Pages\\_ViewStart.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-31T05:34:59.675Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-31T05:34:59.675Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 11,
               "Title": "launchSettings.json",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Properties\\launchSettings.json",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Properties\\launchSettings.json",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Properties\\launchSettings.json",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Properties\\launchSettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-07-31T05:10:46.333Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-31T05:10:46.333Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 10,
               "Title": "20250731041243_InitialCreate.cs",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Data\\Migrations\\20250731041243_InitialCreate.cs",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Data\\Migrations\\20250731041243_InitialCreate.cs",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Data\\Migrations\\20250731041243_InitialCreate.cs",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Data\\Migrations\\20250731041243_InitialCreate.cs",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Data\\Migrations\\20250731041243_InitialCreate.cs",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Data\\Migrations\\20250731041243_InitialCreate.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-31T04:12:44.053Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-31T04:12:44.053Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 12,
               "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Data\\ApplicationDbContext.cs",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Data\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Data\\ApplicationDbContext.cs",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Data\\ApplicationDbContext.cs",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Data\\ApplicationDbContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -218,27 +205,29 @@
               "$type": "Document",
               "DocumentIndex": 9,
               "Title": "appsettings.json",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\appsettings.json",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\appsettings.json",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\appsettings.json",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\appsettings.json",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\appsettings.json",
               "RelativeToolTip": "CampusCafeOrderingSystem\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-07-31T04:08:52.411Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-31T04:08:52.411Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 8,
               "Title": "Index.cshtml",
-              "DocumentMoniker": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Home\\Index.cshtml",
+              "DocumentMoniker": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Home\\Index.cshtml",
               "RelativeDocumentMoniker": "CampusCafeOrderingSystem\\Views\\Home\\Index.cshtml",
-              "ToolTip": "F:\\programming project\\caffe program\\project\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\Views\\Home\\Index.cshtml",
+              "ToolTip": "D:\\Coffee\\CampusCafeOrderingSystem\\Views\\Home\\Index.cshtml",
               "RelativeToolTip": "CampusCafeOrderingSystem\\Views\\Home\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAADwvwgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-31T03:59:10.003Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-31T03:59:10.003Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             }
           ]
         }
