@@ -1,0 +1,1558 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Coffee Shop Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50; /* Main green */
+            --secondary-color: #8BC34A; /* Light green */
+            --background-color: #F9F9F9; /* Off-white */
+            --text-primary: #333333; /* Main text */
+            --text-secondary: #777777; /* Secondary text */
+            --button-hover: #C8E6C9; /* Button hover */
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--primary-color);
+            padding: 0 4rem;
+            height: 70px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .brand i {
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+
+        .nav-items {
+            display: flex;
+            height: 100%;
+            margin-left: 70px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0 1.8rem;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            height: 100%;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: white;
+        }
+
+        .nav-item i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* Logout button styles */
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .logout-btn i {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        .main-content {
+            padding: 6rem 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        /* Dashboard styles */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: var(--button-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.2rem;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-info p {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: #f5f9f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        /* Menu management styles */
+        .menu-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .menu-item {
+            border: 1px solid #eee;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .item-image {
+            height: 180px;
+            background: #f0f7f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .item-info {
+            padding: 1.2rem;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .item-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .item-price {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .item-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .edit-btn {
+            background: #e8f5e9;
+            color: var(--primary-color);
+        }
+
+        .edit-btn:hover {
+            background: #dcedc8;
+        }
+
+        .delete-btn {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .delete-btn:hover {
+            background: #ffcdd2;
+        }
+
+        /* Order management styles */
+        .orders-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+        }
+
+        .order-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.2rem;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid #eee;
+        }
+
+        .orders-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff8e1;
+            color: #ff8f00;
+        }
+
+        .status-preparing {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-ready {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-completed {
+            background: #f5f5f5;
+            color: #616161;
+        }
+
+        .action-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Capacity management styles */
+        .capacity-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+        }
+
+        .capacity-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .capacity-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .capacity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .capacity-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .capacity-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .capacity-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .capacity-progress {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .capacity-form {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: 1.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .form-row input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Sales report table styles */
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .sales-table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .sales-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sales-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .sales-table tr:hover {
+            background-color: #f0f7f0;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-row-full {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row-full label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-row-full input, .form-row-full textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-row-full textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Responsive design */
+        @@media (max-width: 992px) {
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .brand span {
+                display: none;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-filters {
+                gap: 8px;
+            }
+            
+            .capacity-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .sales-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .top-nav {
+                padding: 0 1rem;
+            }
+            
+            .nav-item {
+                padding: 0 1rem;
+            }
+        }
+
+        /* Custom icon colors */
+        .fa-coffee, .fa-mug-hot, .fa-muffin, .fa-cookie, .fa-glass-whiskey {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div class="nav-left">
+            <div class="brand">
+                <i class="fas fa-mug-hot"></i>
+                <span>CampusCafe</span>
+            </div>
+            
+            <div class="nav-items">
+                <div class="nav-item active" data-page="dashboard">
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-page="menu">
+                    <span>Menu</span>
+                </div>
+                <div class="nav-item" data-page="orders">
+                    <span>Orders</span>
+                </div>
+                <div class="nav-item" data-page="report">
+                    <span>Reports</span>
+                </div>
+                <div class="nav-item" data-page="capacity">
+                    <span>Capacity</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logout Button -->
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post" class="logout-form">
+            <button type="submit" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log out</span>
+            </button>
+        </form>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="page-title">Dashboard</h1>
+        
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="page-content">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Today Orders</h3>
+                        <p id="todayOrders">98</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Today Revenue</h3>
+                        <p id="todayRevenue">$1,245</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Menu Items</h3>
+                        <p id="menuCount">28</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Completion Rate</h3>
+                        <p id="completionRate">94%</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Sales Trend in Last 7 Days</h2>
+                    <select id="salesPeriod" onchange="loadSalesChart()">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30">Last 30 Days</option>
+                    </select>
+                </div>
+                <div class="chart-placeholder">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Top Selling Items</h2>
+                </div>
+                <div class="chart-placeholder">
+                    <canvas id="topItemsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menu Management Content -->
+        <div id="menuContent" class="page-content" style="display: none;">
+            <div class="menu-container">
+                <div class="menu-header">
+                    <h2 class="page-title">Menu Management</h2>
+                    <button class="btn" onclick="openAddItemModal()">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+                
+                <div class="menu-grid" id="menuGrid">
+                    <!-- Menu items will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Management Content -->
+        <div id="ordersContent" class="page-content" style="display: none;">
+            <div class="orders-container">
+                <div class="menu-header">
+                    <h2 class="page-title">Order Management</h2>
+                    <div class="order-filters">
+                        <button class="filter-btn active" data-status="all">All</button>
+                        <button class="filter-btn" data-status="pending">Pending</button>
+                        <button class="filter-btn" data-status="preparing">Preparing</button>
+                        <button class="filter-btn" data-status="ready">Ready</button>
+                        <button class="filter-btn" data-status="completed">Completed</button>
+                    </div>
+                </div>
+                
+                <table class="orders-table" id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Time</th>
+                            <th>Items</th>
+                            <th>Amount ($)</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Report Content -->
+        <div id="reportContent" class="page-content" style="display: none;">
+            <div class="menu-container">
+                <h2 class="page-title">Sales Report</h2>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Monthly Sales Statistics</h2>
+                        <select id="reportPeriod" onchange="loadReportData()">
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="365">Last Year</option>
+                        </select>
+                    </div>
+                    <div class="chart-placeholder">
+                        <canvas id="monthlySalesChart"></canvas>
+                    </div>
+                </div>
+                
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Sales ($)</th>
+                            <th>Orders</th>
+                            <th>Avg. Order ($)</th>
+                            <th>Growth (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody">
+                        <!-- Sales data will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Capacity Management Content -->
+        <div id="capacityContent" class="page-content" style="display: none;">
+            <div class="capacity-container">
+                <h2 class="page-title">Daily Capacity Management</h2>
+                
+                <div class="capacity-stats">
+                    <div class="capacity-card">
+                        <div class="capacity-header">
+                            <div class="capacity-title">Max Capacity</div>
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="capacity-value" id="maxCapacity">80</div>
+                        <p class="text-center">Max seating capacity</p>
+                    </div>
+                    
+                    <div class="capacity-card">
+                        <div class="capacity-header">
+                            <div class="capacity-title">Current Usage</div>
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="capacity-value" id="currentUsage">48</div>
+                        <p class="text-center">Current customers</p>
+                        <div class="capacity-bar">
+                            <div class="capacity-progress" id="usageProgressBar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="capacity-card">
+                        <div class="capacity-header">
+                            <div class="capacity-title">Remaining Capacity</div>
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="capacity-value" id="remainingCapacity">32</div>
+                        <p class="text-center">Available seats</p>
+                        <div class="capacity-bar">
+                            <div class="capacity-progress" id="remainingProgressBar" style="width: 40%; background: var(--secondary-color)"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="capacity-form">
+                    <h3>Capacity Settings</h3>
+                    <div class="form-row">
+                        <label for="maxCapacityInput">Max Capacity:</label>
+                        <input type="number" id="maxCapacityInput" value="80" min="10" max="150">
+                    </div>
+                    <div class="form-row">
+                        <label for="currentUsageInput">Current Usage:</label>
+                        <input type="number" id="currentUsageInput" value="48" min="0" max="80">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn" onclick="updateCapacity()">Update Capacity</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Item Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Add New Item</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row-full">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" placeholder="Enter item name">
+                </div>
+                <div class="form-row-full">
+                    <label for="itemPrice">Price ($)</label>
+                    <input type="number" id="itemPrice" placeholder="Enter price">
+                </div>
+                <div class="form-row-full">
+                    <label for="itemCategory">Category</label>
+                    <input type="text" id="itemCategory" placeholder="Enter category (e.g., Coffee, Dessert)">
+                </div>
+                <div class="form-row-full">
+                    <label for="itemDescription">Description</label>
+                    <textarea id="itemDescription" placeholder="Enter item description"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn" id="saveItemBtn" onclick="saveMenuItem()">Save Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="text-align: center; color: var(--primary-color);">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <p style="margin-top: 20px; font-size: 1.2rem;">Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // Mock data storage
+        let menuItems = [];
+        let orders = [];
+        let currentEditingItemId = null;
+        let salesData = [];
+        
+        // Capacity data
+        let capacityData = {
+            max: 80,
+            current: 48
+        };
+
+        // Page initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mock data
+            initMockData();
+            
+            // Set navigation click events
+            document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+                item.addEventListener('click', function() {
+                    navigateToPage(this.dataset.page);
+                });
+            });
+            
+            // Set order filter click events
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterOrders(this.dataset.status);
+                });
+            });
+            
+            // Load initial data
+            loadDashboardData();
+        });
+
+        // Initialize mock data
+        function initMockData() {
+            // Mock menu items
+            menuItems = [
+                { id: 1, name: "Espresso", price: 3.5, category: "Coffee", description: "Strong black coffee made by forcing steam through ground coffee beans", image: "coffee" },
+                { id: 2, name: "Cappuccino", price: 4.5, category: "Coffee", description: "Espresso with steamed milk foam, dusted with chocolate powder", image: "coffee" },
+                { id: 3, name: "Latte", price: 4.75, category: "Coffee", description: "Espresso with steamed milk and a small amount of foam", image: "coffee" },
+                { id: 4, name: "Iced Coffee", price: 4.25, category: "Coffee", description: "Chilled coffee served with ice cubes and optional milk", image: "coffee" },
+                { id: 5, name: "Chocolate Croissant", price: 3.25, category: "Pastry", description: "Buttery croissant with rich chocolate filling", image: "croissant" },
+                { id: 6, name: "Blueberry Muffin", price: 2.95, category: "Pastry", description: "Freshly baked muffin with juicy blueberries", image: "muffin" },
+                { id: 7, name: "Matcha Green Tea", price: 4.0, category: "Tea", description: "Traditional Japanese green tea powder whisked with hot water", image: "mug-hot" },
+                { id: 8, name: "Fruit Smoothie", price: 5.25, category: "Beverage", description: "Blend of fresh fruits, yogurt, and ice", image: "glass-whiskey" }
+            ];
+            
+            // Mock orders
+            orders = [
+                { id: "ORD2023001", date: "2023-05-18 08:25", items: 2, amount: 8.0, status: "pending" },
+                { id: "ORD2023002", date: "2023-05-18 09:30", items: 3, amount: 12.5, status: "preparing" },
+                { id: "ORD2023003", date: "2023-05-18 10:15", items: 1, amount: 4.5, status: "ready" },
+                { id: "ORD2023004", date: "2023-05-18 11:05", items: 4, amount: 18.25, status: "completed" },
+                { id: "ORD2023005", date: "2023-05-18 11:45", items: 2, amount: 7.5, status: "pending" },
+                { id: "ORD2023006", date: "2023-05-18 12:20", items: 3, amount: 13.75, status: "preparing" },
+                { id: "ORD2023007", date: "2023-05-18 13:10", items: 1, amount: 3.5, status: "completed" }
+            ];
+        }
+
+        // Show loading indicator
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'flex';
+        }
+
+        // Hide loading indicator
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        // Simulate API call delay
+        function simulateAPICall(callback) {
+            showLoading();
+            setTimeout(() => {
+                try {
+                    callback();
+                } catch (error) {
+                    console.error("API Error:", error);
+                } finally {
+                    hideLoading();
+                }
+            }, 800);
+        }
+
+        // Navigate to page
+        function navigateToPage(page) {
+            // Update navigation state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeNav = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if (activeNav) activeNav.classList.add('active');
+            
+            // Hide all page content
+            document.querySelectorAll('.page-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById(`${page}Content`);
+            if (targetPage) {
+                targetPage.style.display = 'block';
+                document.querySelector('.page-title').textContent = 
+                    activeNav.querySelector('span').textContent || activeNav.querySelector('i').nextSibling.textContent;
+            }
+            
+            // Load page data
+            switch(page) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'menu':
+                    loadMenuItems();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'report':
+                    loadReportData();
+                    break;
+                case 'capacity':
+                    updateCapacityUI();
+                    break;
+            }
+        }
+
+        // Load dashboard data
+        function loadDashboardData() {
+            simulateAPICall(() => {
+                // Update statistics
+                document.getElementById('todayOrders').textContent = '98';
+                document.getElementById('todayRevenue').textContent = '$1,245';
+                document.getElementById('menuCount').textContent = menuItems.length;
+                document.getElementById('completionRate').textContent = '94%';
+                
+                // Render sales chart
+                renderSalesChart();
+                
+                // Render top items chart
+                renderTopItemsChart();
+            });
+        }
+
+        // Render sales chart
+        function renderSalesChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            // Simulate sales data
+            const labels = [];
+            const salesData = [];
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(today.getDate() - i);
+                labels.push(`${date.getMonth()+1}/${date.getDate()}`);
+                salesData.push(Math.floor(Math.random() * 400) + 600);
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: salesData,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render top items chart
+        function renderTopItemsChart() {
+            const ctx = document.getElementById('topItemsChart').getContext('2d');
+            
+            // Simulate top items data
+            const topItems = menuItems.slice(0, 5).map(item => item.name);
+            const salesData = topItems.map(() => Math.floor(Math.random() * 40) + 20);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topItems,
+                    datasets: [{
+                        label: 'Quantity Sold',
+                        data: salesData,
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.7)',
+                            'rgba(139, 195, 74, 0.7)',
+                            'rgba(200, 230, 201, 0.7)',
+                            'rgba(67, 160, 71, 0.7)',
+                            'rgba(46, 125, 50, 0.7)'
+                        ],
+                        borderColor: '#4CAF50',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load menu items
+        function loadMenuItems() {
+            simulateAPICall(() => {
+                const menuGrid = document.getElementById('menuGrid');
+                menuGrid.innerHTML = '';
+                
+                menuItems.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'menu-item';
+                    itemElement.innerHTML = `
+                        <div class="item-image">
+                            <i class="fas fa-${item.image} fa-3x"></i>
+                        </div>
+                        <div class="item-info">
+                            <div class="item-header">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-price">$${item.price.toFixed(2)}</div>
+                            </div>
+                            <div class="item-desc">
+                                ${item.description}
+                            </div>
+                            <div class="item-actions">
+                                <button class="action-btn edit-btn" onclick="openEditItemModal(${item.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteMenuItem(${item.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    menuGrid.appendChild(itemElement);
+                });
+            });
+        }
+
+        // Open add item modal
+        function openAddItemModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Item';
+            document.getElementById('saveItemBtn').textContent = 'Add Item';
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemCategory').value = '';
+            document.getElementById('itemDescription').value = '';
+            currentEditingItemId = null;
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        // Open edit item modal
+        function openEditItemModal(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            document.getElementById('modalTitle').textContent = 'Edit Item';
+            document.getElementById('saveItemBtn').textContent = 'Save Changes';
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemCategory').value = item.category;
+            document.getElementById('itemDescription').value = item.description;
+            currentEditingItemId = itemId;
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('itemModal').style.display = 'none';
+        }
+
+        // Save menu item
+        function saveMenuItem() {
+            const name = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const category = document.getElementById('itemCategory').value;
+            const description = document.getElementById('itemDescription').value;
+            
+            if (!name || !price || !category) {
+                alert('Please fill in all required fields: Name, Price and Category');
+                return;
+            }
+            
+            simulateAPICall(() => {
+                if (currentEditingItemId) {
+                    // Update existing item
+                    const index = menuItems.findIndex(i => i.id === currentEditingItemId);
+                    if (index !== -1) {
+                        menuItems[index] = {
+                            ...menuItems[index],
+                            name,
+                            price,
+                            category,
+                            description
+                        };
+                    }
+                } else {
+                    // Add new item
+                    const newId = menuItems.length > 0 ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
+                    menuItems.push({
+                        id: newId,
+                        name,
+                        price,
+                        category,
+                        description,
+                        image: 'coffee' // default icon
+                    });
+                }
+                
+                closeModal();
+                loadMenuItems();
+            });
+        }
+
+        // Delete menu item
+        function deleteMenuItem(itemId) {
+            if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) return;
+            
+            simulateAPICall(() => {
+                menuItems = menuItems.filter(item => item.id !== itemId);
+                loadMenuItems();
+            });
+        }
+
+        // Load orders
+        function loadOrders() {
+            simulateAPICall(() => {
+                renderOrders('all');
+            });
+        }
+
+        // Filter orders
+        function filterOrders(status) {
+            // Update filter button state
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const activeBtn = document.querySelector(`.filter-btn[data-status="${status}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            renderOrders(status);
+        }
+
+        // Render orders
+        function renderOrders(status) {
+            const tableBody = document.getElementById('ordersTableBody');
+            tableBody.innerHTML = '';
+            
+            const filteredOrders = status === 'all' 
+                ? orders 
+                : orders.filter(order => order.status === status);
+            
+            filteredOrders.forEach(order => {
+                const row = document.createElement('tr');
+                
+                // Status display
+                let statusClass = '';
+                let statusText = '';
+                
+                switch(order.status) {
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        statusText = 'Pending';
+                        break;
+                    case 'preparing':
+                        statusClass = 'status-preparing';
+                        statusText = 'Preparing';
+                        break;
+                    case 'ready':
+                        statusClass = 'status-ready';
+                        statusText = 'Ready';
+                        break;
+                    case 'completed':
+                        statusClass = 'status-completed';
+                        statusText = 'Completed';
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.date}</td>
+                    <td>${order.items}</td>
+                    <td>$${order.amount.toFixed(2)}</td>
+                    <td><span class="order-status ${statusClass}">${statusText}</span></td>
+                    <td><a class="action-link" onclick="viewOrderDetail('${order.id}')">View Details</a></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // View order details
+        function viewOrderDetail(orderId) {
+            alert(`Viewing details for order ${orderId}`);
+            // In a real app, this would show an order detail modal
+        }
+
+        // Load report data
+        function loadReportData() {
+            simulateAPICall(() => {
+                const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+                const period = document.getElementById('reportPeriod').value;
+                
+                // Generate month labels based on selected period
+                const today = new Date();
+                const labels = [];
+                const salesData = [];
+                const orderCounts = [];
+                const avgAmounts = [];
+                const growthRates = [];
+                
+                let months = 12;
+                if (period === "30") months = 1;
+                else if (period === "90") months = 3;
+                
+                for (let i = months; i >= 0; i--) {
+                    const date = new Date();
+                    date.setMonth(today.getMonth() - i);
+                    
+                    const monthLabel = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+                    labels.push(monthLabel);
+                    
+                    // Simulate data
+                    const sales = Math.floor(Math.random() * 8000) + 4000;
+                    const orders = Math.floor(Math.random() * 1200) + 600;
+                    const avgAmount = Math.round(sales / orders);
+                    const growth = i === months ? 0 : (Math.random() * 20 - 5).toFixed(1);
+                    
+                    salesData.push(sales);
+                    orderCounts.push(orders);
+                    avgAmounts.push(avgAmount);
+                    growthRates.push(growth);
+                }
+                
+                // Store data for table display
+                window.salesReportData = {
+                    labels,
+                    salesData,
+                    orderCounts,
+                    avgAmounts,
+                    growthRates
+                };
+                
+                // Render chart
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Monthly Sales ($)',
+                            data: salesData,
+                            backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                            borderColor: '#388e3c',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // Render table
+                renderSalesTable();
+            });
+        }
+        
+        // Render sales table
+        function renderSalesTable() {
+            const tableBody = document.getElementById('salesTableBody');
+            tableBody.innerHTML = '';
+            
+            const data = window.salesReportData;
+            if (!data) return;
+            
+            data.labels.forEach((label, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${label}</td>
+                    <td>$${data.salesData[index].toLocaleString()}</td>
+                    <td>${data.orderCounts[index]}</td>
+                    <td>$${data.avgAmounts[index]}</td>
+                    <td class="${data.growthRates[index] > 0 ? 'text-success' : 'text-danger'}">
+                        ${data.growthRates[index] > 0 ? '+' : ''}${data.growthRates[index]}%
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Update capacity UI
+        function updateCapacityUI() {
+            document.getElementById('maxCapacity').textContent = capacityData.max;
+            document.getElementById('currentUsage').textContent = capacityData.current;
+            document.getElementById('remainingCapacity').textContent = capacityData.max - capacityData.current;
+            
+            // Calculate percentages
+            const usagePercentage = (capacityData.current / capacityData.max) * 100;
+            const remainingPercentage = 100 - usagePercentage;
+            
+            // Update progress bars
+            document.getElementById('usageProgressBar').style.width = `${usagePercentage}%`;
+            document.getElementById('remainingProgressBar').style.width = `${remainingPercentage}%`;
+            
+            // Update form values
+            document.getElementById('maxCapacityInput').value = capacityData.max;
+            document.getElementById('currentUsageInput').value = capacityData.current;
+        }
+        
+        // Update capacity data
+        function updateCapacity() {
+            const max = parseInt(document.getElementById('maxCapacityInput').value);
+            const current = parseInt(document.getElementById('currentUsageInput').value);
+            
+            if (isNaN(max) || max <= 0) {
+                alert('Please enter a valid max capacity value');
+                return;
+            }
+            
+            if (isNaN(current) || current < 0) {
+                alert('Please enter a valid current usage value');
+                return;
+            }
+            
+            if (current > max) {
+                alert('Current usage cannot exceed max capacity');
+                return;
+            }
+            
+            simulateAPICall(() => {
+                capacityData.max = max;
+                capacityData.current = current;
+                
+                // Update UI
+                updateCapacityUI();
+                
+                alert('Capacity data updated successfully');
+            });
+        }
+    </script>
+</body>
+</html>
