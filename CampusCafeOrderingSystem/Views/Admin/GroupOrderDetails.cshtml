@@ -1,0 +1,98 @@
+@model CampusCafeOrderingSystem.Models.ViewModels.GroupOrderViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "团体订餐详情";
+}
+
+<h2 class="mb-4">团体订餐申请详情</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        基本信息
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">申请ID</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">团体名称</dt>
+            <dd class="col-sm-9">@Model.GroupName</dd>
+
+            <dt class="col-sm-3">申请人邮箱</dt>
+            <dd class="col-sm-9">@Model.RequesterEmail</dd>
+
+            <dt class="col-sm-3">申请时间</dt>
+            <dd class="col-sm-9">@Model.RequestDate.ToString("yyyy-MM-dd HH:mm")</dd>
+
+            <dt class="col-sm-3">当前状态</dt>
+            <dd class="col-sm-9">
+                @switch (Model.Status)
+                {
+                    case "Pending":
+                        <span class="badge bg-warning">待审核</span>;
+                        break;
+                    case "Approved":
+                        <span class="badge bg-success">已通过</span>;
+                        break;
+                    case "Rejected":
+                        <span class="badge bg-danger">已拒绝</span>;
+                        break;
+                    default:
+                        <span class="badge bg-secondary">未知</span>;
+                        break;
+                }
+            </dd>
+
+            <dt class="col-sm-3">备注</dt>
+            <dd class="col-sm-9">@Model.Remarks ?? "无"</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mb-4">
+    <h4>订餐明细</h4>
+    @if (Model.OrderItems != null && Model.OrderItems.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>数量</th>
+                    <th>单价</th>
+                    <th>小计</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitPrice.ToString("C")</td>
+                        <td>@(item.Quantity * item.UnitPrice).ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">暂无订餐明细。</p>
+    }
+</div>
+
+<div>
+    <a href="@Url.Action("GroupOrderApprovals", "Admin")" class="btn btn-secondary me-2">返回审核列表</a>
+
+    @* 预留审核操作按钮 *@
+    <form asp-action="ReviewGroupOrder" method="post" class="d-inline">
+        <input type="hidden" name="groupOrderId" value="@Model.Id" />
+        <input type="hidden" name="newStatus" value="Approved" />
+        <button type="submit" class="btn btn-success me-2" onclick="return confirm('确认批准此申请？');">批准</button>
+    </form>
+    <form asp-action="ReviewGroupOrder" method="post" class="d-inline">
+        <input type="hidden" name="groupOrderId" value="@Model.Id" />
+        <input type="hidden" name="newStatus" value="Rejected" />
+        <button type="submit" class="btn btn-danger" onclick="return confirm('确认拒绝此申请？');">拒绝</button>
+    </form>
+</div>

@@ -292,3 +292,13 @@ F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafe
 F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
 F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
 F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.ClientModel.dll
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.csproj.AssemblyReference.cache
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.AssemblyInfoInputs.cache
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.AssemblyInfo.cs
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.csproj.CoreCompileInputs.cache
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.RazorAssemblyInfo.cache
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.RazorAssemblyInfo.cs
+C:\Users\limin\Desktop\Programe\CampusCafeOrderingSystem\CampusCafeOrderingSystem\obj\Debug\net8.0\CampusCafeOrderingSystem.sourcelink.json

@@ -1,13 +1,21 @@
-﻿@using Microsoft.AspNetCore.Identity
-@model IEnumerable<IdentityUser>
+﻿@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "用户管理";
+}
 
-<h2>User Role Assignment</h2>
+<h2 class="mb-4">用户管理</h2>
 
-<table class="table">
-    <thead>
+<div class="mb-3">
+    <input type="text" class="form-control" id="userSearchInput" placeholder="搜索用户邮箱..." onkeyup="filterUsers()" />
+</div>
+
+<table class="table table-striped table-hover" id="usersTable">
+    <thead class="table-dark">
         <tr>
-            <th>Email</th>
-            <th>Assign Role</th>
+            <th>邮箱</th>
+            <th>当前角色</th>
+            <th>操作</th>
         </tr>
     </thead>
     <tbody>
@@ -16,17 +24,43 @@
             <tr>
                 <td>@user.Email</td>
                 <td>
-                    <form asp-action="AssignRole" method="post">
+                    <!-- 这里预留显示用户角色的接口，后端需传角色数据 -->
+                    <span>未分配</span>
+                </td>
+                <td>
+                    <a href="@Url.Action("ManageUserDetails", "Admin", new { userId = user.Id })" class="btn btn-info btn-sm me-2">详情</a>
+                    <form asp-action="AssignRole" method="post" class="d-inline">
                         <input type="hidden" name="userId" value="@user.Id" />
-                        <select name="role" class="form-select">
-                            <option value="Customer">Customer</option>
-                            <option value="Vendor">Vendor</option>
-                            <option value="Admin">Admin</option>
+                        <select name="role" class="form-select d-inline-block w-auto" style="width: 130px;">
+                            <option value="Customer">客户</option>
+                            <option value="Vendor">供应商</option>
+                            <option value="Admin">管理员</option>
                         </select>
-                        <button type="submit" class="btn btn-success mt-1">Assign</button>
+                        <button type="submit" class="btn btn-success btn-sm ms-1">分配角色</button>
                     </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        // 简单的表格搜索过滤功能
+        function filterUsers() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("userSearchInput");
+            filter = input.value.toLowerCase();
+            table = document.getElementById("usersTable");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 1; i < tr.length; i++) { // 从1开始跳过表头
+                td = tr[i].getElementsByTagName("td")[0]; // 邮箱列
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    tr[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+    </script>
+}

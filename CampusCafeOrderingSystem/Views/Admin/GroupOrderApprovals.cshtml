@@ -1,0 +1,72 @@
+@model IEnumerable<CampusCafeOrderingSystem.Models.ViewModels.GroupOrderViewModel>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "团体订餐审核";
+}
+
+<h2 class="mb-4">团体订餐审核</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        当前无待审核的团体订餐申请。
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>申请ID</th>
+                <th>申请团体名称</th>
+                <th>申请人邮箱</th>
+                <th>申请时间</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.GroupName</td>
+                    <td>@order.RequesterEmail</td>
+                    <td>@order.RequestDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @switch(order.Status)
+                        {
+                            case "Pending":
+                                <span class="badge bg-warning">待审核</span>;
+                                break;
+                            case "Approved":
+                                <span class="badge bg-success">已通过</span>;
+                                break;
+                            case "Rejected":
+                                <span class="badge bg-danger">已拒绝</span>;
+                                break;
+                            default:
+                                <span class="badge bg-secondary">未知</span>;
+                                break;
+                        }
+                    </td>
+                    <td>
+                        <a href="@Url.Action("GroupOrderDetails", "Admin", new { id = order.Id })" class="btn btn-info btn-sm me-1">详情</a>
+
+                        <form asp-action="ReviewGroupOrder" method="post" class="d-inline">
+                            <input type="hidden" name="groupOrderId" value="@order.Id" />
+                            <input type="hidden" name="newStatus" value="Approved" />
+                            <button type="submit" class="btn btn-success btn-sm me-1" onclick="return confirm('确认批准此申请？');">批准</button>
+                        </form>
+
+                        <form asp-action="ReviewGroupOrder" method="post" class="d-inline">
+                            <input type="hidden" name="groupOrderId" value="@order.Id" />
+                            <input type="hidden" name="newStatus" value="Rejected" />
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确认拒绝此申请？');">拒绝</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

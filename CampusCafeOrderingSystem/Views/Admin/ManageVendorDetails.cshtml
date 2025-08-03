@@ -1,0 +1,76 @@
+@model CampusCafeOrderingSystem.Models.Entities.VendorEntity
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "供应商详情";
+}
+
+<h2 class="mb-4">供应商详情</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        基本信息
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">供应商ID</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">供应商名称</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">联系人邮箱</dt>
+            <dd class="col-sm-9">@Model.ContactEmail</dd>
+
+            <dt class="col-sm-3">联系电话</dt>
+            <dd class="col-sm-9">@Model.PhoneNumber</dd>
+
+            <dt class="col-sm-3">状态</dt>
+            <dd class="col-sm-9">
+                @switch (Model.Status)
+                {
+                    case "Pending":
+                        <span class="badge bg-warning">待审核</span>;
+                        break;
+                    case "Approved":
+                        <span class="badge bg-success">已通过</span>;
+                        break;
+                    case "Rejected":
+                        <span class="badge bg-danger">已拒绝</span>;
+                        break;
+                    default:
+                        <span class="badge bg-secondary">未知</span>;
+                        break;
+                }
+            </dd>
+
+            <dt class="col-sm-3">创建时间</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mb-4">
+    <h4>供应商资质文件</h4>
+    @if (Model.QualificationFiles != null && Model.QualificationFiles.Any())
+    {
+        <ul class="list-group">
+            @foreach (var file in Model.QualificationFiles)
+            {
+                <li class="list-group-item">
+                    <a href="@file.Url" target="_blank">@file.FileName</a>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted">暂无资质文件上传。</p>
+    }
+</div>
+
+<div>
+    <a href="@Url.Action("ManageVendors", "Admin")" class="btn btn-secondary me-2">返回供应商列表</a>
+
+    @* 预留修改按钮，后续开放 *@
+    <button class="btn btn-primary" disabled>编辑供应商信息（预留）</button>
+</div>

@@ -1,0 +1,44 @@
+@model IEnumerable<CampusCafeOrderingSystem.Models.Entities.OrderEntity>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "订单管理";
+}
+
+<h2 class="mb-4">订单管理</h2>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>订单ID</th>
+            <th>用户邮箱</th>
+            <th>订单时间</th>
+            <th>订单状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.Id</td>
+                <td>@order.UserEmail</td>
+                <td>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <form asp-action="UpdateOrderStatus" method="post" class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="orderId" value="@order.Id" />
+                        <select name="newStatus" class="form-select form-select-sm" style="max-width: 150px;">
+                            <option value="Pending" selected="@("Pending" == order.Status)">待处理</option>
+                            <option value="Processing" selected="@("Processing" == order.Status)">处理中</option>
+                            <option value="Completed" selected="@("Completed" == order.Status)">已完成</option>
+                            <option value="Cancelled" selected="@("Cancelled" == order.Status)">已取消</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">更新</button>
+                    </form>
+                </td>
+                <td>
+                    <a href="@Url.Action("OrderDetails", "Admin", new { orderId = order.Id })" class="btn btn-info btn-sm">详情</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

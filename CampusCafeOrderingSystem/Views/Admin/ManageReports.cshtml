@@ -1,0 +1,56 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "系统报表";
+}
+
+<h2 class="mb-4">系统报表</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>订单报表</strong>
+            </div>
+            <div class="card-body">
+                <p>展示订单数量、订单状态分布等关键指标。</p>
+                <a href="@Url.Action("OrderReport", "Admin")" class="btn btn-primary btn-sm">查看详细</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>用户活跃度报表</strong>
+            </div>
+            <div class="card-body">
+                <p>展示用户注册、登录及活跃情况的统计数据。</p>
+                <a href="@Url.Action("UserActivityReport", "Admin")" class="btn btn-primary btn-sm">查看详细</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>供应商表现报表</strong>
+            </div>
+            <div class="card-body">
+                <p>展示供应商订单完成率、评分等相关指标。</p>
+                <a href="@Url.Action("VendorPerformanceReport", "Admin")" class="btn btn-primary btn-sm">查看详细</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>团体订餐报表</strong>
+            </div>
+            <div class="card-body">
+                <p>展示团体订餐申请和完成情况统计。</p>
+                <a href="@Url.Action("GroupOrderReport", "Admin")" class="btn btn-primary btn-sm">查看详细</a>
+            </div>
+        </div>
+    </div>
+</div>

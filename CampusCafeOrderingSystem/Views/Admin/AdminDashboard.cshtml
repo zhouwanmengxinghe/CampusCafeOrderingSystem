@@ -1,0 +1,78 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "管理员控制台";
+}
+
+<h1 class="mb-4">欢迎来到管理员控制台</h1>
+
+<div class="row g-4">
+    <!-- 总用户数 -->
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <h5 class="card-title">总用户数</h5>
+                <p class="card-text fs-2" id="totalUsers">--</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 供应商数量 -->
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <h5 class="card-title">供应商数量</h5>
+                <p class="card-text fs-2" id="totalVendors">--</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 今日订单数 -->
+    <div class="col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title">今日订单数</h5>
+                <p class="card-text fs-2" id="todayOrders">--</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 待审核团体订单 -->
+    <div class="col-md-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+                <h5 class="card-title">待审核团体订单</h5>
+                <p class="card-text fs-2" id="pendingGroupOrders">--</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5" />
+
+<h3>快捷入口</h3>
+<div class="list-group">
+    <a href="@Url.Action("ManageUsers", "Admin")" class="list-group-item list-group-item-action">用户管理</a>
+    <a href="@Url.Action("ManageVendors", "Admin")" class="list-group-item list-group-item-action">供应商审核</a>
+    <a href="@Url.Action("ManageOrders", "Admin")" class="list-group-item list-group-item-action">订单管理</a>
+    <a href="@Url.Action("ManageReports", "Admin")" class="list-group-item list-group-item-action">系统报表</a>
+    <a href="@Url.Action("GroupOrderApprovals", "Admin")" class="list-group-item list-group-item-action">团体订餐审核</a>
+    <a href="@Url.Action("Settings", "Admin")" class="list-group-item list-group-item-action">系统设置</a>
+</div>
+
+@section Scripts {
+    <script>
+        // TODO: 这里预留调用API获取数据并渲染
+        document.getElementById('totalUsers').textContent = '加载中...';
+        document.getElementById('totalVendors').textContent = '加载中...';
+        document.getElementById('todayOrders').textContent = '加载中...';
+        document.getElementById('pendingGroupOrders').textContent = '加载中...';
+
+        // 模拟异步获取数据示例
+        setTimeout(() => {
+            document.getElementById('totalUsers').textContent = '1234';
+            document.getElementById('totalVendors').textContent = '45';
+            document.getElementById('todayOrders').textContent = '67';
+            document.getElementById('pendingGroupOrders').textContent = '3';
+        }, 1000);
+    </script>
+}

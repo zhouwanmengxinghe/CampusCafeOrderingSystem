@@ -186,52 +186,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/AdminDashboard.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRtaW5EYXNoYm9hcmQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/GroupOrderApprovals.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cR3JvdXBPcmRlckFwcHJvdmFscy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/GroupOrderDetails.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cR3JvdXBPcmRlckRldGFpbHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageOrders.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlT3JkZXJzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageProducts.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlUHJvZHVjdHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageReports.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlUmVwb3J0cy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageUserDetails.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlVXNlckRldGFpbHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageUsers.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlVXNlcnMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageVendorDetails.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlVmVuZG9yRGV0YWlscy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/ManageVendors.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlVmVuZG9ycy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/Settings.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cU2V0dGluZ3MuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Admin/VendorQualification.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVmVuZG9yUXVhbGlmaWNhdGlvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/limin/Desktop/Programe/CampusCafeOrderingSystem/CampusCafeOrderingSystem/Views/Home/Index.cshtml]

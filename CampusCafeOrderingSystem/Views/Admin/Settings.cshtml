@@ -1,0 +1,59 @@
+@model CampusCafeOrderingSystem.Models.ViewModels.SystemSettingsViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "系统设置";
+}
+
+<h2 class="mb-4">系统设置</h2>
+
+<form asp-action="SaveSettings" method="post" class="needs-validation" novalidate>
+    <div class="mb-3">
+        <label for="BusinessHours" class="form-label">营业时间</label>
+        <input type="text" class="form-control" id="BusinessHours" name="BusinessHours" 
+               value="@Model.BusinessHours" placeholder="例如：周一至周五 8:00-18:00" required />
+        <div class="invalid-feedback">
+            请填写营业时间。
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="EnableVendorRegistration" class="form-label">供应商注册权限</label>
+        <select class="form-select" id="EnableVendorRegistration" name="EnableVendorRegistration" required>
+            <option value="true" selected="@(Model.EnableVendorRegistration ? "selected" : null)">允许</option>
+            <option value="false" selected="@(!Model.EnableVendorRegistration ? "selected" : null)">禁止</option>
+        </select>
+        <div class="invalid-feedback">
+            请选择供应商注册权限。
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="MaxGroupOrderSize" class="form-label">最大团体订餐人数</label>
+        <input type="number" class="form-control" id="MaxGroupOrderSize" name="MaxGroupOrderSize"
+               value="@Model.MaxGroupOrderSize" min="1" max="500" required />
+        <div class="invalid-feedback">
+            请输入有效的最大人数（1-500）。
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">保存设置</button>
+</form>
+
+@section Scripts {
+    <script>
+        // 简单前端验证，阻止无效提交
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+}

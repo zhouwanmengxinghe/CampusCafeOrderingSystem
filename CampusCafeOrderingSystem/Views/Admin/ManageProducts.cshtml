@@ -1,0 +1,78 @@
+@model IEnumerable<CoffeeShop.Models.Product>  <!-- 替换为你的实际模型命名空间 -->
+@{
+    ViewBag.Title = "商品管理";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">商品管理</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/Admin/AddProduct" class="btn btn-primary">➕ 新增商品</a>
+        <form class="d-flex" method="get" action="/Admin/ManageProducts">
+            <input type="text" name="search" class="form-control me-2" placeholder="搜索商品..." />
+            <button class="btn btn-outline-secondary" type="submit">搜索</button>
+        </form>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>图片</th>
+                            <th>名称</th>
+                            <th>分类</th>
+                            <th>价格</th>
+                            <th>库存</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@product.ImageUrl" alt="product image" style="width: 60px; height: 60px; object-fit: cover;" />
+                                </td>
+                                <td>@product.Name</td>
+                                <td>@product.Category</td>
+                                <td>￥@product.Price.ToString("F2")</td>
+                                <td>@product.Stock</td>
+                                <td>
+                                    @if (product.IsAvailable)
+                                    {
+                                        <span class="badge bg-success">上架中</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">已下架</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="/Admin/EditProduct/@product.Id" class="btn btn-sm btn-outline-info">编辑</a>
+                                        <a href="/Admin/DeleteProduct/@product.Id" class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('确定要删除该商品吗？');">删除</a>
+                                        <form asp-action="ToggleStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@product.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                @(product.IsAvailable ? "下架" : "上架")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted">暂无商品数据。</p>
+            }
+        </div>
+    </div>
+</div>

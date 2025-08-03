@@ -1,0 +1,89 @@
+@model IEnumerable<CampusCafeOrderingSystem.Models.Entities.VendorEntity>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "供应商审核";
+}
+
+<h2 class="mb-4">供应商审核</h2>
+
+<div class="mb-3">
+    <input type="text" id="vendorSearchInput" class="form-control" placeholder="搜索供应商名称或邮箱..." onkeyup="filterVendors()" />
+</div>
+
+<table class="table table-striped table-hover" id="vendorsTable">
+    <thead class="table-dark">
+        <tr>
+            <th>供应商名称</th>
+            <th>联系人邮箱</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var vendor in Model)
+        {
+            <tr>
+                <td>@vendor.Name</td>
+                <td>@vendor.ContactEmail</td>
+                <td>
+                    @switch (vendor.Status)
+                    {
+                        case "Pending":
+                            <span class="badge bg-warning">待审核</span>;
+                            break;
+                        case "Approved":
+                            <span class="badge bg-success">已通过</span>;
+                            break;
+                        case "Rejected":
+                            <span class="badge bg-danger">已拒绝</span>;
+                            break;
+                        default:
+                            <span class="badge bg-secondary">未知</span>;
+                            break;
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("ManageVendorDetails", "Admin", new { vendorId = vendor.Id })" class="btn btn-info btn-sm me-2">详情</a>
+                    @if (vendor.Status == "Pending")
+                    {
+                        <form asp-action="ApproveVendor" method="post" class="d-inline">
+                            <input type="hidden" name="vendorId" value="@vendor.Id" />
+                            <button type="submit" class="btn btn-success btn-sm me-1">通过</button>
+                        </form>
+                        <form asp-action="RejectVendor" method="post" class="d-inline">
+                            <input type="hidden" name="vendorId" value="@vendor.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">拒绝</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        // 供应商列表搜索过滤
+        function filterVendors() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("vendorSearchInput");
+            filter = input.value.toLowerCase();
+            table = document.getElementById("vendorsTable");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 1; i < tr.length; i++) { // 跳过表头
+                tdName = tr[i].getElementsByTagName("td")[0];
+                tdEmail = tr[i].getElementsByTagName("td")[1];
+                if (tdName && tdEmail) {
+                    txtValueName = tdName.textContent || tdName.innerText;
+                    txtValueEmail = tdEmail.textContent || tdEmail.innerText;
+                    if (txtValueName.toLowerCase().indexOf(filter) > -1 || txtValueEmail.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+}

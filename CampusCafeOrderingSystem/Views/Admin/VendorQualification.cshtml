@@ -1,0 +1,59 @@
+@model CampusCafeOrderingSystem.Models.Entities.VendorEntity
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "供应商资质审核";
+}
+
+<h2 class="mb-4">供应商资质审核</h2>
+
+<div class="card">
+    <div class="card-header">
+        <strong>供应商信息</strong>
+    </div>
+    <div class="card-body">
+        <p><strong>供应商名称：</strong> @Model.Name</p>
+        <p><strong>联系人邮箱：</strong> @Model.ContactEmail</p>
+        <p><strong>联系电话：</strong> @Model.PhoneNumber</p>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h4>资质文件列表</h4>
+    @if (Model.QualificationFiles != null && Model.QualificationFiles.Any())
+    {
+        <ul class="list-group mb-3">
+            @foreach (var file in Model.QualificationFiles)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="@file.Url" target="_blank">@file.FileName</a>
+                    <span class="badge bg-primary rounded-pill">查看</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted">暂无资质文件上传。</p>
+    }
+</div>
+
+<form asp-action="ReviewQualification" method="post">
+    <input type="hidden" name="vendorId" value="@Model.Id" />
+
+    <div class="mb-3">
+        <label for="reviewStatus" class="form-label">审核结果</label>
+        <select class="form-select" id="reviewStatus" name="reviewStatus" required>
+            <option value="">请选择审核结果</option>
+            <option value="Approved">通过</option>
+            <option value="Rejected">拒绝</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="reviewComments" class="form-label">审核意见（可选）</label>
+        <textarea class="form-control" id="reviewComments" name="reviewComments" rows="3" placeholder="填写审核意见..."></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">提交审核结果</button>
+    <a href="@Url.Action("ManageVendors", "Admin")" class="btn btn-secondary ms-2">返回供应商列表</a>
+</form>
