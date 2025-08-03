@@ -1,0 +1,60 @@
+﻿using Humanizer;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Diagnostics;
+using System;
+
+@model List<CafeApp.Models.user_order_pay.CartItem>
+
+@{
+    ViewBag.Title = "Your Cart";
+Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class= "container" style = "background-color:#F9F9F9; padding:30px;">
+    <h2 style = "color:#4CAF50; font-weight:bold;"> Cart </h2>
+
+    @if(Model == null || Model.Count == 0)
+    {
+        <p class= "text-muted" > Your cart is empty.</p>
+    }
+    else
+{
+    decimal total = 0;
+
+        <table class= "table table-bordered">
+            <thead style = "background-color:#C8E6C9;">
+                <tr>
+                    <th> Item </th>
+                    <th> Description </th>
+                    <th> Price </th>
+                    <th> Action </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+    total += item.Price;
+                    <tr>
+                        <td> @item.Name </td>
+                        <td> @item.Description </td>
+                        <td> $@item.Price.ToString("0.00") </td>
+                        <td>
+                            <a href = "@Url.Action("Remove", "Cart", new { id = item.Id })"
+                               class= "btn btn-sm btn-danger" > Remove </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class= "text-right" >
+            <h4> Total: <span style = "color:#4CAF50;"> $@total.ToString("0.00") </span></h4>
+            <a href = "@Url.Action("Checkout", "Cart")" class= "btn"
+               style = "background-color:#4CAF50; color:white; border-radius:12px;"> Proceed to Checkout</a>
+        </div>
+    }
+</div>
+<a asp-controller="Menu" asp-action="Index" class="btn" style="background-color:#4CAF50; color:white; border-radius:12px; padding:10px 20px;">
+    ← Back to Menu
+</a>
+

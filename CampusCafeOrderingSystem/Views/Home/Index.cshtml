@@ -2,7 +2,54 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    body {
+        background-color: #F9F9F9;
+        color: #333333;
+    }
+
+    .btn-custom {
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        border: none;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 10px;
+    }
+
+    .btn-custom:hover, .btn-custom:focus {
+        background-color: #C8E6C9;
+        color: #333333;
+        text-decoration: none;
+    }
+
+    .subtitle {
+        color: #777777;
+        margin-bottom: 30px;
+    }
+
+    .btn-container {
+        margin-top: 30px;
+    }
+</style>
+
+<div class="text-center" style="padding: 50px;">
+    <h1 class="display-4">Welcome!</h1>
+    <p class="subtitle">
+       we hope you can enjoy our coffee!
+    </p>
+
+    <div class="btn-container">
+        <a asp-controller="Menu" asp-action="Index" class="btn-custom">
+            View Menu
+        </a>
+
+        <a asp-controller="Catering" asp-action="Apply" class="btn-custom">
+            Group Catering Application
+        </a>
+    </div>
 </div>

@@ -1,5 +1,4 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@using CampusCafeOrderingSystem.Models
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
@@ -74,10 +73,11 @@
                             {
                                 if (role == "Customer")
                                 {
-                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Browse">菜单浏览</a></li>
-                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="MyOrders">我的订单</a></li>
-                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Points">我的积分</a></li>
-                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Feedback">反馈与帮助</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Menu" asp-action="Index">view Menu</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">My Cart</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Points">Manage my account</a></li>
+                                    <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Feedback">Helping and Support
+                                    </a></li>
                                 }
                                 else if (role == "Vendor")
                                 {
