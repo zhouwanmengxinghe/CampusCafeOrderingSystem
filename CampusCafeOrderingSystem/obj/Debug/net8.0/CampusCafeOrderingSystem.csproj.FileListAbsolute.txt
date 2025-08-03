@@ -593,3 +593,10 @@ C:\Users\123\Source\Repos\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\
 C:\Users\123\Source\Repos\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.WebPages.Razor.dll
 C:\Users\123\Source\Repos\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.WebPages.dll
 C:\Users\123\Source\Repos\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\Microsoft.Web.Infrastructure.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.Mvc.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.Razor.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.Helpers.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.WebPages.Deployment.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.WebPages.Razor.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\System.Web.WebPages.dll
+F:\programming project\caffe program\project\CampusCafeOrderingSystem\CampusCafeOrderingSystem\bin\Debug\net8.0\Microsoft.Web.Infrastructure.dll

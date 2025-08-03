@@ -26,7 +26,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
-// **���� Session ���񣬱����� Build ֮ǰ**
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -53,7 +53,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// **���� Session �м��**
+
 app.UseSession();
 
 app.UseAuthorization();
@@ -69,7 +69,7 @@ await SeedRolesAndAdminAsync(app);
 app.Run();
 
 
-// **�첽���������ӳ�ʼ����ɫ�͹���Ա**
+
 async Task SeedRolesAndAdminAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
