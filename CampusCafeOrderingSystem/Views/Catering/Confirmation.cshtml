@@ -1,0 +1,114 @@
+@{
+    ViewData["Title"] = "Catering Application Submitted";
+
+    // 我们在 Controller 里用 ViewBag.Data 传了匿名对象，这里用 dynamic 接收
+    var d = ViewBag.Data;
+
+    // 统一把可空类型转为字符串，避免 ?? 混用不同类型
+    string contactName      = d?.ContactName ?? "-";
+    string contactPhone     = d?.ContactPhone ?? "-";
+    string numberOfPeople   = d?.NumberOfPeople != null ? ((int)d.NumberOfPeople).ToString() : "-";
+    string eventDate        = d?.EventDate != null ? ((DateTime?)d.EventDate)?.ToString("yyyy-MM-dd") : "-";
+    string startTime        = d?.StartTime != null ? ((TimeSpan?)d.StartTime)?.ToString(@"hh\:mm") : "-";
+    string endTime          = d?.EndTime   != null ? ((TimeSpan?)d.EndTime)?.ToString(@"hh\:mm")   : "-";
+    string serviceType      = d?.ServiceType != null ? d.ServiceType.ToString() : "-";
+    string address          = d?.Address ?? "-";
+    string dietary          = !string.IsNullOrWhiteSpace((string?)d?.DietaryCsv) ? ((string)d.DietaryCsv).Replace(",", ", ") : "-";
+    string budgetPerPerson  = d?.BudgetPerPerson != null ? ((decimal?)d.BudgetPerPerson)?.ToString("0.00") ?? "-" : "-";
+    string menuStyle        = d?.MenuStyle != null ? d.MenuStyle.ToString() : "-";
+    string notes            = d?.Notes ?? "-";
+    string createdAt        = d?.CreatedAt != null ? ((DateTime)d.CreatedAt).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-";
+    string status           = d?.Status != null ? d.Status.ToString() : "-";
+    int    appId            = d?.Id ?? 0;
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            @if (TempData["SuccessMessage"] is string msg && !string.IsNullOrWhiteSpace(msg))
+            {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @msg
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            }
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h3 class="card-title mb-2">? Application Submitted</h3>
+                    <p class="text-muted mb-0">
+                        Your request has been received. We’ll contact you within <strong>1–2 business days</strong> to confirm the details.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">?? Application Summary</h5>
+                    <dl class="row">
+                        <dt class="col-sm-3">Application ID</dt>
+                        <dd class="col-sm-9">@appId</dd>
+
+                        <dt class="col-sm-3">Submitted At</dt>
+                        <dd class="col-sm-9">@createdAt</dd>
+
+                        <dt class="col-sm-3">Status</dt>
+                        <dd class="col-sm-9"><span class="badge bg-info text-dark">@status</span></dd>
+                    </dl>
+
+                    <hr />
+
+                    <h6 class="mb-2">?? Contact</h6>
+                    <dl class="row">
+                        <dt class="col-sm-3">Name</dt>
+                        <dd class="col-sm-9">@contactName</dd>
+
+                        <dt class="col-sm-3">Phone</dt>
+                        <dd class="col-sm-9">@contactPhone</dd>
+                    </dl>
+
+                    <h6 class="mb-2">??? Event</h6>
+                    <dl class="row">
+                        <dt class="col-sm-3">Date</dt>
+                        <dd class="col-sm-9">@eventDate</dd>
+
+                        <dt class="col-sm-3">Time</dt>
+                        <dd class="col-sm-9">@startTime — @endTime</dd>
+
+                        <dt class="col-sm-3">People</dt>
+                        <dd class="col-sm-9">@numberOfPeople</dd>
+
+                        <dt class="col-sm-3">Service Type</dt>
+                        <dd class="col-sm-9">@serviceType</dd>
+
+                        <dt class="col-sm-3">Address</dt>
+                        <dd class="col-sm-9">@address</dd>
+                    </dl>
+
+                    <h6 class="mb-2">??? Menu & Dietary</h6>
+                    <dl class="row">
+                        <dt class="col-sm-3">Menu Style</dt>
+                        <dd class="col-sm-9">@menuStyle</dd>
+
+                        <dt class="col-sm-3">Budget / Person</dt>
+                        <dd class="col-sm-9">@budgetPerPerson</dd>
+
+                        <dt class="col-sm-3">Dietary</dt>
+                        <dd class="col-sm-9">@dietary</dd>
+                    </dl>
+
+                    <h6 class="mb-2">?? Notes</h6>
+                    <div class="border rounded p-2 bg-light">
+                        @notes
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to Home</a>
+                        <a asp-controller="Catering" asp-action="Apply" class="btn btn-outline-secondary">Submit Another</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

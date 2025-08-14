@@ -1,49 +1,142 @@
 /* _content/CampusCafeOrderingSystem/Views/Shared/_Layout.cshtml.rz.scp.css */
-/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand[b-qo8ttaioaa] {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
-}
-
+/* ---------------------------
+   全局链接样式
+--------------------------- */
 a[b-qo8ttaioaa] {
-  color: #0077cc;
+    color: #4CAF50;
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
 
+    a:hover[b-qo8ttaioaa] {
+        color: #388E3C;
+        text-decoration: underline;
+    }
+
+    /* ---------------------------
+   导航栏品牌 Logo
+--------------------------- */
+    a.navbar-brand[b-qo8ttaioaa] {
+        white-space: normal;
+        text-align: center;
+        word-break: break-word;
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+
+/* ---------------------------
+   按钮样式（主按钮绿色主题）
+--------------------------- */
 .btn-primary[b-qo8ttaioaa] {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff;
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    border-radius: 6px;
+    transition: all 0.3s ease;
 }
 
-.nav-pills .nav-link.active[b-qo8ttaioaa], .nav-pills .show > .nav-link[b-qo8ttaioaa] {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    .btn-primary:hover[b-qo8ttaioaa] {
+        background-color: #45A049;
+        border-color: #45A049;
+    }
+
+.btn[b-qo8ttaioaa] {
+    border-radius: 6px;
 }
 
+/* ---------------------------
+   导航选中状态
+--------------------------- */
+.nav-pills .nav-link.active[b-qo8ttaioaa],
+.nav-pills .show > .nav-link[b-qo8ttaioaa] {
+    color: #fff;
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+/* ---------------------------
+   边框与阴影
+--------------------------- */
 .border-top[b-qo8ttaioaa] {
-  border-top: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5;
 }
+
 .border-bottom[b-qo8ttaioaa] {
-  border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .box-shadow[b-qo8ttaioaa] {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
 }
 
-button.accept-policy[b-qo8ttaioaa] {
-  font-size: 1rem;
-  line-height: inherit;
+/* ---------------------------
+   卡片样式
+--------------------------- */
+.card[b-qo8ttaioaa] {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* ---------------------------
+   表格样式（自适应小屏）
+--------------------------- */
+.table-responsive[b-qo8ttaioaa] {
+    overflow-x: auto;
+}
+
+.table[b-qo8ttaioaa] {
+    background-color: white;
+}
+
+    .table th[b-qo8ttaioaa] {
+        white-space: nowrap;
+    }
+
+/* ---------------------------
+   页脚
+--------------------------- */
+footer[b-qo8ttaioaa],
 .footer[b-qo8ttaioaa] {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 1rem 0;
+    width: 100%;
+    text-align: center;
+}
+
+    footer a[b-qo8ttaioaa],
+    .footer a[b-qo8ttaioaa] {
+        color: #C8E6C9;
+    }
+
+        footer a:hover[b-qo8ttaioaa],
+        .footer a:hover[b-qo8ttaioaa] {
+            color: white;
+            text-decoration: underline;
+        }
+
+/* ---------------------------
+   接受政策按钮
+--------------------------- */
+button.accept-policy[b-qo8ttaioaa] {
+    font-size: 1rem;
+    line-height: inherit;
+}
+
+/* ---------------------------
+   响应式优化
+--------------------------- */
+@media (max-width: 576px) {
+    .navbar .nav-link[b-qo8ttaioaa] {
+        padding: 0.6rem 1rem;
+    }
+
+    h1[b-qo8ttaioaa], .display-4[b-qo8ttaioaa] {
+        font-size: 1.8rem;
+    }
+
+    .btn[b-qo8ttaioaa] {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
 }

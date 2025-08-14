@@ -1,0 +1,296 @@
+@using System.Linq
+@model IEnumerable<CampusCafeOrderingSystem.Models.VendorViewModel>
+
+    @{
+    ViewData["Title"] = "Vendor Management";
+
+    int total    = Model?.Count() ?? 0;
+    int active   = Model?.Count(v => v.Status == "Active") ?? 0;
+    int pending  = Model?.Count(v => v.Status == "Pending") ?? 0;
+    int disabled = Model?.Count(v => v.Status == "Disabled") ?? 0;
+
+    string Badge(string s) => s switch
+    {
+        "Active"   => "<span class=\"badge bg-success\">Active</span>",
+        "Pending"  => "<span class=\"badge bg-secondary\">Pending</span>",
+        "Disabled" => "<span class=\"badge bg-warning text-dark\">Disabled</span>",
+        "Rejected" => "<span class=\"badge bg-danger\">Rejected</span>",
+        _          => "<span class=\"badge bg-light text-dark\">Unknown</span>"
+    };
+
+    string Stars(decimal r)
+    {
+        var full = (int)Math.Round(r, MidpointRounding.AwayFromZero);
+        full = Math.Min(5, Math.Max(0, full));
+        return new string('★', full) + new string('☆', 5 - full);
+    }
+    }
+
+    <div class="container my-4">
+        <h2 class="mb-4 text-center">?? Vendor Management</h2>
+
+        @if (TempData["VendorToast"] is string toast && !string.IsNullOrWhiteSpace(toast))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @toast
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+        <!-- 概览统计 -->
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm text-center p-3">
+                    <div class="text-muted small">Total Vendors</div>
+                    <div class="fs-3 fw-bold">@total</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm text-center p-3">
+                    <div class="text-muted small">Active</div>
+                    <div class="fs-3 fw-bold text-success">@active</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm text-center p-3">
+                    <div class="text-muted small">Pending</div>
+                    <div class="fs-3 fw-bold text-secondary">@pending</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm text-center p-3">
+                    <div class="text-muted small">Disabled</div>
+                    <div class="fs-3 fw-bold text-warning">@disabled</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选区 -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Keyword</label>
+                        <input id="searchBox" type="text" class="form-control" placeholder="Search name / email / phone">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All</option>
+                            <option value="Active">Active</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Disabled">Disabled</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">Min Rating</label>
+                        <select id="ratingFilter" class="form-select">
+                            <option value="">All</option>
+                            <option value="1">≥ 1</option>
+                            <option value="2">≥ 2</option>
+                            <option value="3">≥ 3</option>
+                            <option value="4">≥ 4</option>
+                            <option value="5">= 5</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-2 text-md-end">
+                        <button id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 列表 -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="vendorsTable" class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width:90px;">Vendor ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th style="width:110px;">Status</th>
+                                <th style="width:140px;">Registered</th>
+                                <th style="width:120px;">Rating</th>
+                                <th style="width:180px;" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var v in Model ?? Enumerable.Empty<CampusCafeOrderingSystem.Models.VendorViewModel>())
+                        {
+                            <tr>
+                                <td>@(v.Id ?? "-")</td>
+                                <td>
+                                    <div class="fw-semibold">@((v.Name ?? "-"))</div>
+                                    <div class="small text-muted">@((v.Address ?? "-"))</div>
+                                </td>
+                                <td>@(v.Email ?? "-")</td>
+                                <td>@(v.Phone ?? "-")</td>
+                                <td>@Html.Raw(Badge(v.Status ?? ""))</td>
+                                <td>@(v.RegisteredAt == default ? "-" : v.RegisteredAt.ToString("yyyy-MM-dd"))</td>
+                                <td>
+                                    <span class="text-warning">@Stars(v.Rating)</span>
+                                    <div class="small text-muted">@v.Rating.ToString("0.0") / 5</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                        <!-- 审批 -->
+                                        <form asp-action="ApproveVendor" asp-controller="Admin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
+                                            <button type="submit" class="btn btn-success btn-sm" @((v.Status == "Pending") ? "" : "disabled")>
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectVendor" asp-controller="Admin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
+                                            <button type="submit" class="btn btn-danger btn-sm" @((v.Status == "Pending") ? "" : "disabled")>
+                                                Reject
+                                            </button>
+                                        </form>
+
+                                        <!-- 启/停用切换 -->
+                                        <form asp-action="ToggleVendor" asp-controller="Admin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
+                                            <button type="submit" class="btn btn-warning btn-sm">
+                                                @(v.Status == "Active" ? "Disable" : "Enable")
+                                            </button>
+                                        </form>
+
+                                        <!-- 详情弹窗 -->
+                                        <button type="button"
+                                                class="btn btn-info btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#vendorModal"
+                                                data-id="@(v.Id ?? "-")"
+                                                data-name="@(v.Name ?? "-")"
+                                                data-email="@(v.Email ?? "-")"
+                                                data-phone="@(v.Phone ?? "-")"
+                                                data-address="@(v.Address ?? "-")"
+                                                data-status="@(v.Status ?? "-")"
+                                                data-registered="@(v.RegisteredAt == default ? "-" : v.RegisteredAt.ToString("yyyy-MM-dd"))"
+                                                data-menu="@v.MenuItems"
+                                                data-rating="@v.Rating">
+                                            View
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情 Modal -->
+    <div class="modal fade" id="vendorModal" tabindex="-1" aria-labelledby="vendorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="vendorModalLabel" class="modal-title">Vendor Detail</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Vendor ID</dt>
+                        <dd id="vd-id" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Name</dt>
+                        <dd id="vd-name" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Email</dt>
+                        <dd id="vd-email" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Phone</dt>
+                        <dd id="vd-phone" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Status</dt>
+                        <dd id="vd-status" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Registered</dt>
+                        <dd id="vd-registered" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Address</dt>
+                        <dd id="vd-address" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Menu Items</dt>
+                        <dd id="vd-menu" class="col-sm-9"></dd>
+                        <dt class="col-sm-3">Rating</dt>
+                        <dd id="vd-rating" class="col-sm-9"></dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <!-- DataTables（如已在 _Layout 引入，可移除这三行） -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+        <script>
+            let dt;
+            $(function () {
+                dt = $('#vendorsTable').DataTable({
+                    pageLength: 10,
+                    order: [[5, 'desc']], // Registered 列倒序
+                    dom: 'lrtip'          // 隐藏默认搜索框，使用自定义搜索
+                });
+
+                // 自定义搜索
+                $('#searchBox').on('keyup', function () {
+                    dt.search(this.value).draw();
+                });
+
+                // 筛选：状态列（索引 4），评分列（索引 6）
+                $('#statusFilter, #ratingFilter').on('change', function () {
+                    dt.columns().search('');
+
+                    const status = $('#statusFilter').val();
+                    const minRating = $('#ratingFilter').val();
+
+                    if (status) dt.column(4).search(status, true, false);
+
+                    if (minRating) {
+                        // 评分文本形如 "4.6 / 5"；用简单的范围匹配
+                        const rx = minRating === '5'
+                            ? '^\\s*5(\\.0)?\\s*/\\s*5\\s*$'
+                            : `^[${minRating}-5](\\.[0-9])?\\s*/\\s*5\\s*$`;
+                        dt.column(6).search(rx, true, false);
+                    }
+
+                    dt.draw();
+                });
+
+                // 重置筛选
+                $('#resetFilters').on('click', function () {
+                    $('#searchBox').val('');
+                    $('#statusFilter').val('');
+                    $('#ratingFilter').val('');
+                    dt.search('').columns().search('').draw();
+                });
+
+                // Modal 填充
+                const modal = document.getElementById('vendorModal');
+                modal.addEventListener('show.bs.modal', function (event) {
+                    const btn = event.relatedTarget;
+                    const get = (k) => btn.getAttribute('data-' + k) || '-';
+                    modal.querySelector('#vd-id').textContent = get('id');
+                    modal.querySelector('#vd-name').textContent = get('name');
+                    modal.querySelector('#vd-email').textContent = get('email');
+                    modal.querySelector('#vd-phone').textContent = get('phone');
+                    modal.querySelector('#vd-status').textContent = get('status');
+                    modal.querySelector('#vd-registered').textContent = get('registered');
+                    modal.querySelector('#vd-address').textContent = get('address');
+                    modal.querySelector('#vd-menu').textContent = get('menu');
+                    modal.querySelector('#vd-rating').textContent = get('rating') + ' / 5';
+                });
+            });
+        </script>
+    }
