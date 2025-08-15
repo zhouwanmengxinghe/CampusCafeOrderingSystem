@@ -1,4 +1,4 @@
-﻿using CampusCafeOrderingSystem.Models;
+using CampusCafeOrderingSystem.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +8,13 @@ namespace CampusCafeOrderingSystem.Data
     public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) { }
+            : base(options)
+        {
+        }
 
-        // 团餐申请表
-        public DbSet<CateringApplication> CateringApplications => Set<CateringApplication>();
+        public DbSet<CateringApplication> CateringApplications { get; set; }
+        public DbSet<CafeApp.Models.user_order_pay.Order> Orders { get; set; }
+        public DbSet<CafeApp.Models.user_order_pay.OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
