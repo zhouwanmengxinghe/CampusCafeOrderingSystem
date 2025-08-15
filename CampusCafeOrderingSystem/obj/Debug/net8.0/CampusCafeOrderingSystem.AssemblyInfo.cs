@@ -11,12 +11,11 @@
 using System;
 using System.Reflection;
 
-[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
 [assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("aspnet-CampusCafeOrderingSystem-83bcf351-9fe5-439b-aed7-5b38b389d00e")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("CampusCafeOrderingSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+524b80ee3bc6321bd5dbe94601fa12ae56f56887")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfaad08402bc7b4959dcec379e298c08dea00de3")]
 [assembly: System.Reflection.AssemblyProductAttribute("CampusCafeOrderingSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CampusCafeOrderingSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
