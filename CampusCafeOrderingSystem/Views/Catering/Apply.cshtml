@@ -1,196 +1,197 @@
-@model CafeApp.Models.CateringApplication
+@model CampusCafeOrderingSystem.Models.CateringApplicationViewModel
+@using CampusCafeOrderingSystem.Models
 @{
-    ViewData["Title"] = "团餐申请";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Group Catering Application";
 }
 
-<style>
-    .catering-form {
-        background-color: #F9F9F9;
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .form-title {
-        color: #4CAF50;
-        font-weight: bold;
-        margin-bottom: 30px;
-        text-align: center;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-label {
-        color: #333;
-        font-weight: 500;
-        margin-bottom: 8px;
-    }
-    
-    .form-control {
-        border-radius: 8px;
-        border: 2px solid #E0E0E0;
-        padding: 12px;
-        transition: border-color 0.3s ease;
-    }
-    
-    .form-control:focus {
-        border-color: #4CAF50;
-        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
-    }
-    
-    .btn-submit {
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 12px;
-        padding: 12px 30px;
-        font-weight: 600;
-        border: none;
-        width: 100%;
-        transition: background-color 0.3s ease;
-    }
-    
-    .btn-submit:hover {
-        background-color: #45A049;
-    }
-    
-    .btn-back {
-        background-color: #6c757d;
-        color: white;
-        border-radius: 12px;
-        padding: 12px 30px;
-        font-weight: 600;
-        border: none;
-        text-decoration: none;
-        display: inline-block;
-        margin-right: 15px;
-    }
-    
-    .btn-back:hover {
-        background-color: #5a6268;
-        color: white;
-        text-decoration: none;
-    }
-    
-    .alert-success {
-        border-radius: 12px;
-        border: none;
-        background-color: #d4edda;
-        color: #155724;
-    }
-</style>
+<div class="container my-4">
+    <h2 class="mb-3 text-center">??? Group Catering Application</h2>
+    <p class="text-muted text-center mb-4">
+        ����д������Ϣ���ύ�Ų����롣���ǻ��� <strong>1�C2 ��������</strong> ��������ϵȷ��ϸ�ڡ�<br />
+        Fill out the form and we��ll get back to you within 1�C2 business days.
+    </p>
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success" role="alert">
-                    <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
-                </div>
-            }
-            
-            <div class="catering-form">
-                <h2 class="form-title">
-                    <i class="fas fa-utensils"></i> 团餐申请
-                </h2>
-                
-                <form asp-action="Apply" method="post">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="EventName" class="form-label"></label>
-                                <input asp-for="EventName" class="form-control" placeholder="请输入活动名称">
-                                <span asp-validation-for="EventName" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Apply" asp-controller="Catering" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+
+                        <h5 class="mb-3">?? Contact Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
                                 <label asp-for="ContactName" class="form-label"></label>
-                                <input asp-for="ContactName" class="form-control" placeholder="请输入联系人姓名">
+                                <input asp-for="ContactName" class="form-control" placeholder="e.g., Alice Wang" />
                                 <span asp-validation-for="ContactName" class="text-danger"></span>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="col-md-6">
                                 <label asp-for="ContactPhone" class="form-label"></label>
-                                <input asp-for="ContactPhone" class="form-control" placeholder="请输入联系电话">
+                                <input asp-for="ContactPhone" class="form-control" type="tel" placeholder="+64 21 123 4567" />
                                 <span asp-validation-for="ContactPhone" class="text-danger"></span>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="EventDate" class="form-label"></label>
-                                <input asp-for="EventDate" type="datetime-local" class="form-control">
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-3">??? Event Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="EventDate" class="form-label">Event Date</label>
+                                <input asp-for="EventDate" type="date" class="form-control" />
                                 <span asp-validation-for="EventDate" class="text-danger"></span>
+                                <div class="form-text">Preferred date for the event</div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="PeopleCount" class="form-label"></label>
-                                <input asp-for="PeopleCount" type="number" class="form-control" placeholder="请输入预计人数" min="10" max="500">
-                                <span asp-validation-for="PeopleCount" class="text-danger"></span>
+                            <div class="col-md-4">
+                                <label asp-for="StartTime" class="form-label">Start Time</label>
+                                <input asp-for="StartTime" type="time" class="form-control" />
+                                <span asp-validation-for="StartTime" class="text-danger"></span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="BudgetRange" class="form-label"></label>
-                                <select asp-for="BudgetRange" class="form-control">
-                                    <option value="">请选择预算范围</option>
-                                    <option value="1000-2000">1000-2000元</option>
-                                    <option value="2000-5000">2000-5000元</option>
-                                    <option value="5000-10000">5000-10000元</option>
-                                    <option value="10000+">10000元以上</option>
+                            <div class="col-md-4">
+                                <label asp-for="EndTime" class="form-label">End Time</label>
+                                <input asp-for="EndTime" type="time" class="form-control" />
+                                <span asp-validation-for="EndTime" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label asp-for="NumberOfPeople" class="form-label">Number of People</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input id="peopleRange" type="range" min="1" max="500" value="@Model.NumberOfPeople" class="form-range" />
+                                    <input asp-for="NumberOfPeople" type="number" class="form-control" style="max-width:120px;" min="1" max="500" />
+                                </div>
+                                <span asp-validation-for="NumberOfPeople" class="text-danger"></span>
+                                <div class="form-text">Use slider or enter a number (1�C500).</div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Service Type</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" asp-for="ServiceType" id="st1" value="Delivery" />
+                                        <label class="form-check-label" for="st1">Delivery</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" asp-for="ServiceType" id="st2" value="Pickup" />
+                                        <label class="form-check-label" for="st2">Pickup</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" asp-for="ServiceType" id="st3" value="OnSiteService" />
+                                        <label class="form-check-label" for="st3">On-site Service</label>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="ServiceType" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label asp-for="Address" class="form-label">Venue / Delivery Address</label>
+                                <input asp-for="Address" type="text" class="form-control" placeholder="e.g., Campus Center, Room 201" />
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Dietary Requirements</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    @{
+                                        var opts = new[] { "Vegetarian", "Vegan", "Gluten-Free", "Halal", "Dairy-Free" };
+                                        foreach (var opt in opts)
+                                        {
+                                            var id = "diet_" + opt.Replace(" ", "");
+                                            var isChecked = Model.Dietary?.Contains(opt) ?? false;
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="Dietary" value="@opt" id="@id" @(isChecked ? "checked" : null) />
+                                            <label class="form-check-label" for="@id">@opt</label>
+                                        </div>
+                                        }
+                                    }
+                                </div>
+                                <div class="form-text">You can specify details in Notes below.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="BudgetPerPerson" class="form-label">Budget per Person</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="BudgetPerPerson" type="number" step="0.5" min="0" class="form-control" placeholder="e.g., 12.5">
+                                </div>
+                                <span asp-validation-for="BudgetPerPerson" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="MenuStyle" class="form-label">Preferred Menu Style</label>
+                                <select asp-for="MenuStyle" class="form-select">
+                                    <option value="">Select��</option>
+                                    <option value="CoffeePastries">Coffee &amp; Pastries</option>
+                                    <option value="SandwichSalad">Sandwich &amp; Salad</option>
+                                    <option value="HotDishes">Hot Dishes</option>
+                                    <option value="MixedCustom">Mixed / Custom</option>
                                 </select>
+                                <span asp-validation-for="MenuStyle" class="text-danger"></span>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label asp-for="EventAddress" class="form-label"></label>
-                        <input asp-for="EventAddress" class="form-control" placeholder="请输入活动地址">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label asp-for="SpecialRequirements" class="form-label"></label>
-                        <textarea asp-for="SpecialRequirements" class="form-control" rows="4" placeholder="请输入特殊要求（如饮食禁忌、特殊安排等）"></textarea>
-                        <span asp-validation-for="SpecialRequirements" class="text-danger"></span>
-                    </div>
-                    
-                    <div class="form-group text-center mt-4">
-                        <a asp-controller="Home" asp-action="Index" class="btn-back">
-                            <i class="fas fa-arrow-left"></i> 返回首页
-                        </a>
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-paper-plane"></i> 提交申请
-                        </button>
-                    </div>
-                </form>
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-3">?? Notes</h5>
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="4" placeholder="e.g., Tableware required, delivery window, specific allergens��"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- �Ҳࣺ������˵�� -->
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="mb-2">?? Tips</h6>
+                    <ul class="mb-0">
+                        <li>�Ƽ�������ǰ <strong>48 Сʱ</strong> ���롣</li>
+                        <li>����һ���Բ;߻򳡵ز��ã����ڱ�ע��˵����</li>
+                        <li>�۸�����������˵��ͷ���ʽ������</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-2">?? Need help?</h6>
+                    <p class="mb-1">Email: <a href="mailto:catering@campuscafe.com">catering@campuscafe.com</a></p>
+                    <p class="mb-0">Phone: <span class="text-nowrap">+64 9 000 0000</span></p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     <script>
-        // 设置默认日期为明天
-        document.addEventListener('DOMContentLoaded', function() {
-            const eventDateInput = document.querySelector('input[name="EventDate"]');
-            if (eventDateInput && !eventDateInput.value) {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                eventDateInput.value = tomorrow.toISOString().slice(0, 16);
-            }
-        });
+        // 同步滑块和数字输入框
+        (function () {
+            const range = document.getElementById('peopleRange');
+            const number = document.getElementById('NumberOfPeople');
+            if (!range || !number) return;
+
+            const sync = (src, dest) => {
+                dest.value = src.value;
+                dest.dispatchEvent(new Event('input', { bubbles: true }));
+            };
+
+            range.addEventListener('input', () => sync(range, number));
+            number.addEventListener('input', () => {
+                const v = Math.max(1, Math.min(500, parseInt(number.value || '1', 10)));
+                number.value = v;
+                range.value = v;
+            });
+        })();
     </script>
 }

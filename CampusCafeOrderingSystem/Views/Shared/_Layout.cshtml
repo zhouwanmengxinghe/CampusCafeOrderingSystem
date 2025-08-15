@@ -1,74 +1,92 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-@{
+        @{
     var user = User.Identity;
     string role = User.IsInRole("Admin") ? "Admin"
                 : User.IsInRole("Vendor") ? "Vendor"
                 : "Customer";
-}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CampusCafeOrderingSystem</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CampusCafeOrderingSystem.styles.css" asp-append-version="true" />
-    <style>
-        body {
-            background-color: #F9F9F9;
-            color: #333;
         }
-
-        .navbar {
-            background-color: #4CAF50;
-        }
-
-            .navbar .nav-link, .navbar .navbar-brand {
-                color: white !important;
-                font-weight: 500;
-            }
-
-                .navbar .nav-link:hover {
-                    background-color: #8BC34A;
-                    color: white !important;
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>@ViewData["Title"] - CampusCafeOrderingSystem</title>
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+            <link rel="stylesheet" href="~/CampusCafeOrderingSystem.styles.css" asp-append-version="true" />
+            <style>
+                body {
+                    background-color: #F9F9F9;
+                    color: #333;
+                    font-family: 'Segoe UI', sans-serif;
                 }
 
-        footer {
-            background-color: #4CAF50;
-            color: white;
-            padding: 1rem 0;
-        }
+                .navbar {
+                    background-color: #4CAF50;
+                }
 
-            footer a {
-                color: #C8E6C9;
-            }
+                    .navbar .navbar-brand {
+                        color: white !important;
+                        font-weight: 700;
+                        font-size: 1.4rem;
+                    }
 
-        .btn-primary {
-            background-color: #4CAF50;
-            border-color: #4CAF50;
-        }
+                    .navbar .nav-link {
+                        color: white !important;
+                        font-weight: 500;
+                        padding: 8px 15px;
+                        border-radius: 6px;
+                        transition: background-color 0.3s ease, box-shadow 0.2s ease;
+                    }
 
-            .btn-primary:hover {
-                background-color: #45A049;
-                border-color: #45A049;
-            }
-    </style>
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">CampusCafe</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (SignInManager.IsSignedIn(User))
+                        .navbar .nav-link:hover {
+                            background-color: #66BB6A;
+                            color: white !important;
+                            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+                        }
+
+                footer {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 1rem 0;
+                    margin-top: 40px;
+                }
+
+                    footer a {
+                        color: #C8E6C9;
+                        text-decoration: none;
+                    }
+
+                        footer a:hover {
+                            color: white;
+                            text-decoration: underline;
+                        }
+
+                .btn-primary {
+                    background-color: #4CAF50;
+                    border-color: #4CAF50;
+                }
+
+                    .btn-primary:hover {
+                        background-color: #45A049;
+                        border-color: #45A049;
+                    }
+            </style>
+        </head>
+        <body>
+            <header>
+                <nav class="navbar navbar-expand-lg navbar-dark">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" asp-controller="Home" asp-action="Index">CampusCafe</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarMain">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                @if (SignInManager.IsSignedIn(User))
                         {
                             if (role == "Customer")
                             {
@@ -94,40 +112,38 @@
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Settings">Settings</a></li>
                             }
                         }
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
+                            </ul>
+                            <partial name="_LoginPartial" />
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
             </div>
-        </nav>
-    </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+            <footer class="text-center">
+                <div class="container">
+                    Group 12 - Campus Ordering System &copy; 2025 | <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                </div>
+            </footer>
 
-    <footer class="text-center">
-        <div class="container">
-            Group 12 - Campus Ordering System &copy; 2025 | <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
-        </div>
-    </footer>
+            <script src="~/lib/jquery/dist/jquery.min.js"></script>
+            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-    @if (SignInManager.IsSignedIn(User) && role == "Vendor")
+            @if (SignInManager.IsSignedIn(User) && role == "Vendor")
     {
-        <script>
-            // Check if the current page is already the vendor dashboard
+            <script>
             if (window.location.pathname !== '/Liang/Merchant') {
-                // If not, redirect to the vendor dashboard
                 window.location.href = '@Url.Action("Merchant", "Liang")';
             }
-        </script>
+            </script>
     }
 
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+            @await RenderSectionAsync("Scripts", required: false)
+        </body>
+    </html>
