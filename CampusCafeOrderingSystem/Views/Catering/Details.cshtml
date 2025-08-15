@@ -1,0 +1,275 @@
+@model CafeApp.Models.CateringDetails
+@{
+    ViewData["Title"] = "团餐详情";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .details-container {
+        background-color: #F9F9F9;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .details-title {
+        color: #4CAF50;
+        font-weight: bold;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .info-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 10px 0;
+        border-bottom: 1px solid #E0E0E0;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .info-icon {
+        color: #4CAF50;
+        width: 30px;
+        margin-right: 15px;
+        text-align: center;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #333;
+        min-width: 100px;
+        margin-right: 15px;
+    }
+    
+    .info-value {
+        color: #666;
+        flex: 1;
+    }
+    
+    .menu-item {
+        background-color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .menu-item:hover {
+        transform: translateY(-2px);
+    }
+    
+    .menu-item-name {
+        color: #4CAF50;
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+    
+    .menu-item-description {
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    .menu-item-price {
+        color: #333;
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    
+    .total-amount {
+        background: linear-gradient(135deg, #4CAF50, #45A049);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin: 25px 0;
+    }
+    
+    .btn-checkout {
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 12px;
+        padding: 15px 40px;
+        font-weight: 600;
+        border: none;
+        font-size: 1.1em;
+        transition: background-color 0.3s ease;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .btn-checkout:hover {
+        background-color: #45A049;
+    }
+    
+    .btn-back {
+        background-color: #6c757d;
+        color: white;
+        border-radius: 12px;
+        padding: 15px 40px;
+        font-weight: 600;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .btn-back:hover {
+        background-color: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .status-badge {
+        background-color: #FFC107;
+        color: #333;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="details-container">
+                <h2 class="details-title">
+                    <i class="fas fa-clipboard-list"></i> 团餐详情
+                </h2>
+                
+                <div class="row">
+                    <!-- 基本信息 -->
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h4 class="mb-3">
+                                <i class="fas fa-info-circle text-primary"></i> 基本信息
+                            </h4>
+                            
+                            <div class="info-item">
+                                <i class="fas fa-calendar info-icon"></i>
+                                <span class="info-label">活动名称:</span>
+                                <span class="info-value">@Model.EventName</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <i class="fas fa-clock info-icon"></i>
+                                <span class="info-label">活动时间:</span>
+                                <span class="info-value">@Model.EventDate.ToString("yyyy年MM月dd日 HH:mm")</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <i class="fas fa-users info-icon"></i>
+                                <span class="info-label">预计人数:</span>
+                                <span class="info-value">@Model.PeopleCount 人</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <i class="fas fa-tag info-icon"></i>
+                                <span class="info-label">状态:</span>
+                                <span class="info-value">
+                                    <span class="status-badge">@Model.Status</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 套餐信息 -->
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h4 class="mb-3">
+                                <i class="fas fa-utensils text-success"></i> 推荐套餐
+                            </h4>
+                            
+                            @foreach (var item in Model.MenuItems)
+                            {
+                                <div class="menu-item">
+                                    <div class="menu-item-name">@item.Name</div>
+                                    <div class="menu-item-description">@item.Description</div>
+                                    <div class="menu-item-price">¥@item.Price.ToString("F2") / 人</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 总金额 -->
+                <div class="total-amount">
+                    <h3 class="mb-0">
+                        <i class="fas fa-calculator"></i> 
+                        预估总金额: ¥@Model.TotalAmount.ToString("F2")
+                    </h3>
+                    <small>*最终金额以实际确认为准</small>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <form asp-action="Checkout" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn-checkout">
+                                <i class="fas fa-credit-card"></i> 确认并结算
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <a asp-action="Apply" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> 返回申请页
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 说明信息 -->
+                <div class="info-card mt-4">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-lightbulb"></i> 温馨提示
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            提交订单后，我们的客服人员将在24小时内与您联系确认详情
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            可根据您的具体需求调整菜单和价格
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            支持现场布置和专业服务团队
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check text-success me-2"></i>
+                            如有疑问，请联系客服热线：400-123-4567
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 确认结算提示
+        document.querySelector('.btn-checkout').addEventListener('click', function(e) {
+            if (!confirm('确认提交团餐订单吗？我们将尽快与您联系确认详情。')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

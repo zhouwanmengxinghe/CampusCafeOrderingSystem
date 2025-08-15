@@ -1,0 +1,525 @@
+@model CafeApp.Models.user_order_pay.Order
+@{
+    ViewData["Title"] = "Order Tracking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-map-marker-alt"></i> Order Tracking
+                </h2>
+                <p class="text-muted">Track your order in real-time</p>
+            </div>
+            
+            <!-- Order Status Card -->
+            <div class="card status-card mb-4">
+                <div class="card-body text-center p-4">
+                    <div class="status-icon mb-3">
+                        <i class="@GetStatusIcon(Model.Status) fa-4x text-@GetStatusColor(Model.Status)"></i>
+                    </div>
+                    <h3 class="status-title text-@GetStatusColor(Model.Status)">@GetStatusMessage(Model.Status)</h3>
+                    <p class="status-description text-muted">@GetStatusDescription(Model.Status)</p>
+                    
+                    @if (Model.Status == CafeApp.Models.user_order_pay.OrderStatus.Preparing && Model.EstimatedCompletionTime.HasValue)
+                    {
+                        <div class="estimated-time mt-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-clock"></i>
+                                <strong>Estimated ready time: @Model.EstimatedCompletionTime.Value.ToString("HH:mm")</strong>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (Model.Status == CafeApp.Models.user_order_pay.OrderStatus.Ready)
+                    {
+                        <div class="ready-notification mt-3">
+                            <div class="alert alert-success">
+                                <i class="fas fa-bell"></i>
+                                <strong>Your order is ready for pickup!</strong>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Order Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Order Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>Order Number:</strong>
+                                <span class="order-number">@Model.OrderNumber</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>Order Date:</strong>
+                                <span>@Model.OrderDate.ToString("yyyy-MM-dd HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>Total Amount:</strong>
+                                <span class="amount">¥@Model.TotalAmount.ToString("F2")</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>Payment Method:</strong>
+                                <span>@GetPaymentMethodDisplay(Model.PaymentMethod)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Timeline -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks"></i> Order Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        @{
+                            var timelineSteps = new[] {
+                                (CafeApp.Models.user_order_pay.OrderStatus.Confirmed, "Order Confirmed", "Your order has been received and confirmed", "fas fa-check-circle"),
+                                (CafeApp.Models.user_order_pay.OrderStatus.Preparing, "Preparing Your Order", "Our team is preparing your delicious items", "fas fa-utensils"),
+                                (CafeApp.Models.user_order_pay.OrderStatus.Ready, "Ready for Pickup", "Your order is ready! Please come to collect it", "fas fa-bell"),
+                                (CafeApp.Models.user_order_pay.OrderStatus.Completed, "Order Completed", "Thank you for your order! Enjoy your meal", "fas fa-thumbs-up")
+                            };
+                        }
+                        
+                        @for (int i = 0; i < timelineSteps.Length; i++)
+                        {
+                            var (status, title, description, icon) = timelineSteps[i];
+                            var isCompleted = (int)Model.Status > (int)status;
+                            var isCurrent = Model.Status == status;
+                            var isPending = (int)Model.Status < (int)status;
+                            
+                            <div class="timeline-item @(isCompleted ? "completed" : "") @(isCurrent ? "current" : "") @(isPending ? "pending" : "")">
+                                <div class="timeline-marker">
+                                    <i class="@icon"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">@title</h6>
+                                    <p class="timeline-description">@description</p>
+                                    @if (isCurrent)
+                                    {
+                                        <small class="current-status">Current Status</small>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-cart"></i> Your Items (@Model.OrderItems.Count)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="items-list">
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <div class="item-row">
+                                <div class="item-info">
+                                    <h6 class="item-name">@item.MenuItemName</h6>
+                                </div>
+                                <div class="item-details">
+                                    <span class="item-quantity">×@item.Quantity</span>
+                                    <span class="item-price">¥@item.TotalPrice.ToString("F2")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="text-center mb-4">
+                <a asp-action="TrackOrder" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search"></i> Track Another Order
+                </a>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="MyOrders" class="btn btn-outline-success me-2">
+                        <i class="fas fa-list"></i> My Orders
+                    </a>
+                }
+                <a asp-controller="Menu" asp-action="Index" class="btn btn-success">
+                    <i class="fas fa-utensils"></i> Order More
+                </a>
+            </div>
+            
+            <!-- Auto Refresh Notice -->
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="fas fa-sync-alt"></i>
+                    This page automatically refreshes every 30 seconds to show the latest status.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusIcon(CafeApp.Models.user_order_pay.OrderStatus status)
+    {
+        return status switch
+        {
+            CafeApp.Models.user_order_pay.OrderStatus.Pending => "fas fa-clock",
+            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "fas fa-check-circle",
+            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "fas fa-utensils",
+            CafeApp.Models.user_order_pay.OrderStatus.Ready => "fas fa-bell",
+            CafeApp.Models.user_order_pay.OrderStatus.Completed => "fas fa-thumbs-up",
+            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "fas fa-times-circle",
+            _ => "fas fa-question-circle"
+        };
+    }
+    
+    string GetStatusColor(CafeApp.Models.user_order_pay.OrderStatus status)
+    {
+        return status switch
+        {
+            CafeApp.Models.user_order_pay.OrderStatus.Pending => "warning",
+            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "info",
+            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "primary",
+            CafeApp.Models.user_order_pay.OrderStatus.Ready => "success",
+            CafeApp.Models.user_order_pay.OrderStatus.Completed => "success",
+            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "danger",
+            _ => "secondary"
+        };
+    }
+    
+    string GetStatusMessage(CafeApp.Models.user_order_pay.OrderStatus status)
+    {
+        return status switch
+        {
+            CafeApp.Models.user_order_pay.OrderStatus.Pending => "Order Pending",
+            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "Order Confirmed",
+            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "Preparing Your Order",
+            CafeApp.Models.user_order_pay.OrderStatus.Ready => "Ready for Pickup!",
+            CafeApp.Models.user_order_pay.OrderStatus.Completed => "Order Completed",
+            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "Order Cancelled",
+            _ => "Unknown Status"
+        };
+    }
+    
+    string GetStatusDescription(CafeApp.Models.user_order_pay.OrderStatus status)
+    {
+        return status switch
+        {
+            CafeApp.Models.user_order_pay.OrderStatus.Pending => "We're processing your order",
+            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "Your order has been confirmed and will be prepared soon",
+            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "Our team is carefully preparing your items",
+            CafeApp.Models.user_order_pay.OrderStatus.Ready => "Your order is ready! Please come to collect it",
+            CafeApp.Models.user_order_pay.OrderStatus.Completed => "Thank you for choosing us! We hope you enjoyed your meal",
+            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "This order has been cancelled",
+            _ => "Please contact customer service for more information"
+        };
+    }
+    
+    string GetPaymentMethodDisplay(string paymentMethod)
+    {
+        return paymentMethod switch
+        {
+            "CreditCard" => "Credit/Debit Card",
+            "CampusCard" => "Campus Card",
+            "MobileWallet" => "Mobile Wallet",
+            _ => paymentMethod
+        };
+    }
+}
+
+<style>
+:root {
+    --primary-green: #4CAF50;
+    --light-green: #8BC34A;
+    --background-gray: #F9F9F9;
+    --text-primary: #333333;
+    --text-secondary: #777777;
+    --hover-green: #C8E6C9;
+}
+
+body {
+    background-color: var(--background-gray);
+}
+
+.status-card {
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-radius: 15px;
+}
+
+.status-icon {
+    animation: pulse 2s infinite;
+}
+
+@@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.status-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.status-description {
+    font-size: 1.1rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: white;
+    border-radius: 10px;
+}
+
+.card-header {
+    background-color: var(--primary-green);
+    color: white;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.info-item {
+    margin-bottom: 0.5rem;
+}
+
+.info-item strong {
+    color: var(--text-primary);
+    margin-right: 0.5rem;
+}
+
+.order-number {
+    font-family: 'Courier New', monospace;
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.amount {
+    font-weight: bold;
+    color: var(--primary-green);
+    font-size: 1.1rem;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -2rem;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.timeline-item.completed .timeline-marker {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.timeline-item.current .timeline-marker {
+    background-color: var(--light-green);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.timeline-content {
+    padding-left: 1rem;
+}
+
+.timeline-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.timeline-description {
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.current-status {
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+.items-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.item-row:last-child {
+    border-bottom: none;
+}
+
+.item-name {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.item-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.item-quantity {
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.item-price {
+    font-weight: 600;
+    color: var(--primary-green);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.btn-outline-success {
+    border-color: var(--light-green);
+    color: var(--light-green);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--light-green);
+    border-color: var(--light-green);
+}
+
+.btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.btn-success:hover {
+    background-color: var(--hover-green);
+    border-color: var(--light-green);
+    color: var(--text-primary);
+}
+
+.text-primary {
+    color: var(--primary-green) !important;
+}
+
+.text-success {
+    color: var(--primary-green) !important;
+}
+
+@@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline-marker {
+        left: -1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+    
+    .item-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .item-details {
+        align-self: flex-end;
+    }
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Auto-refresh every 30 seconds
+    setInterval(function() {
+        // Only refresh if the order is not completed
+        @if (Model.Status != CafeApp.Models.user_order_pay.OrderStatus.Completed && Model.Status != CafeApp.Models.user_order_pay.OrderStatus.Cancelled)
+        {
+            @:location.reload();
+        }
+    }, 30000);
+    
+    // Add loading animation when refreshing
+    $(window).on('beforeunload', function() {
+        $('body').append('<div class="loading-overlay"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+    });
+});
+</script>

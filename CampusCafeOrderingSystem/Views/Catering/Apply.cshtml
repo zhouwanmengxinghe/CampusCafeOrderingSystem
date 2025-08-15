@@ -1,0 +1,196 @@
+@model CafeApp.Models.CateringApplication
+@{
+    ViewData["Title"] = "团餐申请";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .catering-form {
+        background-color: #F9F9F9;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-title {
+        color: #4CAF50;
+        font-weight: bold;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        color: #333;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #E0E0E0;
+        padding: 12px;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    }
+    
+    .btn-submit {
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        border: none;
+        width: 100%;
+        transition: background-color 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        background-color: #45A049;
+    }
+    
+    .btn-back {
+        background-color: #6c757d;
+        color: white;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 15px;
+    }
+    
+    .btn-back:hover {
+        background-color: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .alert-success {
+        border-radius: 12px;
+        border: none;
+        background-color: #d4edda;
+        color: #155724;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                </div>
+            }
+            
+            <div class="catering-form">
+                <h2 class="form-title">
+                    <i class="fas fa-utensils"></i> 团餐申请
+                </h2>
+                
+                <form asp-action="Apply" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="EventName" class="form-label"></label>
+                                <input asp-for="EventName" class="form-control" placeholder="请输入活动名称">
+                                <span asp-validation-for="EventName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ContactName" class="form-label"></label>
+                                <input asp-for="ContactName" class="form-control" placeholder="请输入联系人姓名">
+                                <span asp-validation-for="ContactName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ContactPhone" class="form-label"></label>
+                                <input asp-for="ContactPhone" class="form-control" placeholder="请输入联系电话">
+                                <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="EventDate" class="form-label"></label>
+                                <input asp-for="EventDate" type="datetime-local" class="form-control">
+                                <span asp-validation-for="EventDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="PeopleCount" class="form-label"></label>
+                                <input asp-for="PeopleCount" type="number" class="form-control" placeholder="请输入预计人数" min="10" max="500">
+                                <span asp-validation-for="PeopleCount" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="BudgetRange" class="form-label"></label>
+                                <select asp-for="BudgetRange" class="form-control">
+                                    <option value="">请选择预算范围</option>
+                                    <option value="1000-2000">1000-2000元</option>
+                                    <option value="2000-5000">2000-5000元</option>
+                                    <option value="5000-10000">5000-10000元</option>
+                                    <option value="10000+">10000元以上</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="EventAddress" class="form-label"></label>
+                        <input asp-for="EventAddress" class="form-control" placeholder="请输入活动地址">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="SpecialRequirements" class="form-label"></label>
+                        <textarea asp-for="SpecialRequirements" class="form-control" rows="4" placeholder="请输入特殊要求（如饮食禁忌、特殊安排等）"></textarea>
+                        <span asp-validation-for="SpecialRequirements" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group text-center mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> 返回首页
+                        </a>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> 提交申请
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // 设置默认日期为明天
+        document.addEventListener('DOMContentLoaded', function() {
+            const eventDateInput = document.querySelector('input[name="EventDate"]');
+            if (eventDateInput && !eventDateInput.value) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                eventDateInput.value = tomorrow.toISOString().slice(0, 16);
+            }
+        });
+    </script>
+}

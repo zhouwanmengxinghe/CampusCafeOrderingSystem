@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CampusCafeOrderingSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9e0966baf376638f4d595878b3f206983480d9bf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+524b80ee3bc6321bd5dbe94601fa12ae56f56887")]
 [assembly: System.Reflection.AssemblyProductAttribute("CampusCafeOrderingSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CampusCafeOrderingSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
