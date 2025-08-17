@@ -4,37 +4,36 @@ namespace CafeApp.Models
 {
     public class CateringApplication
     {
-        [Required(ErrorMessage = "活动名称不能为空")]
-        [Display(Name = "活动名称")]
+        [Required(ErrorMessage = "Event name is required")]
+        [Display(Name = "Event Name")]
         public string EventName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "联系人姓名不能为空")]
-        [Display(Name = "联系人姓名")]
+        [Required(ErrorMessage = "Contact name is required")]
+        [Display(Name = "Contact Name")]
         public string ContactName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "联系电话不能为空")]
-        [Phone(ErrorMessage = "请输入有效的电话号码")]
-        [Display(Name = "联系电话")]
+        [Required(ErrorMessage = "Contact phone is required")]
+        [Phone(ErrorMessage = "Please enter a valid phone number")]
+        [Display(Name = "Contact Phone")]
         public string ContactPhone { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "活动日期不能为空")]
-        [Display(Name = "活动日期")]
+        [Required(ErrorMessage = "")]
         [DataType(DataType.DateTime)]
         public DateTime EventDate { get; set; }
 
-        [Required(ErrorMessage = "人数不能为空")]
-        [Range(10, 500, ErrorMessage = "团餐人数应在10-500人之间")]
-        [Display(Name = "预计人数")]
+        [Required(ErrorMessage = "Number of people is required")]
+        [Range(10, 500, ErrorMessage = "Number of people should be between 10-500")]
+        [Display(Name = "Expected Number of People")]
         public int PeopleCount { get; set; }
 
-        [Display(Name = "活动地址")]
+        [Display(Name = "Event Address")]
         public string EventAddress { get; set; } = string.Empty;
 
-        [Display(Name = "特殊要求")]
-        [StringLength(500, ErrorMessage = "特殊要求不能超过500字符")]
+        [Display(Name = "Special Requirements")]
+        [StringLength(500, ErrorMessage = "Special requirements cannot exceed 500 characters")]
         public string SpecialRequirements { get; set; } = string.Empty;
 
-        [Display(Name = "预算范围")]
+        [Display(Name = "Budget Range")]
         public string BudgetRange { get; set; } = string.Empty;
     }
 

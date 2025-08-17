@@ -18,7 +18,7 @@ namespace CampusCafeOrderingSystem.Controllers
             _userManager = userManager;
         }
         
-        // 我的订单页面
+        // My Orders page
         [Authorize]
         public async Task<IActionResult> MyOrders()
         {
@@ -37,7 +37,7 @@ namespace CampusCafeOrderingSystem.Controllers
             return View(orders);
         }
         
-        // 订单详情页面
+        // Order Details page
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
@@ -59,7 +59,7 @@ namespace CampusCafeOrderingSystem.Controllers
             return View(order);
         }
         
-        // 根据订单号跟踪订单
+        // Track order by order number
         public async Task<IActionResult> Track(string orderNumber)
         {
             if (string.IsNullOrEmpty(orderNumber))
@@ -81,13 +81,13 @@ namespace CampusCafeOrderingSystem.Controllers
             return View("OrderTracking", order);
         }
         
-        // 订单跟踪页面（不需要登录）
+        // Order tracking page (no login required)
         public IActionResult TrackOrder()
         {
             return View();
         }
         
-        // 获取订单状态的API（用于实时更新）
+        // API to get order status (for real-time updates)
         [HttpGet]
         public async Task<IActionResult> GetOrderStatus(string orderNumber)
         {

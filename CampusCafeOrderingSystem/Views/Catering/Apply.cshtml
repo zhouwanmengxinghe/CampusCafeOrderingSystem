@@ -5,10 +5,10 @@
 }
 
 <div class="container my-4">
-    <h2 class="mb-3 text-center">??? Group Catering Application</h2>
+    <h2 class="mb-3 text-center">Group Catering Application</h2>
     <p class="text-muted text-center mb-4">
-        ����д������Ϣ���ύ�Ų����롣���ǻ��� <strong>1�C2 ��������</strong> ��������ϵȷ��ϸ�ڡ�<br />
-        Fill out the form and we��ll get back to you within 1�C2 business days.
+        Fill out the form and submit your catering application. We will contact you within <strong>1-2 business days</strong> to confirm details.<br />
+        Fill out the form and we'll get back to you within 1-2 business days.
     </p>
 
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -20,7 +20,7 @@
                     <form asp-action="Apply" asp-controller="Catering" method="post" novalidate>
                         @Html.AntiForgeryToken()
 
-                        <h5 class="mb-3">?? Contact Details</h5>
+                        <h5 class="mb-3">Contact Details</h5>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label asp-for="ContactName" class="form-label"></label>
@@ -36,22 +36,21 @@
 
                         <hr class="my-4" />
 
-                        <h5 class="mb-3">??? Event Details</h5>
+                        <h5 class="mb-3">Event Details</h5>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label asp-for="EventDate" class="form-label">Event Date</label>
-                                <input asp-for="EventDate" type="date" class="form-control" />
+                                <label asp-for="EventDate" class="form-label"></label>
+                                <input asp-for="EventDate" type="date" class="form-control" lang="en" placeholder="2001/01/01" value="2001-01-01" />
                                 <span asp-validation-for="EventDate" class="text-danger"></span>
-                                <div class="form-text">Preferred date for the event</div>
                             </div>
                             <div class="col-md-4">
                                 <label asp-for="StartTime" class="form-label">Start Time</label>
-                                <input asp-for="StartTime" type="time" class="form-control" />
+                                <input asp-for="StartTime" type="time" class="form-control" lang="en" placeholder="HH:MM" />
                                 <span asp-validation-for="StartTime" class="text-danger"></span>
                             </div>
                             <div class="col-md-4">
                                 <label asp-for="EndTime" class="form-label">End Time</label>
-                                <input asp-for="EndTime" type="time" class="form-control" />
+                                <input asp-for="EndTime" type="time" class="form-control" lang="en" placeholder="HH:MM" />
                                 <span asp-validation-for="EndTime" class="text-danger"></span>
                             </div>
 
@@ -120,7 +119,7 @@
                             <div class="col-md-6">
                                 <label asp-for="MenuStyle" class="form-label">Preferred Menu Style</label>
                                 <select asp-for="MenuStyle" class="form-select">
-                                    <option value="">Select��</option>
+                                    <option value="">Select...</option>
                                     <option value="CoffeePastries">Coffee &amp; Pastries</option>
                                     <option value="SandwichSalad">Sandwich &amp; Salad</option>
                                     <option value="HotDishes">Hot Dishes</option>
@@ -132,10 +131,10 @@
 
                         <hr class="my-4" />
 
-                        <h5 class="mb-3">?? Notes</h5>
+                        <h5 class="mb-3">Notes</h5>
                         <div class="mb-3">
                             <label asp-for="Notes" class="form-label"></label>
-                            <textarea asp-for="Notes" class="form-control" rows="4" placeholder="e.g., Tableware required, delivery window, specific allergens��"></textarea>
+                            <textarea asp-for="Notes" class="form-control" rows="4" placeholder="e.g., Tableware required, delivery window, specific allergens..."></textarea>
                             <span asp-validation-for="Notes" class="text-danger"></span>
                         </div>
 
@@ -148,22 +147,22 @@
             </div>
         </div>
 
-        <!-- �Ҳࣺ������˵�� -->
+        <!-- Right side: Application instructions -->
         <div class="col-12 col-lg-4">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h6 class="mb-2">?? Tips</h6>
+                    <h6 class="mb-2">Tips</h6>
                     <ul class="mb-0">
-                        <li>�Ƽ�������ǰ <strong>48 Сʱ</strong> ���롣</li>
-                        <li>����һ���Բ;߻򳡵ز��ã����ڱ�ע��˵����</li>
-                        <li>�۸�����������˵��ͷ���ʽ������</li>
+                        <li>Recommend submitting <strong>48 hours</strong> in advance.</li>
+                        <li>If you have special dietary requirements or venue restrictions, please note in the remarks.</li>
+                        <li>Prices will be determined based on menu selection and service format.</li>
                     </ul>
                 </div>
             </div>
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h6 class="mb-2">?? Need help?</h6>
+                    <h6 class="mb-2">Need help?</h6>
                     <p class="mb-1">Email: <a href="mailto:catering@campuscafe.com">catering@campuscafe.com</a></p>
                     <p class="mb-0">Phone: <span class="text-nowrap">+64 9 000 0000</span></p>
                 </div>
@@ -174,8 +173,50 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+    <style>
+        /* Set date input placeholder text to 2001/01/01 */
+        input[type="date"]::-webkit-datetime-edit-text {
+            color: #6c757d;
+        }
+        input[type="date"]::-webkit-datetime-edit-month-field {
+            color: #6c757d;
+        }
+        input[type="date"]::-webkit-datetime-edit-day-field {
+            color: #6c757d;
+        }
+        input[type="date"]::-webkit-datetime-edit-year-field {
+            color: #6c757d;
+        }
+        input[type="date"]:focus::-webkit-datetime-edit-text,
+        input[type="date"]:focus::-webkit-datetime-edit-month-field,
+        input[type="date"]:focus::-webkit-datetime-edit-day-field,
+        input[type="date"]:focus::-webkit-datetime-edit-year-field {
+            color: #495057;
+        }
+        input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text,
+        input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-month-field,
+        input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-day-field,
+        input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-year-field {
+            color: #495057;
+        }
+    </style>
     <script>
-        // 同步滑块和数字输入框
+        // Set date input to use English locale
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.querySelector('input[type="date"]');
+            if (dateInput) {
+                dateInput.setAttribute('lang', 'en-US');
+                // Force English locale for date picker
+                if (dateInput.showPicker) {
+                    const originalShowPicker = dateInput.showPicker;
+                    dateInput.showPicker = function() {
+                        document.documentElement.lang = 'en';
+                        return originalShowPicker.call(this);
+                    };
+                }
+            }
+        });
+       
         (function () {
             const range = document.getElementById('peopleRange');
             const number = document.getElementById('NumberOfPeople');

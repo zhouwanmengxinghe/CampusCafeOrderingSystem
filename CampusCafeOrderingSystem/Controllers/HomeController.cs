@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using CampusCafeOrderingSystem.Models; // 添加对 Models 的引用
+using CampusCafeOrderingSystem.Models; // Import Models namespace
 
 namespace CampusCafeOrderingSystem.Controllers
 {
@@ -26,7 +26,7 @@ namespace CampusCafeOrderingSystem.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            // 传递 RequestId 到 ErrorViewModel
+            // Return RequestId and ErrorViewModel
             return View(new ErrorViewModel
             {
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier

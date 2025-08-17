@@ -1,4 +1,4 @@
-﻿using CafeApp.Models;
+using CafeApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
@@ -40,7 +40,7 @@ namespace CafeApp.Controllers
                     Name = "Espresso",
                     Description = "Strong classic espresso shot.",
                     Price = 3.0M,
-                    ImageUrl = "Content/images/espresso.jpg"  // 修正了图片路径
+                    ImageUrl = "Content/images/espresso.jpg"  // Fixed image path
                 }
             };
         }

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CampusCafeOrderingSystem.Data
 {
-    // 使用非泛型 IdentityDbContext（等价于 IdentityDbContext<IdentityUser>）
+    // Use non-generic IdentityDbContext (equivalent to IdentityDbContext<IdentityUser>)
     public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -20,7 +20,7 @@ namespace CampusCafeOrderingSystem.Data
         {
             base.OnModelCreating(builder);
 
-            // CateringApplication 配置
+            // CateringApplication configuration
             builder.Entity<CateringApplication>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -36,18 +36,18 @@ namespace CampusCafeOrderingSystem.Data
                 entity.Property(e => e.Address)
                       .HasMaxLength(200);
 
-                // 逗号分隔的饮食要求
+                // Comma-separated dietary requirements
                 entity.Property(e => e.DietaryCsv)
                       .HasMaxLength(300);
 
                 entity.Property(e => e.Notes)
                       .HasMaxLength(1000);
 
-                // 预算/人，设置精度
+                // Budget per person, set precision
                 entity.Property(e => e.BudgetPerPerson)
                       .HasColumnType("decimal(10,2)");
 
-                // 常用索引
+                // Common indexes
                 entity.HasIndex(e => e.CreatedAt);
                 entity.HasIndex(e => e.EventDate);
             });

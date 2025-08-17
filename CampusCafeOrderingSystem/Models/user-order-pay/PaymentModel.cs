@@ -8,7 +8,7 @@ namespace CafeApp.Models.user_order_pay
         public decimal TotalAmount { get; set; }
         public string SelectedPaymentMethod { get; set; } = string.Empty;
         
-        // 信用卡支付信息
+       
         [Display(Name = "Card Number")]
         public string? CardNumber { get; set; }
         
@@ -21,14 +21,14 @@ namespace CafeApp.Models.user_order_pay
         [Display(Name = "CVV")]
         public string? CVV { get; set; }
         
-        // 校园账户支付信息
+       
         [Display(Name = "Campus Card Number")]
         public string? CampusCardNumber { get; set; }
         
         [Display(Name = "PIN")]
         public string? CampusCardPin { get; set; }
         
-        // 移动钱包支付信息
+        
         [Display(Name = "Mobile Wallet Type")]
         public string? WalletType { get; set; }
         

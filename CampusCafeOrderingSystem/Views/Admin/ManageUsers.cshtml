@@ -3,7 +3,7 @@
 
     @{
     ViewData["Title"] = "User Management";
-    // 统一可选角色（也可以从 ViewBag.Roles 传入）
+    
     var allRoles = new[] { "Customer", "Vendor", "Admin" };
     }
 
@@ -17,7 +17,7 @@
     </div>
 }
 
-    <!-- 过滤区 -->
+ 
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             <div class="row g-2 align-items-end">
@@ -75,7 +75,7 @@
                             </td>
                             <td>
                                 <div class="d-flex flex-wrap gap-2">
-                                    <!-- 分配角色 -->
+                                   
                                     <form asp-action="AssignRole" asp-controller="Admin" method="post" class="d-flex flex-wrap gap-2">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="userId" value="@user.Id" />
@@ -91,7 +91,7 @@
                                         </button>
                                     </form>
 
-                                    <!-- 移除角色（从该用户已有角色中选择） -->
+                                
                                     <form asp-action="RemoveRole" asp-controller="Admin" method="post" class="d-flex flex-wrap gap-2">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="userId" value="@user.Id" />
@@ -125,7 +125,7 @@
     </div>
 
     @section Scripts {
-        <!-- 如全局已引入 jQuery/DataTables，可移除以下三行 -->
+      
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -135,27 +135,27 @@
                 const dt = $('#usersTable').DataTable({
                     pageLength: 10,
                     order: [[0, 'asc']],
-                    dom: 'lrtip' // 隐藏默认搜索框，使用自定义
+                    dom: 'lrtip' 
                 });
 
-                // 关键字搜索
+                // Keyword search
                 $('#kw').on('keyup', function () {
                     dt.search(this.value).draw();
                 });
 
-                // 角色筛选（作用在第 2 列：Current Roles）
+                // Role filter (applies to column 2: Current Roles)
                 $('#roleFilter').on('change', function () {
                     const val = this.value;
                     if (!val) {
                         dt.column(2).search('').draw();
                     } else {
-                        // 匹配单词边界，避免 Vendor 匹配到 nonVendor 等
+                        // Match word boundaries to avoid Vendor matching nonVendor etc.
                         const rx = `\\b${val}\\b`;
                         dt.column(2).search(rx, true, false).draw();
                     }
                 });
 
-                // 重置筛选
+                // Reset filters
                 $('#resetFilters').on('click', function () {
                     $('#kw').val('');
                     $('#roleFilter').val('');

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Text.Json;
 using CafeApp.Models;
@@ -63,19 +63,30 @@ namespace CampusCafeOrderingSystem.Controllers
 
             if (cartItems == null || !cartItems.Any())
             {
-                return RedirectToAction("Index"); // 返回购物车页
+                return RedirectToAction("Index"); // Return to cart page
             }
 
-            return View();
+            var paymentModel = new PaymentModel
+            {
+                CartItems = cartItems,
+                TotalAmount = cartItems.Sum(item => item.Product.Price * item.Quantity)
+            };
+
+            return View("~/Views/user_order_pay/Payment/Checkout.cshtml", paymentModel);
         }
 
         [HttpPost]
         public IActionResult ProcessPayment(string paymentMethod)
         {
+            var cartJson = HttpContext.Session.GetString("Cart");
+            var cartItems = string.IsNullOrEmpty(cartJson)
+                ? new List<CartItem>()
+                : JsonSerializer.Deserialize<List<CartItem>>(cartJson);
+
+            var totalAmount = cartItems.Sum(item => item.Product.Price * item.Quantity);
             
             if (paymentMethod == "CampusCard")
             {
-             
                 TempData["Message"] = "Paid successfully using Campus Card!";
             }
             else if (paymentMethod == "CreditCard")
@@ -87,10 +98,30 @@ namespace CampusCafeOrderingSystem.Controllers
                 TempData["Message"] = "Invalid payment method selected.";
             }
 
-         
+            TempData["PaymentMethod"] = paymentMethod;
+            TempData["TotalAmount"] = totalAmount;
+            
             HttpContext.Session.Remove("Cart");
 
             return RedirectToAction("Confirmation");
+        }
+
+        public IActionResult Confirmation()
+        {
+            var message = TempData["Message"] as string ?? "Payment completed successfully!";
+            var paymentMethod = TempData["PaymentMethod"] as string ?? "Unknown";
+            var totalAmount = TempData["TotalAmount"] as decimal? ?? 0;
+            
+            var paymentResult = new PaymentResult
+            {
+                IsSuccess = true,
+                Message = message,
+                TransactionId = Guid.NewGuid().ToString("N")[..8].ToUpper(),
+                TransactionTime = DateTime.Now,
+                Amount = totalAmount,
+                PaymentMethod = paymentMethod
+            };
+            return View("~/Views/user_order_pay/Payment/PaymentSuccess.cshtml", paymentResult);
         }
 
         public IActionResult Remove(int id)

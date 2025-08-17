@@ -2,7 +2,7 @@
     ViewData["Title"] = "Reports";
 }
 
-<h2 class="mb-4 text-center">?? System Reports</h2>
+<h2 class="mb-4 text-center">馃搳 System Reports</h2>
 
 <!-- Filters -->
 <div class="card shadow-sm mb-3">
@@ -87,7 +87,7 @@
                     </tr>
                 </thead>
                 <tbody id="tbodyData">
-                    @* 由 JS 渲染 *@
+                    @* Rendered by JS *@
                 </tbody>
             </table>
         </div>
@@ -95,7 +95,7 @@
 </div>
 
 @section Scripts {
-    <!-- DataTables + Buttons (如全局已引入，可移除以下 5 行) -->
+    <!-- DataTables + Buttons (full import to avoid conflicts, keep 5) -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -106,12 +106,12 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
-    <!-- Chart.js (如全局已引入，可移除) -->
+    <!-- Chart.js (full import to avoid conflicts) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // -------- Data (Single Source of Truth) --------
-        const currency = 'USD'; // 如需改成 NZD：'NZD'
+        const currency = 'USD'; // Or change to NZD: 'NZD'
         const rows = [
             { date: '2025-08-01', orders: 45, revenue: 450.00, users: 5, pending: 1 },
             { date: '2025-08-02', orders: 38, revenue: 380.00, users: 3, pending: 2 },
@@ -184,11 +184,11 @@
             const revenue = data.map(r => r.revenue);
             const orders = data.map(r => r.orders);
 
-            // Destroy old
+            // Destroy old charts
             if (revenueChart) revenueChart.destroy();
             if (ordersChart) ordersChart.destroy();
 
-            // Revenue line (with gradient)
+            // Revenue line chart (with gradient)
             const ctx1 = document.getElementById('revenueChart').getContext('2d');
             const grad = ctx1.createLinearGradient(0, 0, 0, 200);
             grad.addColorStop(0, 'rgba(76, 175, 80, 0.35)');  // brand green-ish
@@ -221,7 +221,7 @@
                 }
             });
 
-            // Orders bar
+            // Orders bar chart
             const ctx2 = document.getElementById('ordersChart').getContext('2d');
             ordersChart = new Chart(ctx2, {
                 type: 'bar',
@@ -258,7 +258,7 @@
 
         // Init
         $(function () {
-            // 默认填充 To = 最大日期
+            // Default set To = maximum date
             const maxDate = rows.reduce((max, r) => r.date > max ? r.date : max, rows[0].date);
             $('#toDate').val(maxDate);
 

@@ -4,7 +4,7 @@
         @{
     ViewData["Title"] = "Review Center";
 
-    string Stars(int r) => new string('¡ï', Math.Clamp(r,1,5)) + new string('¡î', Math.Clamp(5-r,0,5));
+    string Stars(int r) => new string('â­', Math.Clamp(r,1,5)) + new string('â˜†', Math.Clamp(5-r,0,5));
     string Badge(string status) => status switch
     {
         "Approved" => "<span class=\"badge bg-success\">Approved</span>",
@@ -13,7 +13,7 @@
     };
         }
 
-        <h2 class="mb-4 text-center">?? Review Center</h2>
+        <h2 class="mb-4 text-center">Review Center</h2>
 
         @if (TempData["Toast"] is string toast && !string.IsNullOrWhiteSpace(toast))
 {
@@ -23,7 +23,7 @@
         </div>
 }
 
-        <!-- ¶¥²¿É¸Ñ¡ -->
+        
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <div class="row g-2 align-items-end">
@@ -35,11 +35,11 @@
                         <label class="form-label">Min Rating</label>
                         <select id="ratingFilter" class="form-select">
                             <option value="">All</option>
-                            <option value="1">¡İ 1</option>
-                            <option value="2">¡İ 2</option>
-                            <option value="3">¡İ 3</option>
-                            <option value="4">¡İ 4</option>
-                            <option value="5">= 5</option>
+                            <option value="1">â­ 1</option>
+                            <option value="2">â­ 2</option>
+                            <option value="3">â­ 3</option>
+                            <option value="4">â­ 4</option>
+                            <option value="5">â­ 5</option>
                         </select>
                     </div>
                     <div class="col-6 col-md-3">
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        <!-- ÁĞ±í -->
+      
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
@@ -123,7 +123,7 @@
             </div>
         </div>
 
-        <!-- ²é¿´È«ÎÄ Modal -->
+       
         <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
@@ -158,16 +158,16 @@
             <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
             <script>
-                // DataTable ³õÊ¼»¯
+                // DataTable initialization
                 let dt;
                 $(function () {
                     dt = $('#reviewTable').DataTable({
                         pageLength: 10,
-                        order: [[4, 'desc']], // °´ÈÕÆÚµ¹Ğò
-                        dom: 'lrtip' // Òş²ØÄ¬ÈÏËÑË÷¿ò£¬Ê¹ÓÃ×Ô¶¨ÒåËÑË÷
+                        order: [[4, 'desc']], // Sort by date descending
+                        dom: 'lrtip' // Hide default search box, use custom search
                     });
 
-                    // ×Ô¶¨ÒåËÑË÷ÓëÉ¸Ñ¡
+                    // Custom search and filtering
                     $('#searchBox').on('keyup', function () {
                         dt.search(this.value).draw();
                     });
@@ -186,19 +186,19 @@
                         const minRating = $('#ratingFilter').val();
                         const status = $('#statusFilter').val();
 
-                        // ÏÈÖØÖÃÁĞËÑË÷
+                        // Clear all searches
                         dt.columns().search('');
 
-                        // Status ÔÚµÚ 5 ÁĞ£¨´Ó 0 ¿ªÊ¼£º0..6£©
+                        // Status in column 5 (starting from 0: 0..6)
                         if (status) dt.column(5).search(status, true, false);
 
-                        // Rating ÔÚµÚ 3 ÁĞ£¬ÁĞÎÄ±¾°üº¬ "¡ï"£»ÕâÀïÓÃÊı×ÖÁĞÉ¸Ñ¡¸üÎÈÍ×¡ª¡ªÎÒÃÇÔÚ small ÎÄ±¾ÀïÓĞ "x / 5"
+                        // Rating in column 3, but text contains "â˜…", needs special handling for filtering. Assuming small text contains "x / 5"
                         if (minRating) dt.column(3).search(`^(${minRating}|${minRating}\\s\\/\\s5|[${minRating}-5])`, true, false);
 
                         dt.draw();
                     }
 
-                    // Modal Ìî³ä
+                    // Modal handling
                     var commentModal = document.getElementById('commentModal');
                     commentModal.addEventListener('show.bs.modal', function (event) {
                         const btn = event.relatedTarget;

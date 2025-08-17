@@ -19,8 +19,19 @@
                         </div>
                     }
                     
-                    <form asp-action="ProcessPayment" method="post" id="paymentForm">
+                    @{
+                        var applicationId = ViewBag.ApplicationId as int?;
+                        var isFromCatering = applicationId.HasValue;
+                        var actionName = isFromCatering ? "ProcessCateringPayment" : "ProcessPayment";
+                        var controllerName = isFromCatering ? "Catering" : "Cart";
+                    }
+                    
+                    <form asp-controller="@controllerName" asp-action="@actionName" method="post" id="paymentForm">
                         @Html.HiddenFor(m => m.TotalAmount)
+                        @if (isFromCatering)
+                        {
+                            <input type="hidden" name="applicationId" value="@applicationId" />
+                        }
                         
                         <!-- 支付方式选择 -->
                         <div class="payment-methods mb-4">
@@ -316,18 +327,18 @@ body {
 @section Scripts {
 <script>
 $(document).ready(function() {
-    // 支付方式选择
+    // Payment method selection
     $('.payment-option').click(function() {
         const paymentType = $(this).data('payment');
         const radio = $(this).find('input[type="radio"]');
         
-        // 选中当前选项
+        // Select current option
         radio.prop('checked', true);
         
-        // 隐藏所有支付表单
+        // Hide all payment forms
         $('.payment-form').hide();
         
-        // 显示对应的支付表单
+        // Show corresponding payment form
         let formId = paymentType.toLowerCase() + 'Form';
         if (paymentType === 'MobileWallet') {
             formId = 'mobileWalletForm';
@@ -338,18 +349,18 @@ $(document).ready(function() {
         }
         $('#' + formId).show();
         
-        // 启用支付按钮
+        // Enable payment button
         $('#payButton').prop('disabled', false);
     });
     
-    // 格式化信用卡号
+    // Format credit card number
     $('input[name="CardNumber"]').on('input', function() {
         let value = $(this).val().replace(/\s/g, '').replace(/[^0-9]/gi, '');
         let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
         $(this).val(formattedValue);
     });
     
-    // 格式化有效期
+    // Format expiry date
     $('input[name="ExpiryDate"]').on('input', function() {
         let value = $(this).val().replace(/\D/g, '');
         if (value.length >= 2) {
@@ -358,12 +369,12 @@ $(document).ready(function() {
         $(this).val(value);
     });
     
-    // 只允许数字输入CVV
+    // Only allow numeric input for CVV
     $('input[name="CVV"]').on('input', function() {
         $(this).val($(this).val().replace(/[^0-9]/g, ''));
     });
     
-    // 手机号格式化
+    // Phone number formatting
     $('input[name="PhoneNumber"]').on('input', function() {
         $(this).val($(this).val().replace(/[^0-9]/g, ''));
     });

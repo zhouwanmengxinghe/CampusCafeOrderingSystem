@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -114,7 +114,7 @@ namespace CampusCafeOrderingSystem.Controllers
         // ========= Vendor Management =========
         public IActionResult Vendors()
         {
-            // TODO: 替换为数据库查询
+            // TODO: Replace with database query
             var demo = new List<VendorViewModel>
             {
                 new VendorViewModel { Id="V001", Name="Cafe Mocha",      Email="mocha@example.com",    Phone="021-000-111", Status="Active",   RegisteredAt=new DateTime(2025,7,15), Address="Campus Center 1F", MenuItems=24, Rating=4.6m },
@@ -136,7 +136,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 return RedirectToAction(nameof(Vendors));
             }
 
-            // TODO: 更新数据库状态为 Active
+            // TODO: Update database status to Active
             TempData["VendorToast"] = $"✅ Vendor {id} approved.";
             return RedirectToAction(nameof(Vendors));
         }
@@ -151,7 +151,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 return RedirectToAction(nameof(Vendors));
             }
 
-            // TODO: 更新数据库状态为 Rejected
+            // TODO: Update database status to Rejected
             TempData["VendorToast"] = $"❌ Vendor {id} rejected.";
             return RedirectToAction(nameof(Vendors));
         }
@@ -166,7 +166,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 return RedirectToAction(nameof(Vendors));
             }
 
-            // TODO: 读取当前状态并切换：Active -> Disabled；Disabled/Rejected/Pending -> Active
+            // TODO: Read current status and toggle: Active -> Disabled; Disabled/Rejected/Pending -> Active
             TempData["VendorToast"] = $"↔️ Vendor {id} status changed.";
             return RedirectToAction(nameof(Vendors));
         }
@@ -181,7 +181,7 @@ namespace CampusCafeOrderingSystem.Controllers
         [HttpGet]
         public IActionResult ReviewCenter()
         {
-            // TODO: 替换为数据库查询
+            // TODO: Replace with database query
             var demo = new List<ReviewViewModel>
             {
                 new ReviewViewModel { Id=101, CustomerName="John Doe",  Comment="The coffee was great, but the delivery was slow.", Rating=4, CreatedAt=new DateTime(2025,8,1), Status="Pending" },
@@ -208,7 +208,7 @@ namespace CampusCafeOrderingSystem.Controllers
                     ? "Rejected"
                     : "Pending";
 
-            // TODO: 根据 id 更新 Review.Status = decision
+            // TODO: Update Review.Status = decision based on id
             TempData["Toast"] = decision == "Approved" ? "✅ Review approved." :
                                 decision == "Rejected" ? "❌ Review rejected." :
                                 "⚠️ No change.";

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Settings";
 }
 
-<h2 class="mb-4 text-center">?? System Settings</h2>
+<h2 class="mb-4 text-center">System Settings</h2>
 
 @if (TempData["SettingsSaved"] is string msg && !string.IsNullOrWhiteSpace(msg))
 {
@@ -134,7 +134,7 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // 记住上次打开的 tab（通过 hash）
+        
         const tabs = document.querySelectorAll('#settings-tabs [data-bs-toggle="pill"]');
         tabs.forEach(t => {
             t.addEventListener('shown.bs.tab', e => {

@@ -1,10 +1,10 @@
 @{
     ViewData["Title"] = "Catering Application Submitted";
 
-    // 我们在 Controller 里用 ViewBag.Data 传了匿名对象，这里用 dynamic 接收
+ 
     var d = ViewBag.Data;
 
-    // 统一把可空类型转为字符串，避免 ?? 混用不同类型
+    
     string contactName      = d?.ContactName ?? "-";
     string contactPhone     = d?.ContactPhone ?? "-";
     string numberOfPeople   = d?.NumberOfPeople != null ? ((int)d.NumberOfPeople).ToString() : "-";
@@ -37,7 +37,7 @@
                 <div class="card-body">
                     <h3 class="card-title mb-2">? Application Submitted</h3>
                     <p class="text-muted mb-0">
-                        Your request has been received. We’ll contact you within <strong>1–2 business days</strong> to confirm the details.
+                        Your request has been received. We锟斤拷ll contact you within <strong>1锟紺2 business days</strong> to confirm the details.
                     </p>
                 </div>
             </div>
@@ -58,7 +58,7 @@
 
                     <hr />
 
-                    <h6 class="mb-2">?? Contact</h6>
+                    <h6 class="mb-2">Contact</h6>
                     <dl class="row">
                         <dt class="col-sm-3">Name</dt>
                         <dd class="col-sm-9">@contactName</dd>
@@ -67,13 +67,13 @@
                         <dd class="col-sm-9">@contactPhone</dd>
                     </dl>
 
-                    <h6 class="mb-2">??? Event</h6>
+                    <h6 class="mb-2">Event</h6>
                     <dl class="row">
-                        <dt class="col-sm-3">Date</dt>
+                        <dt class="col-sm-3"></dt>
                         <dd class="col-sm-9">@eventDate</dd>
 
                         <dt class="col-sm-3">Time</dt>
-                        <dd class="col-sm-9">@startTime — @endTime</dd>
+                        <dd class="col-sm-9">@startTime - @endTime</dd>
 
                         <dt class="col-sm-3">People</dt>
                         <dd class="col-sm-9">@numberOfPeople</dd>
@@ -85,7 +85,7 @@
                         <dd class="col-sm-9">@address</dd>
                     </dl>
 
-                    <h6 class="mb-2">??? Menu & Dietary</h6>
+                    <h6 class="mb-2">Menu & Dietary</h6>
                     <dl class="row">
                         <dt class="col-sm-3">Menu Style</dt>
                         <dd class="col-sm-9">@menuStyle</dd>
@@ -97,12 +97,13 @@
                         <dd class="col-sm-9">@dietary</dd>
                     </dl>
 
-                    <h6 class="mb-2">?? Notes</h6>
+                    <h6 class="mb-2">Notes</h6>
                     <div class="border rounded p-2 bg-light">
                         @notes
                     </div>
 
                     <div class="mt-4 d-flex gap-2">
+                        <a asp-controller="Catering" asp-action="Payment" asp-route-id="@appId" class="btn btn-success">Proceed to Payment</a>
                         <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to Home</a>
                         <a asp-controller="Catering" asp-action="Apply" class="btn btn-outline-secondary">Submit Another</a>
                     </div>

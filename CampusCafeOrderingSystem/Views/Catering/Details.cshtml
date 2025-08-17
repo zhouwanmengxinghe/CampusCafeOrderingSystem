@@ -1,6 +1,6 @@
 @model CafeApp.Models.CateringDetails
 @{
-    ViewData["Title"] = "团餐详情";
+    ViewData["Title"] = "Catering Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -150,38 +150,38 @@
         <div class="col-lg-10">
             <div class="details-container">
                 <h2 class="details-title">
-                    <i class="fas fa-clipboard-list"></i> 团餐详情
+                    <i class="fas fa-clipboard-list"></i> Catering Details
                 </h2>
                 
                 <div class="row">
-                    <!-- 基本信息 -->
+                    <!-- Basic Information -->
                     <div class="col-md-6">
                         <div class="info-card">
                             <h4 class="mb-3">
-                                <i class="fas fa-info-circle text-primary"></i> 基本信息
+                                <i class="fas fa-info-circle text-primary"></i> Basic Information
                             </h4>
                             
                             <div class="info-item">
                                 <i class="fas fa-calendar info-icon"></i>
-                                <span class="info-label">活动名称:</span>
+                                <span class="info-label">Event Name:</span>
                                 <span class="info-value">@Model.EventName</span>
                             </div>
                             
                             <div class="info-item">
                                 <i class="fas fa-clock info-icon"></i>
-                                <span class="info-label">活动时间:</span>
-                                <span class="info-value">@Model.EventDate.ToString("yyyy年MM月dd日 HH:mm")</span>
+                                <span class="info-label"></span>
+                                <span class="info-value">@Model.EventDate.ToString("yyyy-MM-dd HH:mm")</span>
                             </div>
                             
                             <div class="info-item">
                                 <i class="fas fa-users info-icon"></i>
-                                <span class="info-label">预计人数:</span>
-                                <span class="info-value">@Model.PeopleCount 人</span>
+                                <span class="info-label">Number of People:</span>
+                                <span class="info-value">@Model.PeopleCount people</span>
                             </div>
                             
                             <div class="info-item">
                                 <i class="fas fa-tag info-icon"></i>
-                                <span class="info-label">状态:</span>
+                                <span class="info-label">Status:</span>
                                 <span class="info-value">
                                     <span class="status-badge">@Model.Status</span>
                                 </span>
@@ -193,7 +193,7 @@
                     <div class="col-md-6">
                         <div class="info-card">
                             <h4 class="mb-3">
-                                <i class="fas fa-utensils text-success"></i> 推荐套餐
+                                <i class="fas fa-utensils text-success"></i> Recommended Package
                             </h4>
                             
                             @foreach (var item in Model.MenuItems)
@@ -201,7 +201,7 @@
                                 <div class="menu-item">
                                     <div class="menu-item-name">@item.Name</div>
                                     <div class="menu-item-description">@item.Description</div>
-                                    <div class="menu-item-price">¥@item.Price.ToString("F2") / 人</div>
+                                    <div class="menu-item-price">¥@item.Price.ToString("F2") / person</div>
                                 </div>
                             }
                         </div>
@@ -212,9 +212,9 @@
                 <div class="total-amount">
                     <h3 class="mb-0">
                         <i class="fas fa-calculator"></i> 
-                        预估总金额: ¥@Model.TotalAmount.ToString("F2")
+                        Estimated Total: ¥@Model.TotalAmount.ToString("F2")
                     </h3>
-                    <small>*最终金额以实际确认为准</small>
+                    <small>*Final amount subject to actual confirmation</small>
                 </div>
                 
                 <!-- 操作按钮 -->
@@ -223,13 +223,13 @@
                         <form asp-action="Checkout" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <button type="submit" class="btn-checkout">
-                                <i class="fas fa-credit-card"></i> 确认并结算
+                                <i class="fas fa-credit-card"></i> Confirm and Checkout
                             </button>
                         </form>
                     </div>
                     <div class="col-md-6">
                         <a asp-action="Apply" class="btn-back">
-                            <i class="fas fa-arrow-left"></i> 返回申请页
+                            <i class="fas fa-arrow-left"></i> Back to Application
                         </a>
                     </div>
                 </div>
@@ -237,24 +237,24 @@
                 <!-- 说明信息 -->
                 <div class="info-card mt-4">
                     <h5 class="text-primary mb-3">
-                        <i class="fas fa-lightbulb"></i> 温馨提示
+                        <i class="fas fa-lightbulb"></i> Friendly Reminder
                     </h5>
                     <ul class="list-unstyled">
                         <li class="mb-2">
                             <i class="fas fa-check text-success me-2"></i>
-                            提交订单后，我们的客服人员将在24小时内与您联系确认详情
+                            After submitting the order, our customer service staff will contact you within 24 hours to confirm details
                         </li>
                         <li class="mb-2">
                             <i class="fas fa-check text-success me-2"></i>
-                            可根据您的具体需求调整菜单和价格
+                            Menu and pricing can be adjusted according to your specific needs
                         </li>
                         <li class="mb-2">
                             <i class="fas fa-check text-success me-2"></i>
-                            支持现场布置和专业服务团队
+                            Support on-site setup and professional service team
                         </li>
                         <li class="mb-0">
                             <i class="fas fa-check text-success me-2"></i>
-                            如有疑问，请联系客服热线：400-123-4567
+                            If you have any questions, please contact customer service hotline: 400-123-4567
                         </li>
                     </ul>
                 </div>
@@ -265,9 +265,9 @@
 
 @section Scripts {
     <script>
-        // 确认结算提示
+        // Confirm checkout prompt
         document.querySelector('.btn-checkout').addEventListener('click', function(e) {
-            if (!confirm('确认提交团餐订单吗？我们将尽快与您联系确认详情。')) {
+            if (!confirm('Confirm to submit catering order? We will contact you as soon as possible to confirm details.')) {
                 e.preventDefault();
             }
         });

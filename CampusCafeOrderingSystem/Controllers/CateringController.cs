@@ -93,7 +93,7 @@ namespace CampusCafeOrderingSystem.Controllers
             return View();
         }
 
-        // ����ѡ������Ա�鿴�б�
+        // Admin view catering application list
         [HttpGet]
         // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdminList()
@@ -102,6 +102,83 @@ namespace CampusCafeOrderingSystem.Controllers
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
             return View(list);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Payment(int id)
+        {
+            var application = await _db.CateringApplications
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            var paymentModel = new CafeApp.Models.user_order_pay.PaymentModel
+            {
+                TotalAmount = (application.BudgetPerPerson ?? 0) * application.NumberOfPeople
+            };
+
+            ViewBag.ApplicationId = id;
+            ViewBag.ApplicationDetails = application;
+            return View("~/Views/user_order_pay/Payment/Checkout.cshtml", paymentModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProcessCateringPayment(int applicationId, string paymentMethod)
+        {
+            var application = await _db.CateringApplications
+                .FirstOrDefaultAsync(x => x.Id == applicationId);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            var totalAmount = (application.BudgetPerPerson ?? 0) * application.NumberOfPeople;
+            
+            if (paymentMethod == "CampusCard")
+            {
+                TempData["Message"] = "Catering payment completed successfully using Campus Card!";
+            }
+            else if (paymentMethod == "CreditCard")
+            {
+                TempData["Message"] = "Catering payment completed successfully using Credit/Debit Card!";
+            }
+            else
+            {
+                TempData["Message"] = "Invalid payment method selected.";
+            }
+
+            TempData["PaymentMethod"] = paymentMethod;
+            TempData["TotalAmount"] = totalAmount;
+            
+            // Update application status to paid (you might want to add a Paid status)
+            // application.Status = ApplicationStatus.Paid;
+            // await _db.SaveChangesAsync();
+
+            return RedirectToAction("PaymentConfirmation", new { id = applicationId });
+        }
+
+        [HttpGet]
+        public IActionResult PaymentConfirmation(int id)
+        {
+            var message = TempData["Message"] as string ?? "Catering payment completed successfully!";
+            var paymentMethod = TempData["PaymentMethod"] as string ?? "Unknown";
+            var totalAmount = TempData["TotalAmount"] as decimal? ?? 0;
+            
+            var paymentResult = new CafeApp.Models.user_order_pay.PaymentResult
+            {
+                IsSuccess = true,
+                Message = message,
+                TransactionId = Guid.NewGuid().ToString("N")[..8].ToUpper(),
+                TransactionTime = DateTime.Now,
+                Amount = totalAmount,
+                PaymentMethod = paymentMethod
+            };
+            
+            return View("~/Views/user_order_pay/Payment/PaymentSuccess.cshtml", paymentResult);
         }
     }
 }

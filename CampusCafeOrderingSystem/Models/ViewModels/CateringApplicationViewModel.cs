@@ -21,7 +21,6 @@ namespace CampusCafeOrderingSystem.Models
         [Display(Name = "Number of People")]
         public int NumberOfPeople { get; set; } = 10;
 
-        [Display(Name = "Event Date")]
         [DataType(DataType.Date)]
         public DateTime? EventDate { get; set; }
 

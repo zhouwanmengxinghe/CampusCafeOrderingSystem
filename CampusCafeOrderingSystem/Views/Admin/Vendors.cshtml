@@ -22,12 +22,12 @@
     {
         var full = (int)Math.Round(r, MidpointRounding.AwayFromZero);
         full = Math.Min(5, Math.Max(0, full));
-        return new string('¡ï', full) + new string('¡î', 5 - full);
+        return new string('â˜…', full) + new string('â˜†', 5 - full);
     }
     }
 
     <div class="container my-4">
-        <h2 class="mb-4 text-center">?? Vendor Management</h2>
+        <h2 class="mb-4 text-center">Vendor Management</h2>
 
         @if (TempData["VendorToast"] is string toast && !string.IsNullOrWhiteSpace(toast))
     {
@@ -37,7 +37,7 @@
         </div>
     }
 
-        <!-- ¸ÅÀÀÍ³¼Æ -->
+     
         <div class="row g-3 mb-3">
             <div class="col-6 col-md-3">
                 <div class="card shadow-sm text-center p-3">
@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <!-- É¸Ñ¡Çø -->
+      
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <div class="row g-2 align-items-end">
@@ -87,11 +87,11 @@
                         <label class="form-label">Min Rating</label>
                         <select id="ratingFilter" class="form-select">
                             <option value="">All</option>
-                            <option value="1">¡Ý 1</option>
-                            <option value="2">¡Ý 2</option>
-                            <option value="3">¡Ý 3</option>
-                            <option value="4">¡Ý 4</option>
-                            <option value="5">= 5</option>
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
                         </select>
                     </div>
                     <div class="col-12 col-md-2 text-md-end">
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <!-- ÁÐ±í -->
+       
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
@@ -137,7 +137,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center flex-wrap">
-                                        <!-- ÉóÅú -->
+                                      
                                         <form asp-action="ApproveVendor" asp-controller="Admin" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
@@ -154,7 +154,7 @@
                                             </button>
                                         </form>
 
-                                        <!-- Æô/Í£ÓÃÇÐ»» -->
+                                       
                                         <form asp-action="ToggleVendor" asp-controller="Admin" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
@@ -163,7 +163,7 @@
                                             </button>
                                         </form>
 
-                                        <!-- ÏêÇéµ¯´° -->
+                                     
                                         <button type="button"
                                                 class="btn btn-info btn-sm"
                                                 data-bs-toggle="modal"
@@ -190,7 +190,7 @@
         </div>
     </div>
 
-    <!-- ÏêÇé Modal -->
+    
     <div class="modal fade" id="vendorModal" tabindex="-1" aria-labelledby="vendorModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -228,7 +228,7 @@
     </div>
 
     @section Scripts {
-        <!-- DataTables£¨ÈçÒÑÔÚ _Layout ÒýÈë£¬¿ÉÒÆ³ýÕâÈýÐÐ£© -->
+        <!-- DataTables (if already included in _Layout, avoid conflict by not including again) -->
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -239,16 +239,16 @@
             $(function () {
                 dt = $('#vendorsTable').DataTable({
                     pageLength: 10,
-                    order: [[5, 'desc']], // Registered ÁÐµ¹Ðò
-                    dom: 'lrtip'          // Òþ²ØÄ¬ÈÏËÑË÷¿ò£¬Ê¹ÓÃ×Ô¶¨ÒåËÑË÷
+                    order: [[5, 'desc']], // Registered column descending
+                    dom: 'lrtip'          // Hide default search box, use custom search
                 });
 
-                // ×Ô¶¨ÒåËÑË÷
+                // Custom search
                 $('#searchBox').on('keyup', function () {
                     dt.search(this.value).draw();
                 });
 
-                // É¸Ñ¡£º×´Ì¬ÁÐ£¨Ë÷Òý 4£©£¬ÆÀ·ÖÁÐ£¨Ë÷Òý 6£©
+                // Filtering (status column: column 4, rating column: column 6)
                 $('#statusFilter, #ratingFilter').on('change', function () {
                     dt.columns().search('');
 
@@ -258,7 +258,7 @@
                     if (status) dt.column(4).search(status, true, false);
 
                     if (minRating) {
-                        // ÆÀ·ÖÎÄ±¾ÐÎÈç "4.6 / 5"£»ÓÃ¼òµ¥µÄ·¶Î§Æ¥Åä
+                        // Rating text format "4.6 / 5", use simple range matching
                         const rx = minRating === '5'
                             ? '^\\s*5(\\.0)?\\s*/\\s*5\\s*$'
                             : `^[${minRating}-5](\\.[0-9])?\\s*/\\s*5\\s*$`;
@@ -268,7 +268,7 @@
                     dt.draw();
                 });
 
-                // ÖØÖÃÉ¸Ñ¡
+                // Reset filters
                 $('#resetFilters').on('click', function () {
                     $('#searchBox').val('');
                     $('#statusFilter').val('');
@@ -276,7 +276,7 @@
                     dt.search('').columns().search('').draw();
                 });
 
-                // Modal Ìî³ä
+                // Modal handling
                 const modal = document.getElementById('vendorModal');
                 modal.addEventListener('show.bs.modal', function (event) {
                     const btn = event.relatedTarget;

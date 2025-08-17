@@ -31,7 +31,7 @@ namespace CampusCafeOrderingSystem.Models
         [StringLength(200)]
         public string? Address { get; set; }
 
-        // “‘∂∫∫≈¥Ê¥¢£∫Vegetarian,Vegan,Halal...
+     
         [StringLength(300)]
         public string? DietaryCsv { get; set; }
 

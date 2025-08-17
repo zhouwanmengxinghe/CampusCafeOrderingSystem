@@ -4,7 +4,7 @@ using CampusCafeOrderingSystem.Models;
 namespace CampusCafeOrderingSystem.Services
 {
     /// <summary>
-    /// 演示用的内存“持久化”，以后可替换为数据库或 IOptions 配置
+    /// Demonstration in-memory storage, can be replaced with database or IOptions pattern later
     /// </summary>
     public static class AppSettingsStore
     {
