@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
         @{
@@ -92,8 +92,8 @@
                             {
                                 <li class="nav-item"><a class="nav-link" asp-controller="Menu" asp-action="Index">View Menu</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">My Cart</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Points">Manage My Account</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Feedback">Help & Support</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="User" asp-action="Profile">Manage My Account</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Support" asp-action="Index">Help & Support</a></li>
                             }
                             else if (role == "Vendor")
                             {

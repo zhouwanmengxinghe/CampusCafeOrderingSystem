@@ -1,6 +1,7 @@
 using CampusCafeOrderingSystem.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+#nullable enable
 using System;
 using System.Threading.Tasks;
 
@@ -16,6 +17,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 1;
+    
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+    
+    // User settings
+    options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = true;
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -26,13 +44,23 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
-
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+});
+
+// Configure cookie settings
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.SlidingExpiration = true;
 });
 
 var app = builder.Build();
@@ -53,10 +81,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication(); // Add this line - it was missing!
+app.UseAuthorization();
 
 app.UseSession();
-
-app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
@@ -67,8 +95,6 @@ app.MapRazorPages();
 await SeedRolesAndAdminAsync(app);
 
 app.Run();
-
-
 
 async Task SeedRolesAndAdminAsync(WebApplication app)
 {
@@ -109,6 +135,20 @@ async Task SeedRolesAndAdminAsync(WebApplication app)
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(newVendor, "Vendor");
+        }
+    }
+    
+    // Create default customer account for testing
+    var customerEmail = "customer@test.com";
+    var customerPassword = "Customer123!";
+    var customerUser = await userManager.FindByEmailAsync(customerEmail);
+    if (customerUser == null)
+    {
+        var newCustomer = new IdentityUser { UserName = customerEmail, Email = customerEmail, EmailConfirmed = true };
+        var result = await userManager.CreateAsync(newCustomer, customerPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newCustomer, "Customer");
         }
     }
 }
