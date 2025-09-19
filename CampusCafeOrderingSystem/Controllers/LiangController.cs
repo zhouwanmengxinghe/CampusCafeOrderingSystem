@@ -8,7 +8,7 @@ namespace CampusCafeOrderingSystem.Controllers
     {
         public IActionResult Merchant()
         {
-            return View();
+            return RedirectToAction("Index", "Merchant");
         }
     }
 }

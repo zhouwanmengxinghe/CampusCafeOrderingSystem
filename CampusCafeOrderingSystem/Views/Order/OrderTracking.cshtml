@@ -1,4 +1,4 @@
-@model CafeApp.Models.user_order_pay.Order
+@model CampusCafeOrderingSystem.Models.Order
 @{
     ViewData["Title"] = "Order Tracking";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -24,7 +24,7 @@
                     <h3 class="status-title text-@GetStatusColor(Model.Status)">@GetStatusMessage(Model.Status)</h3>
                     <p class="status-description text-muted">@GetStatusDescription(Model.Status)</p>
                     
-                    @if (Model.Status == CafeApp.Models.user_order_pay.OrderStatus.Preparing && Model.EstimatedCompletionTime.HasValue)
+                    @if (Model.Status == CampusCafeOrderingSystem.Models.OrderStatus.Preparing && Model.EstimatedCompletionTime.HasValue)
                     {
                         <div class="estimated-time mt-3">
                             <div class="alert alert-info">
@@ -34,7 +34,7 @@
                         </div>
                     }
                     
-                    @if (Model.Status == CafeApp.Models.user_order_pay.OrderStatus.Ready)
+                    @if (Model.Status == CampusCafeOrderingSystem.Models.OrderStatus.Ready)
                     {
                         <div class="ready-notification mt-3">
                             <div class="alert alert-success">
@@ -96,10 +96,10 @@
                     <div class="timeline">
                         @{
                             var timelineSteps = new[] {
-                                (CafeApp.Models.user_order_pay.OrderStatus.Confirmed, "Order Confirmed", "Your order has been received and confirmed", "fas fa-check-circle"),
-                                (CafeApp.Models.user_order_pay.OrderStatus.Preparing, "Preparing Your Order", "Our team is preparing your delicious items", "fas fa-utensils"),
-                                (CafeApp.Models.user_order_pay.OrderStatus.Ready, "Ready for Pickup", "Your order is ready! Please come to collect it", "fas fa-bell"),
-                                (CafeApp.Models.user_order_pay.OrderStatus.Completed, "Order Completed", "Thank you for your order! Enjoy your meal", "fas fa-thumbs-up")
+                                (CampusCafeOrderingSystem.Models.OrderStatus.Confirmed, "Order Confirmed", "Your order has been received and confirmed", "fas fa-check-circle"),
+                (CampusCafeOrderingSystem.Models.OrderStatus.Preparing, "Preparing Your Order", "Our team is preparing your delicious items", "fas fa-utensils"),
+                (CampusCafeOrderingSystem.Models.OrderStatus.Ready, "Ready for Pickup", "Your order is ready! Please come to collect it", "fas fa-bell"),
+                (CampusCafeOrderingSystem.Models.OrderStatus.Completed, "Order Completed", "Thank you for your order! Enjoy your meal", "fas fa-thumbs-up")
                             };
                         }
                         
@@ -181,58 +181,58 @@
 </div>
 
 @functions {
-    string GetStatusIcon(CafeApp.Models.user_order_pay.OrderStatus status)
+    string GetStatusIcon(CampusCafeOrderingSystem.Models.OrderStatus status)
     {
         return status switch
         {
-            CafeApp.Models.user_order_pay.OrderStatus.Pending => "fas fa-clock",
-            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "fas fa-check-circle",
-            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "fas fa-utensils",
-            CafeApp.Models.user_order_pay.OrderStatus.Ready => "fas fa-bell",
-            CafeApp.Models.user_order_pay.OrderStatus.Completed => "fas fa-thumbs-up",
-            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "fas fa-times-circle",
+            CampusCafeOrderingSystem.Models.OrderStatus.Pending => "fas fa-clock",
+            CampusCafeOrderingSystem.Models.OrderStatus.Confirmed => "fas fa-check-circle",
+            CampusCafeOrderingSystem.Models.OrderStatus.Preparing => "fas fa-utensils",
+            CampusCafeOrderingSystem.Models.OrderStatus.Ready => "fas fa-bell",
+            CampusCafeOrderingSystem.Models.OrderStatus.Completed => "fas fa-thumbs-up",
+            CampusCafeOrderingSystem.Models.OrderStatus.Cancelled => "fas fa-times-circle",
             _ => "fas fa-question-circle"
         };
     }
     
-    string GetStatusColor(CafeApp.Models.user_order_pay.OrderStatus status)
+    string GetStatusColor(CampusCafeOrderingSystem.Models.OrderStatus status)
     {
         return status switch
         {
-            CafeApp.Models.user_order_pay.OrderStatus.Pending => "warning",
-            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "info",
-            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "primary",
-            CafeApp.Models.user_order_pay.OrderStatus.Ready => "success",
-            CafeApp.Models.user_order_pay.OrderStatus.Completed => "success",
-            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "danger",
+            CampusCafeOrderingSystem.Models.OrderStatus.Pending => "warning",
+            CampusCafeOrderingSystem.Models.OrderStatus.Confirmed => "info",
+            CampusCafeOrderingSystem.Models.OrderStatus.Preparing => "primary",
+            CampusCafeOrderingSystem.Models.OrderStatus.Ready => "success",
+            CampusCafeOrderingSystem.Models.OrderStatus.Completed => "success",
+            CampusCafeOrderingSystem.Models.OrderStatus.Cancelled => "danger",
             _ => "secondary"
         };
     }
     
-    string GetStatusMessage(CafeApp.Models.user_order_pay.OrderStatus status)
+    string GetStatusMessage(CampusCafeOrderingSystem.Models.OrderStatus status)
     {
         return status switch
         {
-            CafeApp.Models.user_order_pay.OrderStatus.Pending => "Order Pending",
-            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "Order Confirmed",
-            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "Preparing Your Order",
-            CafeApp.Models.user_order_pay.OrderStatus.Ready => "Ready for Pickup!",
-            CafeApp.Models.user_order_pay.OrderStatus.Completed => "Order Completed",
-            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "Order Cancelled",
+            CampusCafeOrderingSystem.Models.OrderStatus.Pending => "Order Pending",
+            CampusCafeOrderingSystem.Models.OrderStatus.Confirmed => "Order Confirmed",
+            CampusCafeOrderingSystem.Models.OrderStatus.Preparing => "Preparing Your Order",
+            CampusCafeOrderingSystem.Models.OrderStatus.Ready => "Ready for Pickup!",
+            CampusCafeOrderingSystem.Models.OrderStatus.Completed => "Order Completed",
+            CampusCafeOrderingSystem.Models.OrderStatus.Cancelled => "Order Cancelled",
             _ => "Unknown Status"
         };
     }
     
-    string GetStatusDescription(CafeApp.Models.user_order_pay.OrderStatus status)
+    string GetStatusDescription(CampusCafeOrderingSystem.Models.OrderStatus status)
     {
         return status switch
         {
-            CafeApp.Models.user_order_pay.OrderStatus.Pending => "We're processing your order",
-            CafeApp.Models.user_order_pay.OrderStatus.Confirmed => "Your order has been confirmed and will be prepared soon",
-            CafeApp.Models.user_order_pay.OrderStatus.Preparing => "Our team is carefully preparing your items",
-            CafeApp.Models.user_order_pay.OrderStatus.Ready => "Your order is ready! Please come to collect it",
-            CafeApp.Models.user_order_pay.OrderStatus.Completed => "Thank you for choosing us! We hope you enjoyed your meal",
-            CafeApp.Models.user_order_pay.OrderStatus.Cancelled => "This order has been cancelled",
+            CampusCafeOrderingSystem.Models.OrderStatus.Pending => "We're processing your order",
+            CampusCafeOrderingSystem.Models.OrderStatus.Confirmed => "Your order has been confirmed and will be prepared soon",
+            CampusCafeOrderingSystem.Models.OrderStatus.Preparing => "Our team is carefully preparing your items",
+            CampusCafeOrderingSystem.Models.OrderStatus.Ready => "Your order is ready! Please come to collect it",
+            CampusCafeOrderingSystem.Models.OrderStatus.Completed => "Thank you for choosing us! We hope you enjoyed your meal",
+            CampusCafeOrderingSystem.Models.OrderStatus.Cancelled => "This order has been cancelled",
             _ => "Please contact customer service for more information"
         };
     }
@@ -511,7 +511,7 @@ $(document).ready(function() {
     // Auto-refresh every 30 seconds
     setInterval(function() {
         // Only refresh if the order is not completed
-        @if (Model.Status != CafeApp.Models.user_order_pay.OrderStatus.Completed && Model.Status != CafeApp.Models.user_order_pay.OrderStatus.Cancelled)
+        @if (Model.Status != CampusCafeOrderingSystem.Models.OrderStatus.Completed && Model.Status != CampusCafeOrderingSystem.Models.OrderStatus.Cancelled)
         {
             @:location.reload();
         }

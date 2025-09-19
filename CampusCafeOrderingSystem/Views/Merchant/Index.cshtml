@@ -1,0 +1,333 @@
+@{
+    ViewData["Title"] = "Merchant Management Center";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="merchant-index-container">
+        <!-- Top Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-content">
+                <h1>Merchant Management Center</h1>
+                <p>Welcome back! Manage your coffee shop business</p>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">Today's Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$3,248</div>
+                    <div class="stat-label">Today's Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4.8</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Function Modules Navigation -->
+        <div class="modules-section">
+            <h2>Function Modules</h2>
+            <div class="modules-grid">
+                <a asp-controller="Merchant" asp-action="Dashboard" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="module-content">
+                        <h3>Data Dashboard</h3>
+                        <p>View sales data, order statistics and business overview</p>
+                    </div>
+                    <div class="module-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <a asp-controller="Merchant" asp-action="MenuManagement" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="module-content">
+                        <h3>Menu Management</h3>
+                        <p>Add, edit and manage your menu items</p>
+                    </div>
+                    <div class="module-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <a asp-controller="Merchant" asp-action="OrderManagement" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="module-content">
+                        <h3>Order Management</h3>
+                        <p>Process orders, view order status and history</p>
+                    </div>
+                    <div class="module-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <a asp-controller="Merchant" asp-action="Reports" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="module-content">
+                        <h3>Business Reports</h3>
+                        <p>Generate sales reports and export business data</p>
+                    </div>
+                    <div class="module-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <a asp-controller="Merchant" asp-action="ReviewManagement" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="module-content">
+                        <h3>Review Management</h3>
+                        <p>View and reply to customer reviews, improve service quality</p>
+                    </div>
+                    <div class="module-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <a asp-controller="Account" asp-action="Logout" class="module-card logout-card">
+                    <div class="module-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="module-content">
+                        <h3>Logout</h3>
+                        <p>Safely logout from merchant management system</p>
+                    </div>
+                    <div class="module-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #FFFFFF;
+            min-height: 100vh;
+            color: #333333;
+        }
+
+        .merchant-index-container {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #F9F9F9;
+            min-height: 100vh;
+        }
+
+        .welcome-section {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .welcome-content h1 {
+            font-size: 2.5rem;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .welcome-content p {
+            font-size: 1.2rem;
+            color: #666666;
+        }
+
+        .quick-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: #4CAF50;
+            border-radius: 8px;
+            color: white;
+            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .modules-section {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .modules-section h2 {
+            font-size: 2rem;
+            color: #333333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .module-card {
+            display: flex;
+            align-items: center;
+            padding: 25px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .module-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.15);
+            border-color: #4CAF50;
+            text-decoration: none;
+            color: inherit;
+            background: #FAFFFE;
+        }
+
+        .module-icon {
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+        }
+
+        .module-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .module-content {
+            flex: 1;
+        }
+
+        .module-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #333333;
+        }
+
+        .module-content p {
+            color: #666666;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .module-arrow {
+            margin-left: 15px;
+            color: #666666;
+            transition: transform 0.3s ease;
+        }
+
+        .module-card:hover .module-arrow {
+            transform: translateX(5px);
+            color: #4CAF50;
+        }
+
+        .logout-card {
+            border-color: #FFE4E1;
+        }
+
+        .logout-card .module-icon {
+            background: #E74C3C;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+        }
+
+        .logout-card:hover {
+            border-color: #E74C3C;
+            background: #FFF8F8;
+        }
+
+        .logout-card:hover .module-arrow {
+            color: #E74C3C;
+        }
+
+        @@media (max-width: 768px) {
+            .welcome-section {
+                flex-direction: column;
+                gap: 30px;
+                text-align: center;
+            }
+
+            .quick-stats {
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+            }
+
+            .stat-card {
+                min-width: auto;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-content h1 {
+                font-size: 2rem;
+            }
+
+            .merchant-index-container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

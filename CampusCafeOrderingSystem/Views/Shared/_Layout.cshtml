@@ -14,8 +14,10 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>@ViewData["Title"] - CampusCafeOrderingSystem</title>
             <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-            <link rel="stylesheet" href="~/CampusCafeOrderingSystem.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CampusCafeOrderingSystem.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    @await RenderSectionAsync("Styles", required: false)
             <style>
                 body {
                     background-color: #F9F9F9;
@@ -92,21 +94,38 @@
                             {
                                 <li class="nav-item"><a class="nav-link" asp-controller="Menu" asp-action="Index">View Menu</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">My Cart</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="User" asp-action="Profile">Manage My Account</a></li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        My Account
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                        <li><a class="dropdown-item" asp-controller="User" asp-action="Index">Dashboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="User" asp-action="Profile">Profile</a></li>
+                                        <li><a class="dropdown-item" asp-controller="User" asp-action="Preferences">Preferences</a></li>
+                                        <li><a class="dropdown-item" asp-controller="User" asp-action="History">Order History</a></li>
+                                        <li><a class="dropdown-item" asp-controller="User" asp-action="Credits">Credits</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Order" asp-action="MyOrders">My Orders</a></li>
+                                    </ul>
+                                </li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Support" asp-action="Index">Help & Support</a></li>
                             }
                             else if (role == "Vendor")
                             {
-                                <li class="nav-item"><a class="nav-link" asp-controller="Liang" asp-action="Merchant">Dashboard</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Menu">Menu</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Orders">Orders</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Reports">Reports</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Capacity">Capacity</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Index">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Dashboard">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="MenuManagement">Menu</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="OrderManagement">Orders</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Reports">Reports</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="ReviewManagement">Reviews</a></li>
                             }
                             else if (role == "Admin")
                             {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Orders">Order Management</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="MenuManagement">Menu Management</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ManageUsers">User Management</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Vendors">Vendor Management</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="CateringApplications">Catering Management</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Reports">Reports</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ReviewCenter">Review Center</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Settings">Settings</a></li>
@@ -135,14 +154,7 @@
             <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
             <script src="~/js/site.js" asp-append-version="true"></script>
 
-            @if (SignInManager.IsSignedIn(User) && role == "Vendor")
-    {
-            <script>
-            if (window.location.pathname !== '/Liang/Merchant') {
-                window.location.href = '@Url.Action("Merchant", "Liang")';
-            }
-            </script>
-    }
+
 
             @await RenderSectionAsync("Scripts", required: false)
         </body>

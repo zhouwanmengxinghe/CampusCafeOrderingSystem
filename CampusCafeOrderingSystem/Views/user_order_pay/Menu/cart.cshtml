@@ -1,60 +1,356 @@
-﻿using Humanizer;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Diagnostics;
-using System;
-
-@model List<CafeApp.Models.user_order_pay.CartItem>
+@model List<CampusCafeOrderingSystem.Models.CartItem>
 
 @{
     ViewBag.Title = "Your Cart";
-Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class= "container" style = "background-color:#F9F9F9; padding:30px;">
-    <h2 style = "color:#4CAF50; font-weight:bold;"> Cart </h2>
+<style>
+    .cart-hero {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+    }
+    
+    .cart-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .cart-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .cart-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.3s ease;
+    }
+    
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .item-image i {
+        font-size: 2rem;
+        color: #4CAF50;
+    }
+    
+    .item-details h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-price {
+        color: #4CAF50;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .quantity-btn {
+        width: 35px;
+        height: 35px;
+        border: 2px solid #4CAF50;
+        background: white;
+        color: #4CAF50;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    
+    .quantity-btn:hover {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .quantity-input {
+        width: 60px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .remove-btn {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .remove-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+    
+    .cart-summary {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 2rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .total-amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #4CAF50;
+        margin-bottom: 1rem;
+    }
+    
+    .checkout-btn {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .checkout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        color: white;
+    }
+    
+    .continue-shopping {
+        background: white;
+        color: #4CAF50;
+        border: 2px solid #4CAF50;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .continue-shopping:hover {
+        background: #4CAF50;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #666;
+    }
+    
+    .empty-cart i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-cart h3 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .cart-item {
+            padding: 1rem;
+        }
+        
+        .item-image {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .quantity-controls {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+    }
+</style>
 
+<!-- Hero Section -->
+<div class="cart-hero">
+    <div class="container text-center">
+        <h1 class="display-4 mb-3">🛒 Your Cart</h1>
+        <p class="lead">Review your items and proceed to checkout when ready</p>
+    </div>
+</div>
+
+<div class="container">
     @if(Model == null || Model.Count == 0)
     {
-        <p class= "text-muted" > Your cart is empty.</p>
+        <div class="cart-container">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Your cart is empty</h3>
+                <p>Looks like you haven't added any items to your cart yet.</p>
+                <a asp-controller="Menu" asp-action="Index" class="continue-shopping">
+                    <i class="fas fa-arrow-left"></i> Start Shopping
+                </a>
+           </div>
+
+@section Scripts {
+    <script>
+        function increaseQuantity(button) {
+            const form = button.closest('form');
+            const input = form.querySelector('input[name="quantity"]');
+            const currentValue = parseInt(input.value);
+            if (currentValue < 99) {
+                input.value = currentValue + 1;
+                form.submit();
+            }
+        }
+
+        function decreaseQuantity(button) {
+            const form = button.closest('form');
+            const input = form.querySelector('input[name="quantity"]');
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                form.submit();
+            }
+        }
+
+        // Add confirmation for remove buttons
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Add loading state for checkout button
+        document.querySelector('.checkout-btn')?.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+            this.disabled = true;
+        });
+    </script>
+}
+      </div>
     }
     else
-{
-    decimal total = 0;
-
-        <table class= "table table-bordered">
-            <thead style = "background-color:#C8E6C9;">
-                <tr>
-                    <th> Item </th>
-                    <th> Description </th>
-                    <th> Price </th>
-                    <th> Action </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var item in Model)
-                {
-    total += item.Price;
-                    <tr>
-                        <td> @item.Name </td>
-                        <td> @item.Description </td>
-                        <td> $@item.Price.ToString("0.00") </td>
-                        <td>
-                            <a href = "@Url.Action("Remove", "Cart", new { id = item.Id })"
-                               class= "btn btn-sm btn-danger" > Remove </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <div class= "text-right" >
-            <h4> Total: <span style = "color:#4CAF50;"> $@total.ToString("0.00") </span></h4>
-            <a href = "@Url.Action("Checkout", "Cart")" class= "btn"
-               style = "background-color:#4CAF50; color:white; border-radius:12px;"> Proceed to Checkout</a>
+    {
+        decimal total = 0;
+        
+        <div class="cart-container">
+            <div class="cart-header">
+                <h4 class="mb-0">Cart Items (@Model.Count @(Model.Count == 1 ? "item" : "items"))</h4>
+            </div>
+            
+            @foreach(var item in Model)
+            {
+                decimal subtotal = item.Price * item.Quantity;
+                total += subtotal;
+                
+                <div class="cart-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="item-image">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Name" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-utensils"></i>
+                                    }
+                                </div>
+                                <div class="item-details">
+                                    <h5>@item.Name</h5>
+                                    <p class="item-description">@item.Description</p>
+                                    <div class="item-price">$@item.Price.ToString("0.00") each</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="quantity-controls">
+                                <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" class="d-flex align-items-center gap-2">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="button" class="quantity-btn" onclick="decreaseQuantity(this)">-</button>
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1" max="99" class="quantity-input" onchange="this.form.submit()" />
+                                    <button type="button" class="quantity-btn" onclick="increaseQuantity(this)">+</button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-2 text-center">
+                            <div class="fw-bold">$@subtotal.ToString("0.00")</div>
+                        </div>
+                        
+                        <div class="col-md-1 text-center">
+                            <a href="@Url.Action("Remove", "Cart", new { id = item.Id })" class="remove-btn">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <div class="cart-summary">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="total-amount">
+                            Total: $@total.ToString("0.00")
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="@Url.Action("Checkout", "Cart")" class="checkout-btn">
+                            <i class="fas fa-credit-card me-2"></i> Proceed to Checkout
+                        </a>
+                        <a asp-controller="Menu" asp-action="Index" class="continue-shopping">
+                            <i class="fas fa-arrow-left"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     }
 </div>
-<a asp-controller="Menu" asp-action="Index" class="btn" style="background-color:#4CAF50; color:white; border-radius:12px; padding:10px 20px;">
-    ← Back to Menu
-</a>
 

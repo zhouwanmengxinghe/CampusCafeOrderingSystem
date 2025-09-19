@@ -43,8 +43,24 @@ namespace CampusCafeOrderingSystem.Models
         [StringLength(1000)]
         public string? Notes { get; set; }
 
+        // Event details
+        [StringLength(100)]
+        public string EventName { get; set; } = string.Empty;
+
+        [StringLength(200)]
+        public string EventLocation { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public string SpecialRequirements { get; set; } = string.Empty;
+
+        [EmailAddress]
+        public string ContactEmail { get; set; } = string.Empty;
+
         // System fields
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
+        public DateTime? ReviewedAt { get; set; }
+        public string? AdminNotes { get; set; }
+        public string UserId { get; set; } = string.Empty;
     }
 }

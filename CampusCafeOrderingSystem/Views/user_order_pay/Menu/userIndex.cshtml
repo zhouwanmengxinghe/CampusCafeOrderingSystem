@@ -1,4 +1,4 @@
-﻿@model List<CafeApp.Models.MenuItem>
+@model List<CampusCafeOrderingSystem.Models.MenuItem>
 
 @{
     ViewBag.Title = "Menu";
@@ -6,78 +6,302 @@
 }
 
 <style>
-    .card-container {
-        perspective: 1000px;
-    }
-
-    .flip-card {
-        transition: transform 0.6s;
-        transform-style: preserve-3d;
-        position: relative;
-        height: 300px;
-    }
-
-    .card:hover .flip-card {
-        transform: rotateY(180deg);
-    }
-
-    .card-front, .card-back {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        backface-visibility: hidden;
+    .menu-hero {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
         border-radius: 20px;
     }
-
-    .card-front {
-        z-index: 2;
+    
+    .search-filter-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
     }
-
-    .card-back {
-        transform: rotateY(180deg);
-        background-color: #F9F9F9;
-        padding: 20px;
+    
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .category-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #4CAF50;
+        background: white;
+        color: #4CAF50;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .category-btn:hover,
+    .category-btn.active {
+        background: #4CAF50;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .search-box {
+        position: relative;
+        max-width: 400px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+    
+    .menu-item-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .menu-item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .item-image {
+        height: 200px;
+        background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .item-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, #4CAF50, #45a049);
+        opacity: 0.1;
+    }
+    
+    .item-image i {
+        font-size: 3rem;
+        color: #4CAF50;
+        z-index: 1;
+    }
+    
+    .item-content {
+        padding: 1.5rem;
+    }
+    
+    .item-name {
+        font-size: 1.25rem;
+        font-weight: 600;
         color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+    
+    .item-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #4CAF50;
+        margin-bottom: 1rem;
+    }
+    
+    .add-to-cart-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .add-to-cart-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    .cart-button {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .cart-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        color: white;
+    }
+    
+    .no-items {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .no-items i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .category-filter {
+            justify-content: center;
+        }
+        
+        .search-filter-section {
+            padding: 1rem;
+        }
+        
+        .menu-hero {
+            padding: 2rem 0;
+        }
     }
 </style>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <a asp-controller="Cart" asp-action="Index" class="btn" style="background-color:#4CAF50; color:white; border-radius:12px;">
-        <i class="fas fa-shopping-cart"></i> View Cart
-    </a>
+<!-- Hero Section -->
+<div class="menu-hero">
+    <div class="container text-center">
+        <h1 class="display-4 mb-3">☕ Our Menu</h1>
+        <p class="lead mb-4">Hello, @User.Identity.Name! Discover our delicious selection of coffee, pastries, and fresh meals.</p>
+        <div class="d-flex justify-content-center align-items-center gap-3">
+            <div class="d-flex align-items-center text-white-50">
+                <i class="fas fa-clock me-2"></i>
+                <span id="time-display"></span>
+            </div>
+            <a asp-controller="Cart" asp-action="Index" class="cart-button">
+                <i class="fas fa-shopping-cart"></i> View Cart
+            </a>
+        </div>
+    </div>
 </div>
 
-<div class="container" style="background-color:#F9F9F9; padding:30px; border-radius: 20px;">
-    <h2 style="color:#4CAF50; font-weight:bold;">Hello, @User.Identity.Name</h2>
-    <div class="mb-3 text-muted">
-        <i class="fas fa-clock"></i>
-        It is already <span id="time-display"></span>
-        <p style="color:#777777;">Time for a coffee break.</p>
+<div class="container">
+    <!-- Search and Filter Section -->
+    <div class="search-filter-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search for items...">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="category-filter">
+                    <button class="category-btn active" data-category="all">All Items</button>
+                    @if (ViewBag.Categories != null)
+                    {
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <button class="category-btn" data-category="@category">@category</button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="row">
-        @foreach (var item in Model)
+    <!-- Menu Items Grid -->
+    <div class="row" id="menuGrid">
+        @if (Model != null && Model.Any())
         {
-            <div class="col-md-4 mb-4">
-                <div class="card card-container shadow" style="border-radius: 20px;">
-                    <div class="flip-card">
-                        <div class="card-front">
-                            <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name" style="height: 300px; object-fit: cover; border-radius: 20px 20px 0 0;" />
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-4 col-md-6 mb-4 menu-item" data-category="@item.Category" data-name="@item.Name.ToLower()">
+                    <div class="menu-item-card">
+                        <div class="item-image">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" alt="@item.Name" style="width: 100%; height: 100%; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                @switch (item.Category?.ToLower())
+                                {
+                                    case "coffee":
+                                        <i class="fas fa-coffee"></i>
+                                        break;
+                                    case "pastry":
+                                        <i class="fas fa-cookie-bite"></i>
+                                        break;
+                                    case "salad":
+                                        <i class="fas fa-leaf"></i>
+                                        break;
+                                    default:
+                                        <i class="fas fa-utensils"></i>
+                                        break;
+                                }
+                            }
                         </div>
-                        <div class="card-back d-flex flex-column justify-content-between">
-                            <div>
-                                <h5 class="card-title">@item.Name</h5>
-                                <p class="card-text" style="color: #777;">@item.Description</p>
-                                <p class="card-text" style="color: #4CAF50; font-weight: bold;">$@item.Price.ToString("0.00")</p>
-                            </div>
+                        <div class="item-content">
+                            <h3 class="item-name">@item.Name</h3>
+                            <p class="item-description">@item.Description</p>
+                            <div class="item-price">$@item.Price.ToString("0.00")</div>
                             <form asp-controller="Cart" asp-action="Add" method="post">
                                 <input type="hidden" name="id" value="@item.Id" />
-                                <button type="submit" class="btn w-100" style="background-color:#4CAF50; color:white; border-radius:12px;">
-                                    Add to Cart
+                                <button type="submit" class="add-to-cart-btn">
+                                    <i class="fas fa-plus"></i> Add to Cart
                                 </button>
                             </form>
                         </div>
                     </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="no-items">
+                    <i class="fas fa-coffee"></i>
+                    <h3>No menu items available</h3>
+                    <p>Please check back later for our delicious offerings!</p>
                 </div>
             </div>
         }
@@ -86,6 +310,7 @@
 
 @section Scripts {
     <script>
+        // Time display functionality
         function updateTime() {
             const now = new Date();
             document.getElementById("time-display").textContent =
@@ -93,14 +318,82 @@
                     hour: 'numeric',
                     minute: '2-digit',
                     hour12: true
-                        });
-                }
+                });
+        }
 
-                updateTime();
+        updateTime();
         const delay = (60 - new Date().getSeconds()) * 1000;
         setTimeout(() => {
-                    updateTime();
+            updateTime();
             setInterval(updateTime, 60000);
         }, delay);
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterItems();
+        });
+
+        // Category filter functionality
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                filterItems();
+            });
+        });
+
+        function filterItems() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+            let visibleCount = 0;
+
+            menuItems.forEach(item => {
+                const itemName = item.dataset.name;
+                const itemCategory = item.dataset.category;
+                
+                const matchesSearch = itemName.includes(searchTerm);
+                const matchesCategory = activeCategory === 'all' || itemCategory === activeCategory;
+                
+                if (matchesSearch && matchesCategory) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Show/hide no results message
+            const noItemsDiv = document.querySelector('.no-items');
+            if (noItemsDiv) {
+                if (visibleCount === 0 && menuItems.length > 0) {
+                    noItemsDiv.style.display = 'block';
+                    noItemsDiv.innerHTML = `
+                        <i class="fas fa-search"></i>
+                        <h3>No items found</h3>
+                        <p>Try adjusting your search or filter criteria.</p>
+                    `;
+                } else {
+                    noItemsDiv.style.display = 'none';
+                }
+            }
+        }
+
+        // Add to cart animation
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Add a subtle animation feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
     </script>
 }

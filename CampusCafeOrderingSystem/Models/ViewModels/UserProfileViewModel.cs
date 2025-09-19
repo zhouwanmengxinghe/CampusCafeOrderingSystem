@@ -18,6 +18,18 @@ namespace CampusCafeOrderingSystem.Models
         [Display(Name = "手机号码")]
         public string PhoneNumber { get; set; } = string.Empty;
         
+        [Display(Name = "全名")]
+        public string FullName { get; set; } = string.Empty;
+        
+        [Display(Name = "学号")]
+        public string StudentId { get; set; } = string.Empty;
+        
+        [Display(Name = "院系")]
+        public string Department { get; set; } = string.Empty;
+        
+        [Display(Name = "地址")]
+        public string Address { get; set; } = string.Empty;
+        
         public UserPreference? UserPreference { get; set; }
     }
 

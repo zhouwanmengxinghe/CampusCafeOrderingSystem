@@ -24,7 +24,7 @@
 </div>
 
 <!-- Overview Cards -->
-<div class="row g-3 mb-4">
+<div id="overview-cards" class="row g-3 mb-4">
     <div class="col-md-3 col-6">
         <div class="card shadow-sm text-center p-3">
             <div class="text-muted small">Total Orders</div>
@@ -52,7 +52,7 @@
 </div>
 
 <!-- Charts -->
-<div class="row g-3 mb-4">
+<div id="charts-section" class="row g-3 mb-4">
     <div class="col-12 col-lg-7">
         <div class="card shadow-sm h-100">
             <div class="card-body">
@@ -72,18 +72,18 @@
 </div>
 
 <!-- Data Table -->
-<div class="card shadow-sm">
+<div id="reports-table" class="card shadow-sm">
     <div class="card-body">
         <h5 class="card-title">Sales Summary</h5>
         <div class="table-responsive">
             <table id="reportsTable" class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th>Date</th>
-                        <th>Total Orders</th>
-                        <th>Total Revenue</th>
-                        <th>New Users</th>
-                        <th>Pending Orders</th>
+                        <th>日期</th>
+                        <th>订单数</th>
+                        <th>收入</th>
+                        <th>增长率</th>
+                        <th>趋势</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyData">
@@ -110,43 +110,142 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        // -------- 缓存管理 --------
+        const CACHE_PREFIX = 'reports_cache_';
+        const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+        
+        function getCacheKey(startDate, endDate) {
+            return `${CACHE_PREFIX}${startDate}_${endDate}`;
+        }
+        
+        function getFromCache(key) {
+            try {
+                const cached = localStorage.getItem(key);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    if (Date.now() - data.timestamp < CACHE_DURATION) {
+                        return data.value;
+                    } else {
+                        localStorage.removeItem(key);
+                    }
+                }
+            } catch (e) {
+                console.warn('缓存读取失败:', e);
+            }
+            return null;
+        }
+        
+        function setToCache(key, value) {
+            try {
+                const data = {
+                    value: value,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.warn('缓存存储失败:', e);
+            }
+        }
+        
+        // -------- 懒加载管理 --------
+        let isLoading = false;
+        let loadedSections = new Set();
+        
+        function showLoadingSpinner(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div></div>';
+            }
+        }
+        
         // -------- Data (Single Source of Truth) --------
         const currency = 'USD'; // Or change to NZD: 'NZD'
-        const rows = [
-            { date: '2025-08-01', orders: 45, revenue: 450.00, users: 5, pending: 1 },
-            { date: '2025-08-02', orders: 38, revenue: 380.00, users: 3, pending: 2 },
-            { date: '2025-08-03', orders: 52, revenue: 520.00, users: 7, pending: 1 },
-            { date: '2025-08-04', orders: 41, revenue: 410.00, users: 4, pending: 0 },
-            { date: '2025-08-05', orders: 50, revenue: 500.00, users: 6, pending: 3 }
-        ];
+        let reportData = null;
 
+        // -------- 异步数据加载 --------
+        async function loadReportData(startDate, endDate) {
+            if (isLoading) return null;
+            
+            const cacheKey = getCacheKey(startDate || '', endDate || '');
+            
+            // 尝试从缓存获取
+            const cachedData = getFromCache(cacheKey);
+            if (cachedData) {
+                console.log('从缓存加载数据');
+                return cachedData;
+            }
+            
+            isLoading = true;
+            try {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                
+                const response = await fetch(`/api/reports/dashboard-data?${params}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // 存储到缓存
+                setToCache(cacheKey, data);
+                
+                console.log('从API加载数据');
+                return data;
+            } catch (error) {
+                console.error('数据加载失败:', error);
+                return null;
+            } finally {
+                isLoading = false;
+            }
+        }
+        
+        // -------- 懒加载函数 --------
+        async function lazyLoadSection(sectionId, loadFunction) {
+            if (loadedSections.has(sectionId)) return;
+            
+            showLoadingSpinner(sectionId);
+            
+            try {
+                await loadFunction();
+                loadedSections.add(sectionId);
+            } catch (error) {
+                console.error(`加载${sectionId}失败:`, error);
+                document.getElementById(sectionId).innerHTML = '<div class="alert alert-danger">加载失败，请重试</div>';
+            }
+        }
+        
         // -------- Helpers --------
         const fmtCurrency = (n) => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
         const parseDate = (s) => new Date(s + 'T00:00:00');
 
-        function applyDateFilter(data) {
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
-            const fromD = from ? parseDate(from) : null;
-            const toD = to ? parseDate(to) : null;
-
-            return data.filter(r => {
-                const d = parseDate(r.date);
-                if (fromD && d < fromD) return false;
-                if (toD && d > toD) return false;
-                return true;
-            });
+        // -------- 数据处理函数 --------
+        function updateOverviewCards(data) {
+            if (!data || !data.overview) return;
+            
+            const overview = data.overview;
+            document.getElementById('kpiOrders').textContent = overview.totalOrders || 0;
+            document.getElementById('kpiRevenue').textContent = fmtCurrency(overview.totalRevenue || 0);
+            document.getElementById('kpiUsers').textContent = overview.avgOrderValue ? fmtCurrency(overview.avgOrderValue) : '$0';
+            document.getElementById('kpiPending').textContent = overview.topProduct || '暂无数据';
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('tbodyData');
-            tbody.innerHTML = data.map(r => `
+            
+            if (!data || !data.dailyData || !Array.isArray(data.dailyData)) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">暂无数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.dailyData.map(r => `
                     <tr>
                         <td>${r.date}</td>
-                        <td>${r.orders}</td>
-                        <td>${fmtCurrency(r.revenue)}</td>
-                        <td>${r.users}</td>
-                        <td>${r.pending}</td>
+                        <td>${r.orders || 0}</td>
+                        <td>${fmtCurrency(r.revenue || 0)}</td>
+                        <td>${r.growth ? (r.growth > 0 ? '+' : '') + r.growth.toFixed(1) + '%' : '0%'}</td>
+                        <td><span class="badge ${r.growth > 0 ? 'bg-success' : r.growth < 0 ? 'bg-danger' : 'bg-secondary'}">${r.growth > 0 ? '上升' : r.growth < 0 ? '下降' : '持平'}</span></td>
                     </tr>
                 `).join('');
         }
@@ -179,97 +278,189 @@
             });
         }
 
-        function renderCharts(data) {
-            const labels = data.map(r => r.date);
-            const revenue = data.map(r => r.revenue);
-            const orders = data.map(r => r.orders);
+        async function renderCharts(data) {
+            if (!data || !data.dailyData || !Array.isArray(data.dailyData)) {
+                console.warn('图表数据无效');
+                return;
+            }
+
+            const labels = data.dailyData.map(r => r.date);
+            const revenue = data.dailyData.map(r => r.revenue || 0);
+            const orders = data.dailyData.map(r => r.orders || 0);
 
             // Destroy old charts
             if (revenueChart) revenueChart.destroy();
             if (ordersChart) ordersChart.destroy();
 
             // Revenue line chart (with gradient)
-            const ctx1 = document.getElementById('revenueChart').getContext('2d');
-            const grad = ctx1.createLinearGradient(0, 0, 0, 200);
-            grad.addColorStop(0, 'rgba(76, 175, 80, 0.35)');  // brand green-ish
-            grad.addColorStop(1, 'rgba(76, 175, 80, 0.05)');
+            const ctx1 = document.getElementById('revenueChart')?.getContext('2d');
+            if (ctx1) {
+                const grad = ctx1.createLinearGradient(0, 0, 0, 200);
+                grad.addColorStop(0, 'rgba(76, 175, 80, 0.35)');  // brand green-ish
+                grad.addColorStop(1, 'rgba(76, 175, 80, 0.05)');
 
-            revenueChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: `Revenue (${currency})`,
-                        data: revenue,
-                        fill: true,
-                        backgroundColor: grad,
-                        borderColor: 'rgba(76, 175, 80, 1)',
-                        tension: 0.3,
-                        pointRadius: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' } },
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: (v) => fmtCurrency(v)
+                revenueChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: `收入 (${currency})`,
+                            data: revenue,
+                            fill: true,
+                            backgroundColor: grad,
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            tension: 0.3,
+                            pointRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { 
+                            legend: { position: 'top' },
+                            title: {
+                                display: true,
+                                text: '收入趋势'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: (v) => fmtCurrency(v)
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Orders bar chart
-            const ctx2 = document.getElementById('ordersChart').getContext('2d');
-            ordersChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Orders',
-                        data: orders,
-                        backgroundColor: 'rgba(33, 150, 243, 0.35)',
-                        borderColor: 'rgba(33, 150, 243, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 }
+            const ctx2 = document.getElementById('ordersChart')?.getContext('2d');
+            if (ctx2) {
+                ordersChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: '订单数',
+                            data: orders,
+                            backgroundColor: 'rgba(33, 150, 243, 0.35)',
+                            borderColor: 'rgba(33, 150, 243, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { 
+                            legend: { position: 'top' },
+                            title: {
+                                display: true,
+                                text: '订单趋势'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            }
                         }
                     }
+                });
+            }
+        }
+
+        async function refreshAll() {
+            const startDate = document.getElementById('fromDate').value;
+            const endDate = document.getElementById('toDate').value;
+            
+            // 显示加载状态
+            showLoadingSpinner('overview-cards');
+            showLoadingSpinner('reports-table');
+            showLoadingSpinner('charts-section');
+            
+            try {
+                // 加载数据
+                reportData = await loadReportData(startDate, endDate);
+                
+                if (reportData) {
+                    // 更新概览卡片
+                    updateOverviewCards(reportData);
+                    
+                    // 渲染表格
+                    renderTable(reportData);
+                    
+                    // 重新初始化DataTable
+                    const table = $('#reportsTable');
+                    if ($.fn.DataTable.isDataTable(table)) {
+                        table.DataTable().destroy();
+                    }
+                    table.DataTable({
+                        pageLength: 10,
+                        order: [[0, 'desc']],
+                        language: {
+                            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/zh.json'
+                        }
+                    });
+                    
+                    // 懒加载图表
+                    await lazyLoadSection('charts-section', async () => {
+                        await renderCharts(reportData);
+                    });
+                } else {
+                    throw new Error('数据加载失败');
                 }
+            } catch (error) {
+                console.error('刷新失败:', error);
+                // 显示错误信息
+                document.getElementById('overview-cards').innerHTML = '<div class="alert alert-danger">数据加载失败，请重试</div>';
+            }
+        }
+
+        // -------- 交叉观察器（懒加载） --------
+        function setupIntersectionObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        if (sectionId === 'charts-section' && reportData) {
+                            lazyLoadSection(sectionId, async () => {
+                                await renderCharts(reportData);
+                            });
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.1
             });
+            
+            // 观察图表区域
+            const chartsSection = document.getElementById('charts-section');
+            if (chartsSection) {
+                observer.observe(chartsSection);
+            }
         }
+        
+        // -------- Page Init --------
+        $(document).ready(async function() {
+            // Set default dates (last 7 days)
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
 
-        function refreshAll() {
-            const filtered = applyDateFilter(rows);
-            renderTable(filtered);
-            updateKPIs(filtered);
-            initDataTable(); // re-init DT after re-render
-            renderCharts(filtered);
-        }
+            // 设置交叉观察器
+            setupIntersectionObserver();
 
-        // Init
-        $(function () {
-            // Default set To = maximum date
-            const maxDate = rows.reduce((max, r) => r.date > max ? r.date : max, rows[0].date);
-            $('#toDate').val(maxDate);
-
-            refreshAll();
-
-            $('#fromDate, #toDate').on('change', refreshAll);
-            $('#resetFilters').on('click', function () {
-                $('#fromDate').val('');
-                $('#toDate').val(maxDate);
+            // Bind events
+            document.getElementById('fromDate').addEventListener('change', refreshAll);
+            document.getElementById('toDate').addEventListener('change', refreshAll);
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
+                document.getElementById('toDate').value = today.toISOString().split('T')[0];
                 refreshAll();
             });
+
+            // Initial load
+            await refreshAll();
         });
     </script>
 }

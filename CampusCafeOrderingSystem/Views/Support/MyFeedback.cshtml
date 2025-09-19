@@ -1,0 +1,97 @@
+@model List<CampusCafeOrderingSystem.Models.Feedback>
+@{
+    ViewData["Title"] = "My Feedback";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-comments"></i> My Feedback History</h2>
+                <a asp-action="Feedback" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Submit New Feedback
+                </a>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="row">
+                    @foreach (var feedback in Model)
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">@feedback.Subject</h6>
+                                    <span class="badge @(feedback.Status == CampusCafeOrderingSystem.Models.FeedbackStatus.Open ? "bg-warning" : 
+                                                         feedback.Status == CampusCafeOrderingSystem.Models.FeedbackStatus.InProgress ? "bg-info" : 
+                                                         feedback.Status == CampusCafeOrderingSystem.Models.FeedbackStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                        @feedback.Status
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Category:</strong> 
+                                        <span class="badge bg-light text-dark">@feedback.Category</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Priority:</strong> 
+                                        <span class="badge @(feedback.Priority == CampusCafeOrderingSystem.Models.FeedbackPriority.Low ? "bg-secondary" : 
+                                                             feedback.Priority == CampusCafeOrderingSystem.Models.FeedbackPriority.Medium ? "bg-warning" : 
+                                                             feedback.Priority == CampusCafeOrderingSystem.Models.FeedbackPriority.High ? "bg-danger" : "bg-dark")">
+                                            @feedback.Priority
+                                        </span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Message:</strong>
+                                        <p class="text-muted mb-0">@feedback.Message</p>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(feedback.AdminResponse))
+                                    {
+                                        <div class="alert alert-light mt-3">
+                                            <strong><i class="fas fa-reply"></i> Admin Reply:</strong>
+                                            <p class="mb-1">@feedback.AdminResponse</p>
+                                            @if (feedback.ResponseDate.HasValue)
+                                            {
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i> Replied on @feedback.ResponseDate.Value.ToString("MMM dd, yyyy HH:mm")
+                                                </small>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <small>
+                                        <i class="fas fa-calendar"></i> Submitted on @feedback.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-comment-slash fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No Feedback Yet</h4>
+                    <p class="text-muted mb-4">You haven't submitted any feedback yet. Share your experience with us!</p>
+                    <a asp-action="Feedback" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Submit Your First Feedback
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh every 30 seconds to check for admin replies
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+}

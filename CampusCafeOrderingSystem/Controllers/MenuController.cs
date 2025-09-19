@@ -1,48 +1,128 @@
-using CafeApp.Models;
+using CampusCafeOrderingSystem.Models;
+using CampusCafeOrderingSystem.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace CafeApp.Controllers
+namespace CampusCafeOrderingSystem.Controllers
 {
     public class MenuController : Controller
     {
-        // GET: /Menu
-        public IActionResult Index()
+        private readonly ApplicationDbContext _context;
+        
+        public MenuController(ApplicationDbContext context)
         {
-            var menuItems = GetSampleMenuItems();
-            return View("~/Views/user_order_pay/Menu/userIndex.cshtml", menuItems);
-
+            _context = context;
         }
-
-        private List<MenuItem> GetSampleMenuItems()
+        
+        // GET: /Menu
+        public async Task<IActionResult> Index(string category = null)
         {
-            return new List<MenuItem>
+            var query = _context.MenuItems.Where(m => m.IsAvailable);
+            
+            if (!string.IsNullOrEmpty(category))
+            {
+                query = query.Where(m => m.Category == category);
+            }
+            
+            var menuItems = await query.OrderBy(m => m.Category).ThenBy(m => m.Name).ToListAsync();
+            
+            // 如果数据库为空，添加示例数据
+            if (!menuItems.Any())
+            {
+                await SeedSampleMenuItems();
+                menuItems = await query.OrderBy(m => m.Category).ThenBy(m => m.Name).ToListAsync();
+            }
+            
+            ViewBag.Categories = await _context.MenuItems
+                .Where(m => m.IsAvailable)
+                .Select(m => m.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
+                
+            return View("~/Views/user_order_pay/Menu/userIndex.cshtml", menuItems);
+        }
+        
+        // GET: /Menu/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var menuItem = await _context.MenuItems
+                .FirstOrDefaultAsync(m => m.Id == id && m.IsAvailable);
+                
+            if (menuItem == null)
+            {
+                return NotFound();
+            }
+            
+            return View(menuItem);
+        }
+        
+        private async Task SeedSampleMenuItems()
+        {
+            var sampleItems = new List<MenuItem>
             {
                 new MenuItem
                 {
-                    Id = 1,
                     Name = "Latte",
                     Description = "A smooth blend of espresso and steamed milk.",
                     Price = 4.5M,
-                    ImageUrl = "Content/images/latte.jpg" 
+                    ImageUrl = "/images/latte.jpg",
+                    Category = "Coffee",
+                    IsAvailable = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 },
                 new MenuItem
                 {
-                    Id = 2,
                     Name = "Cappuccino",
                     Description = "Espresso with frothy milk.",
                     Price = 4.0M,
-                    ImageUrl = "Content/images/cappuccino.jpg"
+                    ImageUrl = "/images/cappuccino.jpg",
+                    Category = "Coffee",
+                    IsAvailable = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 },
                 new MenuItem
                 {
-                    Id = 3,
                     Name = "Espresso",
                     Description = "Strong classic espresso shot.",
                     Price = 3.0M,
-                    ImageUrl = "Content/images/espresso.jpg"  // Fixed image path
+                    ImageUrl = "/images/espresso.jpg",
+                    Category = "Coffee",
+                    IsAvailable = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new MenuItem
+                {
+                    Name = "Croissant",
+                    Description = "Buttery, flaky pastry perfect with coffee.",
+                    Price = 3.5M,
+                    ImageUrl = "/images/croissant.jpg",
+                    Category = "Pastry",
+                    IsAvailable = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new MenuItem
+                {
+                    Name = "Caesar Salad",
+                    Description = "Fresh romaine lettuce with caesar dressing.",
+                    Price = 8.5M,
+                    ImageUrl = "/images/caesar-salad.jpg",
+                    Category = "Salad",
+                    IsAvailable = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 }
             };
+            
+            _context.MenuItems.AddRange(sampleItems);
+            await _context.SaveChangesAsync();
         }
         public IActionResult Cart()
         {

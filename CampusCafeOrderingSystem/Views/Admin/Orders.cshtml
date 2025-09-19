@@ -1,0 +1,343 @@
+@model List<CampusCafeOrderingSystem.Models.Order>
+@{
+    ViewData["Title"] = "Order Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-clipboard-list"></i> Order Management
+                </h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshOrders()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="filterOrders('all')">All Orders</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterOrders('pending')">Pending</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterOrders('confirmed')">Confirmed</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterOrders('preparing')">Preparing</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterOrders('ready')">Ready</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterOrders('completed')">Completed</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Toast"] != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    @TempData["Toast"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Orders Table -->
+            <div class="card">
+                <div class="card-body">
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Orders Found</h4>
+                            <p class="text-muted">There are no orders to display at the moment.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="ordersTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Est. Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model)
+                                    {
+                                        <tr data-status="@order.Status.ToString().ToLower()">
+                                            <td>
+                                                <strong>@order.OrderNumber</strong>
+                                                <br>
+                                                <small class="text-muted">ID: @order.Id</small>
+                                            </td>
+                                            <td>
+                                                @if (order.User != null)
+                                                {
+                                                    <div>
+                                                        <strong>@order.User.UserName</strong>
+                                                        <br>
+                                                        <small class="text-muted">@order.User.Email</small>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Unknown User</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @order.OrderDate.ToString("MM/dd HH:mm")
+                                                <br>
+                                                <small class="text-muted">@order.PaymentMethod</small>
+                                            </td>
+                                            <td>
+                                                <div class="order-items">
+                                                    @foreach (var item in order.OrderItems.Take(2))
+                                                    {
+                                                        <div class="small">
+                                                            @item.Quantity × @item.MenuItemName
+                                                        </div>
+                                                    }
+                                                    @if (order.OrderItems.Count > 2)
+                                                    {
+                                                        <small class="text-muted">+@(order.OrderItems.Count - 2) more...</small>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong>¥@order.TotalAmount.ToString("F2")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@GetStatusColor(order.Status)">
+                                                    @order.Status
+                                                </span>
+                                                @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Preparing && order.EstimatedCompletionTime.HasValue)
+                                                {
+                                                    <br>
+                                                    <small class="text-info">
+                                                        <i class="fas fa-clock"></i> @order.EstimatedCompletionTime.Value.ToString("HH:mm")
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (order.EstimatedCompletionTime.HasValue)
+                                                {
+                                                    <small class="text-muted">
+                                                        @order.EstimatedCompletionTime.Value.ToString("HH:mm")
+                                                    </small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group-vertical btn-group-sm" role="group">
+                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Pending)
+                                                    {
+                                                        <button class="btn btn-outline-success btn-sm" onclick="updateStatus(@order.Id, 'Confirmed')">
+                                                            <i class="fas fa-check"></i> Confirm
+                                                        </button>
+                                                    }
+                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Confirmed)
+                                                    {
+                                                        <button class="btn btn-outline-primary btn-sm" onclick="updateStatus(@order.Id, 'Preparing')">
+                                                            <i class="fas fa-utensils"></i> Start Prep
+                                                        </button>
+                                                        <button class="btn btn-outline-info btn-sm" onclick="setEstimatedTime(@order.Id)">
+                                                            <i class="fas fa-clock"></i> Set Time
+                                                        </button>
+                                                    }
+                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Preparing)
+                                                    {
+                                                        <button class="btn btn-outline-warning btn-sm" onclick="updateStatus(@order.Id, 'Ready')">
+                                                            <i class="fas fa-bell"></i> Ready
+                                                        </button>
+                                                    }
+                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Ready)
+                                                    {
+                                                        <button class="btn btn-outline-success btn-sm" onclick="updateStatus(@order.Id, 'Completed')">
+                                                            <i class="fas fa-thumbs-up"></i> Complete
+                                                        </button>
+                                                    }
+                                                    @if (order.Status != CampusCafeOrderingSystem.Models.OrderStatus.Completed && order.Status != CampusCafeOrderingSystem.Models.OrderStatus.Cancelled)
+                                                    {
+                                                        <button class="btn btn-outline-danger btn-sm" onclick="updateStatus(@order.Id, 'Cancelled')">
+                                                            <i class="fas fa-times"></i> Cancel
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Set Estimated Time Modal -->
+<div class="modal fade" id="estimatedTimeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Estimated Completion Time</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="estimatedTimeForm">
+                    <input type="hidden" id="orderIdInput" />
+                    <div class="mb-3">
+                        <label for="minutesInput" class="form-label">Estimated minutes from now:</label>
+                        <select class="form-select" id="minutesInput" required>
+                            <option value="5">5 minutes</option>
+                            <option value="10">10 minutes</option>
+                            <option value="15" selected>15 minutes</option>
+                            <option value="20">20 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">1 hour</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitEstimatedTime()">Set Time</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusColor(CampusCafeOrderingSystem.Models.OrderStatus status)
+    {
+        return status switch
+        {
+            CampusCafeOrderingSystem.Models.OrderStatus.Pending => "warning",
+            CampusCafeOrderingSystem.Models.OrderStatus.Confirmed => "info",
+            CampusCafeOrderingSystem.Models.OrderStatus.Preparing => "primary",
+            CampusCafeOrderingSystem.Models.OrderStatus.Ready => "success",
+            CampusCafeOrderingSystem.Models.OrderStatus.Completed => "success",
+            CampusCafeOrderingSystem.Models.OrderStatus.Cancelled => "danger",
+            _ => "secondary"
+        };
+    }
+}
+
+<script>
+function updateStatus(orderId, status) {
+    if (confirm(`Are you sure you want to update this order status to ${status}?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action("UpdateOrderStatus", "Admin")';
+        
+        const orderIdInput = document.createElement('input');
+        orderIdInput.type = 'hidden';
+        orderIdInput.name = 'orderId';
+        orderIdInput.value = orderId;
+        
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = status;
+        
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '__RequestVerificationToken';
+        tokenInput.value = $('input[name="__RequestVerificationToken"]').val();
+        
+        form.appendChild(orderIdInput);
+        form.appendChild(statusInput);
+        form.appendChild(tokenInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function setEstimatedTime(orderId) {
+    document.getElementById('orderIdInput').value = orderId;
+    new bootstrap.Modal(document.getElementById('estimatedTimeModal')).show();
+}
+
+function submitEstimatedTime() {
+    const orderId = document.getElementById('orderIdInput').value;
+    const minutes = document.getElementById('minutesInput').value;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '@Url.Action("SetEstimatedTime", "Admin")';
+    
+    const orderIdInput = document.createElement('input');
+    orderIdInput.type = 'hidden';
+    orderIdInput.name = 'orderId';
+    orderIdInput.value = orderId;
+    
+    const minutesInput = document.createElement('input');
+    minutesInput.type = 'hidden';
+    minutesInput.name = 'minutes';
+    minutesInput.value = minutes;
+    
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = '__RequestVerificationToken';
+    tokenInput.value = $('input[name="__RequestVerificationToken"]').val();
+    
+    form.appendChild(orderIdInput);
+    form.appendChild(minutesInput);
+    form.appendChild(tokenInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+    
+    bootstrap.Modal.getInstance(document.getElementById('estimatedTimeModal')).hide();
+}
+
+function filterOrders(status) {
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function refreshOrders() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+
+<style>
+.order-items {
+    max-width: 200px;
+}
+
+.btn-group-vertical .btn {
+    margin-bottom: 2px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>

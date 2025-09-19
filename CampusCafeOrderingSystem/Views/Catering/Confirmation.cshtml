@@ -1,3 +1,4 @@
+#nullable disable
 @{
     ViewData["Title"] = "Catering Application Submitted";
 
@@ -13,7 +14,7 @@
     string endTime          = d?.EndTime   != null ? ((TimeSpan?)d.EndTime)?.ToString(@"hh\:mm")   : "-";
     string serviceType      = d?.ServiceType != null ? d.ServiceType.ToString() : "-";
     string address          = d?.Address ?? "-";
-    string dietary          = !string.IsNullOrWhiteSpace((string?)d?.DietaryCsv) ? ((string)d.DietaryCsv).Replace(",", ", ") : "-";
+    string dietary          = !string.IsNullOrWhiteSpace(d?.DietaryCsv) ? d.DietaryCsv.Replace(",", ", ") : "-";
     string budgetPerPerson  = d?.BudgetPerPerson != null ? ((decimal?)d.BudgetPerPerson)?.ToString("0.00") ?? "-" : "-";
     string menuStyle        = d?.MenuStyle != null ? d.MenuStyle.ToString() : "-";
     string notes            = d?.Notes ?? "-";
@@ -29,6 +30,14 @@
             {
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 @msg
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            }
+            
+            @if (TempData["ErrorMessage"] is string errorMsg && !string.IsNullOrWhiteSpace(errorMsg))
+            {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @errorMsg
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             }
@@ -53,7 +62,36 @@
                         <dd class="col-sm-9">@createdAt</dd>
 
                         <dt class="col-sm-3">Status</dt>
-                        <dd class="col-sm-9"><span class="badge bg-info text-dark">@status</span></dd>
+                        <dd class="col-sm-9">
+                            @{
+                                var statusEnum = d?.Status;
+                            }
+                            @if (statusEnum != null)
+                            {
+                                @switch ((ApplicationStatus)statusEnum)
+                                {
+                                    case ApplicationStatus.Pending:
+                                        <span class="badge bg-warning text-dark">⏳ Pending Review</span>
+                                        break;
+                                    case ApplicationStatus.Approved:
+                                        <span class="badge bg-success">✅ Approved</span>
+                                        break;
+                                    case ApplicationStatus.Rejected:
+                                        <span class="badge bg-danger">❌ Rejected</span>
+                                        break;
+                                    case ApplicationStatus.Paid:
+                                        <span class="badge bg-info">💰 Payment Completed</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@status</span>
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@status</span>
+                            }
+                        </dd>
                     </dl>
 
                     <hr />
@@ -102,8 +140,108 @@
                         @notes
                     </div>
 
+                    <hr />
+
+                    <h6 class="mb-3">Application Status Timeline</h6>
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Application Submitted</h6>
+                                <small class="text-muted">@createdAt</small>
+                            </div>
+                        </div>
+                        
+                        @if (d?.Status != null)
+                        {
+                            var currentStatus = (ApplicationStatus)d.Status;
+                            
+                            <div class="timeline-item @(currentStatus >= ApplicationStatus.Approved ? "completed" : "pending")">
+                                <div class="timeline-marker @(currentStatus >= ApplicationStatus.Approved ? "bg-success" : "bg-warning")"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Admin Review</h6>
+                                    <small class="text-muted">
+                                        @if (currentStatus >= ApplicationStatus.Approved)
+                                        {
+                                            @("Reviewed")
+                                        }
+                                        else
+                                        {
+                                            @("Pending review by administrator")
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            @if (currentStatus == ApplicationStatus.Approved)
+                            {
+                                <div class="timeline-item pending">
+                                    <div class="timeline-marker bg-info"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Payment</h6>
+                                        <small class="text-muted">Ready for payment</small>
+                                    </div>
+                                </div>
+                            }
+                            else if (currentStatus == ApplicationStatus.Paid)
+                            {
+                                <div class="timeline-item completed">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Payment Completed</h6>
+                                        <small class="text-muted">Payment processed successfully</small>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <style>
+                        .timeline {
+                            position: relative;
+                            padding-left: 30px;
+                        }
+                        .timeline::before {
+                            content: '';
+                            position: absolute;
+                            left: 15px;
+                            top: 0;
+                            bottom: 0;
+                            width: 2px;
+                            background: #dee2e6;
+                        }
+                        .timeline-item {
+                            position: relative;
+                            margin-bottom: 20px;
+                        }
+                        .timeline-marker {
+                            position: absolute;
+                            left: -22px;
+                            top: 5px;
+                            width: 12px;
+                            height: 12px;
+                            border-radius: 50%;
+                            border: 2px solid #fff;
+                        }
+                        .timeline-item.pending .timeline-marker {
+                            background: #ffc107;
+                        }
+                        .timeline-item.completed .timeline-marker {
+                            background: #28a745;
+                        }
+                        .timeline-content h6 {
+                            margin-bottom: 2px;
+                            font-size: 0.9rem;
+                        }
+                    </style>
+
                     <div class="mt-4 d-flex gap-2">
-                        <a asp-controller="Catering" asp-action="Payment" asp-route-id="@appId" class="btn btn-success">Proceed to Payment</a>
+                        @if (d?.Status != null && (ApplicationStatus)d.Status == ApplicationStatus.Approved)
+                        {
+                            <a asp-controller="Catering" asp-action="Payment" asp-route-id="@appId" class="btn btn-success">
+                                <i class="fas fa-credit-card"></i> Proceed to Payment
+                            </a>
+                        }
                         <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to Home</a>
                         <a asp-controller="Catering" asp-action="Apply" class="btn btn-outline-secondary">Submit Another</a>
                     </div>

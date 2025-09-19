@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CampusCafeOrderingSystem.Data;
-using CafeApp.Models.user_order_pay;
+using CampusCafeOrderingSystem.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CampusCafeOrderingSystem.Controllers
 {

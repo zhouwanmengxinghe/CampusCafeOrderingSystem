@@ -115,7 +115,14 @@ namespace CampusCafeOrderingSystem.Controllers
                 return NotFound();
             }
 
-            var paymentModel = new CafeApp.Models.user_order_pay.PaymentModel
+            // Check if application is approved before allowing payment
+            if (application.Status != ApplicationStatus.Approved)
+            {
+                TempData["ErrorMessage"] = "This application must be approved before payment can be processed.";
+                return RedirectToAction(nameof(Confirmation), new { id = id });
+            }
+
+            var paymentModel = new CampusCafeOrderingSystem.Models.PaymentModel
             {
                 TotalAmount = (application.BudgetPerPerson ?? 0) * application.NumberOfPeople
             };
@@ -126,37 +133,46 @@ namespace CampusCafeOrderingSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ProcessCateringPayment(int applicationId, string paymentMethod)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcessCateringPayment(PaymentModel model, int applicationId)
         {
             var application = await _db.CateringApplications
                 .FirstOrDefaultAsync(x => x.Id == applicationId);
 
             if (application == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Application not found.";
+                return RedirectToAction("Apply");
+            }
+
+            // Set payment method from selected payment method
+            model.PaymentMethod = model.SelectedPaymentMethod;
+
+            // Validate payment
+            var validationResult = ValidatePayment(model);
+            if (!validationResult.IsValid)
+            {
+                TempData["ErrorMessage"] = validationResult.ErrorMessage;
+                return RedirectToAction(nameof(Payment), new { id = applicationId });
+            }
+
+            // Process payment
+            var paymentResult = ProcessPaymentMethod(model);
+            if (!paymentResult.IsSuccessful)
+            {
+                TempData["ErrorMessage"] = paymentResult.Message;
+                return RedirectToAction(nameof(Payment), new { id = applicationId });
             }
 
             var totalAmount = (application.BudgetPerPerson ?? 0) * application.NumberOfPeople;
+            paymentResult.Amount = totalAmount;
             
-            if (paymentMethod == "CampusCard")
-            {
-                TempData["Message"] = "Catering payment completed successfully using Campus Card!";
-            }
-            else if (paymentMethod == "CreditCard")
-            {
-                TempData["Message"] = "Catering payment completed successfully using Credit/Debit Card!";
-            }
-            else
-            {
-                TempData["Message"] = "Invalid payment method selected.";
-            }
+            // Update application status to paid
+            application.Status = ApplicationStatus.Paid;
+            await _db.SaveChangesAsync();
 
-            TempData["PaymentMethod"] = paymentMethod;
-            TempData["TotalAmount"] = totalAmount;
-            
-            // Update application status to paid (you might want to add a Paid status)
-            // application.Status = ApplicationStatus.Paid;
-            // await _db.SaveChangesAsync();
+            // Store payment result in TempData
+            TempData["PaymentResult"] = System.Text.Json.JsonSerializer.Serialize(paymentResult);
 
             return RedirectToAction("PaymentConfirmation", new { id = applicationId });
         }
@@ -164,21 +180,74 @@ namespace CampusCafeOrderingSystem.Controllers
         [HttpGet]
         public IActionResult PaymentConfirmation(int id)
         {
-            var message = TempData["Message"] as string ?? "Catering payment completed successfully!";
-            var paymentMethod = TempData["PaymentMethod"] as string ?? "Unknown";
-            var totalAmount = TempData["TotalAmount"] as decimal? ?? 0;
+            PaymentResult paymentResult;
             
-            var paymentResult = new CafeApp.Models.user_order_pay.PaymentResult
+            // Try to get payment result from TempData
+            var paymentResultJson = TempData["PaymentResult"] as string;
+            if (!string.IsNullOrEmpty(paymentResultJson))
+            {
+                try
+                {
+                    paymentResult = System.Text.Json.JsonSerializer.Deserialize<PaymentResult>(paymentResultJson);
+                }
+                catch
+                {
+                    // Fallback if deserialization fails
+                    paymentResult = CreateFallbackPaymentResult();
+                }
+            }
+            else
+            {
+                // Fallback payment result
+                paymentResult = CreateFallbackPaymentResult();
+            }
+            
+            return View("~/Views/user_order_pay/Payment/PaymentSuccess.cshtml", paymentResult);
+        }
+
+        private PaymentResult CreateFallbackPaymentResult()
+        {
+            return new PaymentResult
+            {
+                IsSuccess = true,
+                Message = "Catering payment completed successfully!",
+                TransactionId = Guid.NewGuid().ToString("N")[..8].ToUpper(),
+                TransactionTime = DateTime.Now,
+                Amount = 0,
+                PaymentMethod = "Unknown"
+            };
+        }
+
+        private (bool IsValid, string ErrorMessage) ValidatePayment(PaymentModel model)
+        {
+            // 简化验证逻辑 - 只要选择了支付方式就通过
+            if (string.IsNullOrWhiteSpace(model.SelectedPaymentMethod))
+            {
+                return (false, "Please select a payment method.");
+            }
+
+            return (true, string.Empty);
+        }
+
+        private PaymentResult ProcessPaymentMethod(PaymentModel model)
+        {
+            // 模拟支付处理 - 任何输入都成功
+            var message = model.SelectedPaymentMethod switch
+            {
+                "CampusCard" => "Payment completed successfully using Campus Card!",
+                "CreditCard" => "Payment completed successfully using Credit/Debit Card!",
+                "MobileWallet" => "Payment completed successfully using Mobile Wallet!",
+                _ => "Payment completed successfully!"
+            };
+
+            return new PaymentResult
             {
                 IsSuccess = true,
                 Message = message,
                 TransactionId = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                 TransactionTime = DateTime.Now,
-                Amount = totalAmount,
-                PaymentMethod = paymentMethod
+                PaymentMethod = model.PaymentMethod
             };
-            
-            return View("~/Views/user_order_pay/Payment/PaymentSuccess.cshtml", paymentResult);
         }
     }
 }

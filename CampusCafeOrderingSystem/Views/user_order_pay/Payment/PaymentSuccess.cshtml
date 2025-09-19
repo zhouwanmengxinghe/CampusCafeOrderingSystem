@@ -1,7 +1,9 @@
-@model CafeApp.Models.user_order_pay.PaymentResult
+@model PaymentResult
 @{
     ViewData["Title"] = "Payment Success";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var orderNumber = ViewBag.OrderNumber as string ?? "N/A";
+    var order = ViewBag.Order as Order;
 }
 
 <div class="container mt-5">
@@ -17,6 +19,7 @@
                     <!-- Success Message -->
                     <h2 class="text-success mb-3">Payment Successful!</h2>
                     <p class="lead text-muted mb-4">@Model.Message</p>
+                    <p class="text-muted">Order Number: <strong>@orderNumber</strong></p>
                     
                     <!-- Transaction Details -->
                     <div class="transaction-details">
@@ -27,6 +30,33 @@
                                     <div class="detail-content">
                                         <strong>Transaction ID</strong>
                                         <p>@Model.TransactionId</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-clock text-info"></i>
+                                    <div class="detail-content">
+                                        <strong>Transaction Time</strong>
+                                        <p>@Model.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-credit-card text-warning"></i>
+                                    <div class="detail-content">
+                                        <strong>Payment Method</strong>
+                                        <p>@Model.PaymentMethod</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-dollar-sign text-success"></i>
+                                    <div class="detail-content">
+                                        <strong>Amount Paid</strong>
+                                        <p>¥@Model.Amount.ToString("F2")</p>
                                     </div>
                                 </div>
                             </div>

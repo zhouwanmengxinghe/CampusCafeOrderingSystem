@@ -1,6 +1,6 @@
-﻿using CafeApp.Models;
+using CampusCafeOrderingSystem.Models;
 
-namespace CafeApp.Models.user_order_pay
+namespace CampusCafeOrderingSystem.Models
 {
     public class CartItem
     {
@@ -11,5 +11,8 @@ namespace CafeApp.Models.user_order_pay
         public string Name => Product.Name;
         public string Description => Product.Description;
         public decimal Price => Product.Price;
+        
+        // Computed property to get image URL from Product
+        public string ImageUrl => Product?.ImageUrl ?? "/images/default-food.jpg";
     }
 }

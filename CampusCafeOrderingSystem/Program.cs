@@ -44,6 +44,22 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
+// Register custom services
+builder.Services.AddScoped<CampusCafeOrderingSystem.Services.IMenuService, CampusCafeOrderingSystem.Services.MenuService>();
+builder.Services.AddScoped<CampusCafeOrderingSystem.Services.IOrderService, CampusCafeOrderingSystem.Services.OrderService>();
+builder.Services.AddScoped<CampusCafeOrderingSystem.Services.ICreditService, CampusCafeOrderingSystem.Services.CreditService>();
+
+// Register HttpClient for OrderService
+builder.Services.AddHttpClient<CampusCafeOrderingSystem.Services.OrderService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5117");
+});
+
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Add caching services
+builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -76,6 +92,9 @@ else
     app.UseHsts();
 }
 
+// Configure the application to run on port 5117
+app.Urls.Add("http://localhost:5117");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -91,6 +110,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+
+// Map SignalR Hub
+app.MapHub<CampusCafeOrderingSystem.Hubs.OrderHub>("/orderHub");
 
 await SeedRolesAndAdminAsync(app);
 
@@ -138,6 +160,20 @@ async Task SeedRolesAndAdminAsync(WebApplication app)
         }
     }
     
+    // Create vendor@qq.com account for testing
+    var testVendorEmail = "vendor@qq.com";
+    var testVendorPassword = "Vendor123!";
+    var testVendorUser = await userManager.FindByEmailAsync(testVendorEmail);
+    if (testVendorUser == null)
+    {
+        var newTestVendor = new IdentityUser { UserName = testVendorEmail, Email = testVendorEmail, EmailConfirmed = true };
+        var result = await userManager.CreateAsync(newTestVendor, testVendorPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newTestVendor, "Vendor");
+        }
+    }
+    
     // Create default customer account for testing
     var customerEmail = "customer@test.com";
     var customerPassword = "Customer123!";
@@ -151,4 +187,8 @@ async Task SeedRolesAndAdminAsync(WebApplication app)
             await userManager.AddToRoleAsync(newCustomer, "Customer");
         }
     }
+    
+    // Seed menu items and orders data
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await SeedData.SeedAsync(context);
 }

@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using CampusCafeOrderingSystem.Models;
 using CampusCafeOrderingSystem.Services;
+using CampusCafeOrderingSystem.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusCafeOrderingSystem.Controllers
 {
@@ -15,13 +17,16 @@ namespace CampusCafeOrderingSystem.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDbContext _context;
 
         public AdminController(
             UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
         }
 
         // ========= User Management =========
@@ -171,6 +176,68 @@ namespace CampusCafeOrderingSystem.Controllers
             return RedirectToAction(nameof(Vendors));
         }
 
+        // ========= Order Management =========
+        public async Task<IActionResult> Orders()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                .Include(o => o.User)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, OrderStatus status)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null)
+            {
+                TempData["Toast"] = "❌ Order not found.";
+                return RedirectToAction(nameof(Orders));
+            }
+
+            var oldStatus = order.Status;
+            order.Status = status;
+
+            // Set estimated completion time when order is confirmed
+            if (status == OrderStatus.Confirmed && !order.EstimatedCompletionTime.HasValue)
+            {
+                order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15); // Default 15 minutes
+            }
+
+            // Set completed time when order is completed
+            if (status == OrderStatus.Completed && !order.CompletedTime.HasValue)
+            {
+                order.CompletedTime = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Toast"] = $"✅ Order {order.OrderNumber} status updated from {oldStatus} to {status}.";
+            return RedirectToAction(nameof(Orders));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetEstimatedTime(int orderId, int minutes)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null)
+            {
+                TempData["Toast"] = "❌ Order not found.";
+                return RedirectToAction(nameof(Orders));
+            }
+
+            order.EstimatedCompletionTime = DateTime.Now.AddMinutes(minutes);
+            await _context.SaveChangesAsync();
+
+            TempData["Toast"] = $"✅ Estimated completion time set to {minutes} minutes for order {order.OrderNumber}.";
+            return RedirectToAction(nameof(Orders));
+        }
+
         // ========= Reports =========
         public IActionResult Reports()
         {
@@ -213,6 +280,69 @@ namespace CampusCafeOrderingSystem.Controllers
                                 decision == "Rejected" ? "❌ Review rejected." :
                                 "⚠️ No change.";
             return RedirectToAction(nameof(ReviewCenter));
+        }
+
+        // ========= Menu Management =========
+        public async Task<IActionResult> MenuManagement()
+        {
+            var menuItems = await _context.MenuItems
+                .OrderBy(m => m.Category)
+                .ThenBy(m => m.Name)
+                .ToListAsync();
+
+            return View(menuItems);
+        }
+
+        // ========= Catering Management =========
+        public async Task<IActionResult> CateringApplications()
+        {
+            var applications = await _context.CateringApplications
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(applications);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveCateringApplication(int id)
+        {
+            var application = await _context.CateringApplications.FindAsync(id);
+            if (application == null)
+            {
+                TempData["Toast"] = "❌ Application not found.";
+                return RedirectToAction(nameof(CateringApplications));
+            }
+
+            application.Status = ApplicationStatus.Approved;
+            application.ReviewedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            TempData["Toast"] = $"✅ Catering application {application.Id} approved.";
+            return RedirectToAction(nameof(CateringApplications));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectCateringApplication(int id, string reason = null)
+        {
+            var application = await _context.CateringApplications.FindAsync(id);
+            if (application == null)
+            {
+                TempData["Toast"] = "❌ Application not found.";
+                return RedirectToAction(nameof(CateringApplications));
+            }
+
+            application.Status = ApplicationStatus.Rejected;
+            application.ReviewedAt = DateTime.Now;
+            if (!string.IsNullOrEmpty(reason))
+            {
+                application.AdminNotes = reason;
+            }
+            await _context.SaveChangesAsync();
+
+            TempData["Toast"] = $"❌ Catering application {application.Id} rejected.";
+            return RedirectToAction(nameof(CateringApplications));
         }
 
         // ========= Settings =========

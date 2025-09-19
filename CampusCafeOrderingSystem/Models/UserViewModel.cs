@@ -67,7 +67,7 @@ namespace CampusCafeOrderingSystem.Models
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }
         public string OrderNumber { get; set; } = string.Empty;
-        public CafeApp.Models.user_order_pay.OrderStatus Status { get; set; } = CafeApp.Models.user_order_pay.OrderStatus.Pending; // 改为枚举类型
+        public CampusCafeOrderingSystem.Models.OrderStatus Status { get; set; } = CampusCafeOrderingSystem.Models.OrderStatus.Pending; // 改为枚举类型
         public List<string> OrderItems { get; set; } = new();
         public string PaymentMethod { get; set; } = string.Empty;
     }
