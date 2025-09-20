@@ -364,11 +364,13 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     $"dashboard_data_{vendorEmail}_",
                     $"overview_{vendorEmail}_",
                     $"daily_data_{vendorEmail}_",
-                    $"category_data_{vendorEmail}_"
+                    $"category_data_{vendorEmail}_",
+                    $"sales_data_{vendorEmail}_",
+                    $"popular_items_{vendorEmail}_"
                 };
 
                 // 由于IMemoryCache没有直接的模式匹配删除方法，我们需要清除可能的日期范围
-                for (int i = -7; i <= 7; i++)
+                for (int i = -30; i <= 30; i++)
                 {
                     var date = today.AddDays(i);
                     var dateStr = date.ToString("yyyyMMdd");
@@ -377,9 +379,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     {
                         // 清除单日缓存
                         _cache.Remove($"{pattern}{dateStr}_{dateStr}");
+                        _cache.Remove($"{pattern}{dateStr}"); // popular_items_键只包含单日日期
                         
                         // 清除可能的日期范围缓存
-                        for (int j = i; j <= 7; j++)
+                        for (int j = i; j <= 30; j++)
                         {
                             var endDate = today.AddDays(j);
                             var endDateStr = endDate.ToString("yyyyMMdd");
@@ -1183,6 +1186,176 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "导出PDF失败", details = ex.Message });
+            }
+        }
+
+        // 管理员端专用的仪表板数据接口
+        [HttpGet("admin-dashboard-data")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAdminDashboardData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        {
+            try
+            {
+                // 设置默认日期范围（如果未提供）
+                var start = startDate ?? DateTime.Now.AddDays(-30);
+                var end = endDate ?? DateTime.Now;
+
+                // 生成缓存键
+                var cacheKey = $"admin_dashboard_data_{start:yyyyMMdd}_{end:yyyyMMdd}";
+                
+                // 尝试从缓存获取数据
+                if (_cache.TryGetValue(cacheKey, out var cachedResult))
+                {
+                    return Ok(cachedResult);
+                }
+
+                // 获取所有订单数据（不限制商家）
+                var allOrders = await _context.Orders
+                    .Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.MenuItem)
+                    .ToListAsync();
+
+                // 只使用已完成的订单进行统计计算
+                var completedOrders = allOrders.Where(o => o.Status == OrderStatus.Completed).ToList();
+
+                // 1. 概览数据
+                var totalRevenue = completedOrders.Sum(o => o.TotalAmount);
+                var totalOrders = completedOrders.Count;
+                var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+                var topProduct = completedOrders
+                    .SelectMany(o => o.OrderItems)
+                    .GroupBy(oi => oi.MenuItemName)
+                    .OrderByDescending(g => g.Sum(oi => oi.Quantity))
+                    .Select(g => g.Key)
+                    .FirstOrDefault() ?? "No data";
+
+                var overview = new
+                {
+                    totalRevenue,
+                    totalOrders,
+                    avgOrderValue,
+                    topProduct
+                };
+
+                // 2. 每日数据
+                var dailyDataTemp = completedOrders
+                    .GroupBy(o => o.OrderDate.Date)
+                    .Select(g => new
+                    {
+                        date = g.Key.ToString("yyyy-MM-dd"),
+                        revenue = g.Sum(o => o.TotalAmount),
+                        orders = g.Count(),
+                        avgOrderValue = g.Average(o => o.TotalAmount)
+                    })
+                    .OrderBy(d => d.date)
+                    .ToList();
+
+                // 计算增长率并创建最终数据
+                var dailyData = new List<object>();
+                for (int i = 0; i < dailyDataTemp.Count; i++)
+                {
+                    var current = dailyDataTemp[i];
+                    var previous = i > 0 ? dailyDataTemp[i - 1] : null;
+                    
+                    var revenueGrowth = previous != null && previous.revenue > 0 
+                        ? ((current.revenue - previous.revenue) / previous.revenue * 100) 
+                        : 0;
+
+                    dailyData.Add(new
+                    {
+                        date = current.date,
+                        revenue = current.revenue,
+                        orders = current.orders,
+                        avgOrderValue = current.avgOrderValue,
+                        growth = Math.Round(revenueGrowth, 1)
+                    });
+                }
+
+                // 3. 小时数据（当天的订单分布）
+                var todayOrders = completedOrders.Where(o => o.OrderDate.Date == DateTime.Today).ToList();
+                var hourlyData = new List<object>();
+                for (int hour = 0; hour < 24; hour++)
+                {
+                    var hourOrders = todayOrders.Where(o => o.OrderDate.Hour == hour).ToList();
+                    hourlyData.Add(new
+                    {
+                        hour = hour.ToString("D2") + ":00",
+                        orders = hourOrders.Count,
+                        revenue = hourOrders.Sum(o => o.TotalAmount)
+                    });
+                }
+
+                // 4. 商品排行
+                var productRanking = completedOrders
+                    .SelectMany(o => o.OrderItems)
+                    .GroupBy(oi => oi.MenuItemName)
+                    .Select(g => new
+                    {
+                        name = g.Key,
+                        quantity = g.Sum(oi => oi.Quantity),
+                        revenue = g.Sum(oi => oi.UnitPrice * oi.Quantity)
+                    })
+                    .OrderByDescending(p => p.quantity)
+                    .Take(10)
+                    .ToList();
+
+                // 5. 商家表现数据
+                var vendorPerformance = completedOrders
+                    .GroupBy(o => o.VendorEmail)
+                    .Select(g => new
+                    {
+                        vendorEmail = g.Key,
+                        revenue = g.Sum(o => o.TotalAmount),
+                        orders = g.Count(),
+                        avgOrderValue = g.Average(o => o.TotalAmount)
+                    })
+                    .OrderByDescending(v => v.revenue)
+                    .Take(10)
+                    .ToList();
+
+                var result = new
+                {
+                    overview,
+                    dailyData,
+                    hourlyData,
+                    productRanking,
+                    vendorPerformance,
+                    chartData = new
+                    {
+                        daily = new
+                        {
+                            labels = dailyDataTemp.Select(d => d.date.Substring(5)).ToList(), // MM-dd format
+                            revenue = dailyDataTemp.Select(d => d.revenue).ToList(),
+                            orders = dailyDataTemp.Select(d => d.orders).ToList()
+                        },
+                        hourly = new
+                        {
+                            labels = hourlyData.Select(h => ((dynamic)h).hour).ToList(),
+                            orders = hourlyData.Select(h => ((dynamic)h).orders).ToList(),
+                            revenue = hourlyData.Select(h => ((dynamic)h).revenue).ToList()
+                        },
+                        products = new
+                        {
+                            labels = productRanking.Select(p => p.name).ToList(),
+                            data = productRanking.Select(p => p.quantity).ToList()
+                        },
+                        vendors = new
+                        {
+                            labels = vendorPerformance.Select(v => v.vendorEmail).ToList(),
+                            data = vendorPerformance.Select(v => v.revenue).ToList()
+                        }
+                    }
+                };
+
+                // 缓存结果
+                _cache.Set(cacheKey, result, _cacheExpiration);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to load dashboard data", details = ex.Message });
             }
         }
     }

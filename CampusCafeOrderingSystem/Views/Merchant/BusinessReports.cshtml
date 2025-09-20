@@ -394,6 +394,115 @@
             loadReportData();
         }
 
+        // Transform API data to report format
+        function transformApiDataToReportFormat(apiData, startDate, endDate) {
+            try {
+                // Extract overview data
+                const overview = {
+                    totalRevenue: apiData.overview?.totalRevenue || 0,
+                    totalOrders: apiData.overview?.totalOrders || 0,
+                    avgOrderValue: apiData.overview?.avgOrderValue || 0,
+                    topProduct: apiData.overview?.topProduct || 'N/A'
+                };
+                
+                // Extract daily data
+                const dailyData = {
+                    labels: [],
+                    revenueData: [],
+                    ordersData: []
+                };
+                
+                if (apiData.dailyData && Array.isArray(apiData.dailyData)) {
+                    apiData.dailyData.forEach(day => {
+                        const date = new Date(day.date);
+                        dailyData.labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                        dailyData.revenueData.push(day.revenue || 0);
+                        dailyData.ordersData.push(day.orders || 0);
+                    });
+                }
+                
+                // Extract category data (use default if not provided)
+                const categoryData = apiData.categoryData || {
+                    labels: ['Coffee', 'Tea', 'Pastries', 'Light Meals', 'Others'],
+                    data: [45, 25, 15, 10, 5]
+                };
+                
+                // Extract hourly data
+                const hourlyData = {
+                    labels: ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'],
+                    data: []
+                };
+                
+                if (apiData.hourlyData && Array.isArray(apiData.hourlyData)) {
+                    hourlyData.data = apiData.hourlyData.map(h => h.orders || 0);
+                } else {
+                    // Default hourly data
+                    hourlyData.data = [5, 15, 35, 45, 30, 25, 40, 35, 30, 25, 20, 15, 10, 8, 5, 3];
+                }
+                
+                // Extract products data
+                const productsData = {
+                    labels: [],
+                    data: []
+                };
+                
+                if (apiData.topProducts && Array.isArray(apiData.topProducts)) {
+                    apiData.topProducts.forEach(product => {
+                        productsData.labels.push(product.name || 'Unknown');
+                        productsData.data.push(product.quantity || 0);
+                    });
+                } else {
+                    // Default products data
+                    productsData.labels = ['Latte', 'Cappuccino', 'Americano', 'Mocha', 'Espresso'];
+                    productsData.data = [120, 95, 80, 65, 45];
+                }
+                
+                // Generate daily table data from daily data
+                const dailyTableData = [];
+                const maxTableRows = Math.min(dailyData.labels.length, 7);
+                
+                for (let i = 0; i < maxTableRows; i++) {
+                    const revenue = dailyData.revenueData[i] || 0;
+                    const orders = dailyData.ordersData[i] || 0;
+                    const avgValue = orders > 0 ? revenue / orders : 0;
+                    const growthRate = i > 0 && dailyData.revenueData[i-1] > 0 ? 
+                        ((revenue - dailyData.revenueData[i-1]) / dailyData.revenueData[i-1] * 100) : 0;
+                    
+                    // Parse date from label or use index-based date
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(currentDate.getDate() + i);
+                    
+                    dailyTableData.push({
+                        date: currentDate.toLocaleDateString('en-US'),
+                        revenue: revenue,
+                        orders: orders,
+                        avgValue: avgValue,
+                        growthRate: growthRate
+                    });
+                }
+                
+                return {
+                    overview: overview,
+                    dailyData: dailyData,
+                    categoryData: categoryData,
+                    hourlyData: hourlyData,
+                    productsData: productsData,
+                    dailyTableData: dailyTableData
+                };
+            } catch (error) {
+                console.error('Error transforming API data:', error);
+                // Return empty structure if transformation fails
+                return {
+                    overview: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, topProduct: 'N/A' },
+                    dailyData: { labels: [], revenueData: [], ordersData: [] },
+                    categoryData: { labels: ['Coffee', 'Tea', 'Pastries', 'Light Meals', 'Others'], data: [45, 25, 15, 10, 5] },
+                    hourlyData: { labels: ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'], data: [5, 15, 35, 45, 30, 25, 40, 35, 30, 25, 20, 15, 10, 8, 5, 3] },
+                    productsData: { labels: ['Latte', 'Cappuccino', 'Americano', 'Mocha', 'Espresso'], data: [120, 95, 80, 65, 45] },
+                    dailyTableData: []
+                };
+            }
+        }
+
         // Generate fake report data
         function generateFakeReportData(startDate, endDate) {
             const start = new Date(startDate);
@@ -503,10 +612,25 @@
                 // Clear error messages
                 hideError();
                 
-                // Generate fake data
+                // Call real API to get data
                 console.log(`Loading report data: ${startDate} to ${endDate}`);
-                reportData = generateFakeReportData(startDate, endDate);
-                console.log('Loaded report data:', reportData);
+                const response = await fetch(`/api/ReportsApi/dashboard-data?startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const apiData = await response.json();
+                console.log('API response:', apiData);
+                
+                // Transform API data to match the expected format
+                reportData = transformApiDataToReportFormat(apiData, startDate, endDate);
+                console.log('Transformed report data:', reportData);
                 
                 // Update UI
                 updateOverviewCards();
@@ -516,8 +640,12 @@
                 console.error('Error loading report data:', error);
                 showError(`Error loading report data: ${error.message}`);
                 
-                // Clear data display
-                clearDataDisplay();
+                // Fallback to fake data if API fails
+                console.log('Falling back to fake data...');
+                reportData = generateFakeReportData(startDate, endDate);
+                updateOverviewCards();
+                updateCharts();
+                updateDailyTable();
             } finally {
                 // Hide loading indicator
                 document.body.classList.remove('loading');

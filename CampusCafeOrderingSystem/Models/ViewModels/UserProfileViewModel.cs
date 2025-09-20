@@ -6,28 +6,28 @@ namespace CampusCafeOrderingSystem.Models
     {
         public string UserId { get; set; } = string.Empty;
         
-        [Display(Name = "用户名")]
+        [Display(Name = "Username")]
         public string UserName { get; set; } = string.Empty;
         
         [Required]
         [EmailAddress]
-        [Display(Name = "邮箱地址")]
+        [Display(Name = "Email Address")]
         public string Email { get; set; } = string.Empty;
         
         [Phone]
-        [Display(Name = "手机号码")]
+        [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; } = string.Empty;
         
-        [Display(Name = "全名")]
+        [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
         
-        [Display(Name = "学号")]
+        [Display(Name = "Student ID")]
         public string StudentId { get; set; } = string.Empty;
         
-        [Display(Name = "院系")]
+        [Display(Name = "Department")]
         public string Department { get; set; } = string.Empty;
         
-        [Display(Name = "地址")]
+        [Display(Name = "Address")]
         public string Address { get; set; } = string.Empty;
         
         public UserPreference? UserPreference { get; set; }

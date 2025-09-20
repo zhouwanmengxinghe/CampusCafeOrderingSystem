@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using CampusCafeOrderingSystem.Services;
 using CampusCafeOrderingSystem.Models;
+using CampusCafeOrderingSystem.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
 
 namespace CampusCafeOrderingSystem.Controllers.Api
@@ -19,53 +20,73 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenuItems(
-            [FromQuery] string? search = null,
-            [FromQuery] string? category = null,
-            [FromQuery] bool? available = null)
+        public async Task<ActionResult<ApiResponse<PagedResult<MenuItemResponseDto>>>> GetMenuItems(
+            [FromQuery] MenuItemQueryDto query)
         {
-            try
+            var vendorEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(vendorEmail))
             {
-                var vendorEmail = User.Identity?.Name;
-                if (string.IsNullOrEmpty(vendorEmail))
-                {
-                    return Unauthorized(new { message = "无法获取商家信息" });
-                }
-
-                IEnumerable<MenuItem> items;
-
-                if (available == true)
-                {
-                    items = await _menuService.GetAvailableMenuItemsByVendorAsync(vendorEmail);
-                }
-                else
-                {
-                    items = await _menuService.GetMenuItemsByVendorAsync(vendorEmail);
-                }
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    items = items.Where(i => i.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                                           i.Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                                           i.Category.Contains(search, StringComparison.OrdinalIgnoreCase));
-                }
-
-                if (!string.IsNullOrEmpty(category))
-                {
-                    items = items.Where(i => i.Category == category);
-                }
-
-                if (available.HasValue)
-                {
-                    items = items.Where(i => i.IsAvailable == available.Value);
-                }
-
-                return Ok(items);
+                return ApiResponse<PagedResult<MenuItemResponseDto>>.Error("无法获取商家信息", 401);
             }
-            catch (Exception ex)
+
+            IEnumerable<MenuItem> items;
+
+            if (query.IsAvailable == true)
             {
-                return StatusCode(500, new { message = "获取菜品列表失败", error = ex.Message });
+                items = await _menuService.GetAvailableMenuItemsByVendorAsync(vendorEmail);
             }
+            else
+            {
+                items = await _menuService.GetMenuItemsByVendorAsync(vendorEmail);
+            }
+
+            if (!string.IsNullOrEmpty(query.Search))
+            {
+                items = items.Where(i => i.Name.Contains(query.Search, StringComparison.OrdinalIgnoreCase) ||
+                                       i.Description.Contains(query.Search, StringComparison.OrdinalIgnoreCase) ||
+                                       i.Category.Contains(query.Search, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrEmpty(query.Category))
+            {
+                items = items.Where(i => i.Category == query.Category);
+            }
+
+            if (query.IsAvailable.HasValue)
+            {
+                items = items.Where(i => i.IsAvailable == query.IsAvailable.Value);
+            }
+
+            var itemList = items.ToList();
+            var totalCount = itemList.Count;
+            
+            // Apply pagination
+            var pagedItems = itemList
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .Select(i => new MenuItemResponseDto
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Description = i.Description,
+                    Price = i.Price,
+                    Category = i.Category,
+                    ImageUrl = i.ImageUrl,
+                    IsAvailable = i.IsAvailable,
+                    VendorEmail = i.VendorEmail
+                })
+                .ToList();
+
+            var result = new PagedResult<MenuItemResponseDto>
+            {
+                Items = pagedItems,
+                TotalCount = totalCount,
+                CurrentPage = query.Page,
+                PageSize = query.PageSize,
+                TotalPages = (int)Math.Ceiling((double)totalCount / query.PageSize)
+            };
+
+            return ApiResponse<PagedResult<MenuItemResponseDto>>.SuccessResult(result);
         }
 
         [HttpGet("{id}")]
@@ -245,7 +266,20 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                var categories = await _menuService.GetCategoriesAsync();
+                var vendorEmail = User.Identity?.Name;
+                if (string.IsNullOrEmpty(vendorEmail))
+                {
+                    return Unauthorized(new { message = "无法获取商家信息" });
+                }
+
+                var items = await _menuService.GetMenuItemsByVendorAsync(vendorEmail);
+                var categories = items
+                    .Where(i => !string.IsNullOrWhiteSpace(i.Category))
+                    .Select(i => i.Category)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToList();
+
                 return Ok(categories);
             }
             catch (Exception ex)

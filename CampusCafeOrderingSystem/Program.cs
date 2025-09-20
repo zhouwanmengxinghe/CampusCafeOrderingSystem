@@ -1,6 +1,11 @@
 using CampusCafeOrderingSystem.Data;
+using CampusCafeOrderingSystem.Middleware;
+using CampusCafeOrderingSystem.Filters;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies; // added
+using Microsoft.AspNetCore.Http; // added
 #nullable enable
 using System;
 using System.Threading.Tasks;
@@ -42,7 +47,49 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<ModelValidationFilter>();
+    options.Filters.Add<ApiResponseFilter>();
+    options.Filters.Add<RateLimitFilter>();
+    options.Filters.Add<InputSanitizationFilter>();
+});
+
+// Add Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Campus Cafe Ordering System API",
+        Version = "v1",
+        Description = "API for Campus Cafe Ordering System"
+    });
+    
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // Register custom services
 builder.Services.AddScoped<CampusCafeOrderingSystem.Services.IMenuService, CampusCafeOrderingSystem.Services.MenuService>();
@@ -77,6 +124,35 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
+
+    // Return 401/403 for API and AJAX requests instead of HTML redirect
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = ctx =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/api") ||
+                string.Equals(ctx.Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase) ||
+                (ctx.Request.Headers["Accept"].ToString().Contains("application/json", StringComparison.OrdinalIgnoreCase)))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+            ctx.Response.Redirect(ctx.RedirectUri);
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = ctx =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/api") ||
+                string.Equals(ctx.Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase) ||
+                (ctx.Request.Headers["Accept"].ToString().Contains("application/json", StringComparison.OrdinalIgnoreCase)))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            }
+            ctx.Response.Redirect(ctx.RedirectUri);
+            return Task.CompletedTask;
+        }
+    };
 });
 
 var app = builder.Build();
@@ -85,12 +161,21 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Campus Cafe API V1");
+        c.RoutePrefix = "api/docs";
+    });
 }
 else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// Add global exception handling middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the application to run on port 5117
 app.Urls.Add("http://localhost:5117");

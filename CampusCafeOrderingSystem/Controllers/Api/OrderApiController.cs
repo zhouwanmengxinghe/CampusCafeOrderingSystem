@@ -1,307 +1,219 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using CampusCafeOrderingSystem.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using CampusCafeOrderingSystem.Data;
 using CampusCafeOrderingSystem.Models;
-using System.Security.Claims;
+using CampusCafeOrderingSystem.Models.DTOs;
+using CampusCafeOrderingSystem.Services;
 
 namespace CampusCafeOrderingSystem.Controllers.Api
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Vendor")]
     public class OrderApiController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
         private readonly IOrderService _orderService;
 
-        public OrderApiController(IOrderService orderService)
+        public OrderApiController(ApplicationDbContext context, IOrderService orderService)
         {
+            _context = context;
             _orderService = orderService;
         }
 
+        // GET: /api/OrderApi
         [HttpGet]
-        [Authorize(Roles = "Vendor")]
-        public async Task<ActionResult<IEnumerable<object>>> GetOrders(
-            [FromQuery] string? status = null,
-            [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null,
-            [FromQuery] string? search = null)
+        public async Task<ActionResult<ApiResponse<PagedResult<OrderResponseDto>>>> GetOrders([FromQuery] OrderQueryDto query)
         {
-            try
+            var vendorEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(vendorEmail))
             {
-                IEnumerable<Order> orders;
-
-                var merchantEmail = User.FindFirstValue(ClaimTypes.Email);
-                
-                if (!string.IsNullOrEmpty(search))
-                {
-                    orders = await _orderService.SearchOrdersAsync(search, merchantEmail);
-                }
-                else if (!string.IsNullOrEmpty(status) && Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
-                {
-                    orders = await _orderService.GetOrdersByStatusAsync(orderStatus, merchantEmail);
-                }
-                else if (startDate.HasValue && endDate.HasValue)
-                {
-                    orders = await _orderService.GetOrdersByDateRangeAsync(startDate.Value, endDate.Value, merchantEmail);
-                }
-                else
-                {
-                    orders = await _orderService.GetOrdersByMerchantAsync(merchantEmail);
-                }
-
-                var result = orders.Select(o => new
-                {
-                    id = o.Id,
-                    orderNumber = o.OrderNumber,
-                    customerName = o.User?.UserName ?? "Unknown",
-                    customerPhone = o.CustomerPhone,
-                    status = o.Status.ToString().ToLower(),
-                    orderTime = o.OrderDate,
-                    totalAmount = o.TotalAmount,
-                    notes = o.Notes,
-                    deliveryType = o.DeliveryType.ToString(),
-                    deliveryAddress = o.DeliveryAddress,
-                    estimatedCompletionTime = o.EstimatedCompletionTime,
-                    items = o.OrderItems.Select(oi => new
-                    {
-                        name = oi.MenuItemName,
-                        quantity = oi.Quantity,
-                        unitPrice = oi.UnitPrice,
-                        specialInstructions = oi.SpecialInstructions
-                    }).ToList()
-                });
-
-                return Ok(result);
+                return Unauthorized(ApiResponse<PagedResult<OrderResponseDto>>.Error("无法获取商家信息", 401));
             }
-            catch (Exception ex)
+
+            // 基础查询：限制为当前商家并包含必要关联
+            var q = _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.MenuItem)
+                .Where(o => o.VendorEmail == vendorEmail)
+                .AsQueryable();
+
+            // 状态筛选
+            if (!string.IsNullOrWhiteSpace(query.Status))
             {
-                return BadRequest(new { message = ex.Message });
+                if (Enum.TryParse<OrderStatus>(query.Status, true, out var status))
+                {
+                    q = q.Where(o => o.Status == status);
+                }
             }
+
+            // 日期范围筛选（包含结束日）
+            if (query.StartDate.HasValue && query.EndDate.HasValue)
+            {
+                var start = query.StartDate.Value.Date;
+                var endExclusive = query.EndDate.Value.Date.AddDays(1);
+                q = q.Where(o => o.OrderDate >= start && o.OrderDate < endExclusive);
+            }
+
+            // 搜索：订单号 / 用户名 / 电话
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var term = query.Search.Trim();
+                q = q.Where(o => o.OrderNumber.Contains(term) ||
+                                 (o.User != null && o.User.UserName!.Contains(term)) ||
+                                 (o.CustomerPhone != null && o.CustomerPhone.Contains(term)));
+            }
+
+            // 排序（下单时间倒序）
+            q = q.OrderByDescending(o => o.OrderDate);
+
+            // 分页
+            var page = query.Page <= 0 ? 1 : query.Page;
+            var pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
+            var totalCount = await q.CountAsync();
+            var orders = await q.Skip((page - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .ToListAsync();
+
+            // 映射DTO
+            var items = orders.Select(MapToDto).ToList();
+            var paged = new PagedResult<OrderResponseDto>(items, totalCount, page, pageSize);
+            return ApiResponse<PagedResult<OrderResponseDto>>.SuccessResult(paged);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<object>> GetOrder(int id)
-        {
-            try
-            {
-                var order = await _orderService.GetOrderByIdAsync(id);
-                
-                var result = new
-                {
-                    id = order.Id,
-                    orderNumber = order.OrderNumber,
-                    customerName = order.User?.UserName ?? "Unknown",
-                    customerPhone = order.CustomerPhone,
-                    status = order.Status.ToString().ToLower(),
-                    orderTime = order.OrderDate,
-                    totalAmount = order.TotalAmount,
-                    notes = order.Notes,
-                    deliveryType = order.DeliveryType.ToString(),
-                    deliveryAddress = order.DeliveryAddress,
-                    paymentMethod = order.PaymentMethod,
-                    estimatedCompletionTime = order.EstimatedCompletionTime,
-                    items = order.OrderItems.Select(oi => new
-                    {
-                        name = oi.MenuItemName,
-                        quantity = oi.Quantity,
-                        unitPrice = oi.UnitPrice,
-                        specialInstructions = oi.SpecialInstructions
-                    }).ToList()
-                };
-
-                return Ok(result);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpPatch("{id}/status")]
-        [Authorize(Roles = "Vendor")]
-        public async Task<ActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequest request)
-        {
-            try
-            {
-                if (!Enum.TryParse<OrderStatus>(request.Status, true, out var status))
-                {
-                    return BadRequest(new { message = "Invalid status value" });
-                }
-
-                var success = await _orderService.UpdateOrderStatusAsync(id, status);
-                if (!success)
-                {
-                    return NotFound(new { message = "Order not found" });
-                }
-
-                return Ok(new { message = "Order status updated successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
+        // GET: /api/OrderApi/stats
         [HttpGet("stats")]
-        [Authorize(Roles = "Vendor")]
-        public async Task<ActionResult<object>> GetOrderStats(
-            [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null)
+        public async Task<ActionResult<ApiResponse<OrderStatsDto>>> GetStats([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
-            try
+            var vendorEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(vendorEmail))
             {
-                var merchantEmail = User.FindFirstValue(ClaimTypes.Email);
-                
-                // 如果没有指定日期，默认获取今天的数据
-                var start = startDate ?? DateTime.Today;
-                var end = endDate ?? DateTime.Today.AddDays(1).AddTicks(-1);
-
-                var totalRevenue = await _orderService.GetTotalRevenueAsync(merchantEmail, start, end);
-                var totalOrders = await _orderService.GetTotalOrdersCountAsync(merchantEmail, start, end);
-                
-                var pendingOrders = await _orderService.GetOrdersByStatusAsync(OrderStatus.Pending, merchantEmail);
-                var preparingOrders = await _orderService.GetOrdersByStatusAsync(OrderStatus.Preparing, merchantEmail);
-                var inDeliveryOrders = await _orderService.GetOrdersByStatusAsync(OrderStatus.InDelivery, merchantEmail);
-                var completedOrders = await _orderService.GetOrdersByStatusAsync(OrderStatus.Completed, merchantEmail);
-
-                var result = new
-                {
-                    totalRevenue,
-                    totalOrders,
-                    pendingCount = pendingOrders.Count(),
-                    preparingCount = preparingOrders.Count(),
-                    inDeliveryCount = inDeliveryOrders.Count(),
-                    completedCount = completedOrders.Where(o => o.OrderDate >= start && o.OrderDate <= end).Count()
-                };
-
-                return Ok(result);
+                return Unauthorized(ApiResponse<OrderStatsDto>.Error("无法获取商家信息", 401));
             }
-            catch (Exception ex)
+
+            var q = _context.Orders.Where(o => o.VendorEmail == vendorEmail);
+            if (startDate.HasValue && endDate.HasValue)
             {
-                return BadRequest(new { message = ex.Message });
+                var start = startDate.Value.Date;
+                var endExclusive = endDate.Value.Date.AddDays(1);
+                q = q.Where(o => o.OrderDate >= start && o.OrderDate < endExclusive);
             }
+
+            // 统计
+            var totalOrders = await q.CountAsync();
+            var pending = await q.Where(o => o.Status == OrderStatus.Pending).CountAsync();
+            var preparing = await q.Where(o => o.Status == OrderStatus.Preparing).CountAsync();
+            var inDelivery = await q.Where(o => o.Status == OrderStatus.InDelivery).CountAsync();
+            var completed = await q.Where(o => o.Status == OrderStatus.Completed).CountAsync();
+
+            var stats = new OrderStatsDto
+            {
+                TotalOrders = totalOrders,
+                PendingOrders = pending,
+                PreparingOrders = preparing,
+                InDeliveryOrders = inDelivery,
+                CompletedOrders = completed,
+                CancelledOrders = await q.Where(o => o.Status == OrderStatus.Cancelled).CountAsync(),
+                TotalRevenue = 0,
+                TodayRevenue = 0,
+                AverageOrderValue = totalOrders > 0 ? await q.AverageAsync(o => o.TotalAmount) : 0
+            };
+
+            return ApiResponse<OrderStatsDto>.SuccessResult(stats);
         }
 
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Vendor")]
-        public async Task<ActionResult> DeleteOrder(int id)
+        // GET: /api/OrderApi/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ApiResponse<OrderResponseDto>>> GetOrderById(int id)
         {
+            var vendorEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(vendorEmail))
+            {
+                return Unauthorized(ApiResponse<OrderResponseDto>.Error("无法获取商家信息", 401));
+            }
+
             try
             {
-                var success = await _orderService.DeleteOrderAsync(id);
-                if (!success)
-                {
-                    return NotFound(new { message = "Order not found" });
-                }
-
-                return Ok(new { message = "Order deleted successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpGet("my-orders")]
-        [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<IEnumerable<object>>> GetMyOrders()
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var orders = await _orderService.GetOrdersByUserIdAsync(userId);
-
-                var result = orders.Select(o => new
-                {
-                    id = o.Id,
-                    orderNumber = o.OrderNumber,
-                    status = o.Status.ToString().ToLower(),
-                    orderTime = o.OrderDate,
-                    totalAmount = o.TotalAmount,
-                    paymentMethod = o.PaymentMethod,
-                    deliveryType = o.DeliveryType.ToString(),
-                    deliveryAddress = o.DeliveryAddress,
-                    estimatedCompletionTime = o.EstimatedCompletionTime,
-                    items = o.OrderItems.Select(oi => new
-                    {
-                        id = oi.Id,
-                        menuItemId = oi.MenuItemId,
-                        name = oi.MenuItemName,
-                        quantity = oi.Quantity,
-                        unitPrice = oi.UnitPrice,
-                        totalPrice = oi.TotalPrice,
-                        specialInstructions = oi.SpecialInstructions
-                    }).ToList()
-                }).OrderByDescending(o => o.orderTime);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpGet("my-orders/{id}")]
-        [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<object>> GetMyOrderDetails(int id)
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var order = await _orderService.GetOrderByIdAsync(id);
-                
-                // 验证订单是否属于当前用户
-                if (order.UserId != userId)
+                if (order == null || order.VendorEmail != vendorEmail)
                 {
-                    return Forbid("You can only access your own orders");
+                    return NotFound(ApiResponse<OrderResponseDto>.ErrorResult("订单不存在或无权限"));
                 }
 
-                var result = new
-                {
-                    id = order.Id,
-                    orderNumber = order.OrderNumber,
-                    status = order.Status.ToString().ToLower(),
-                    orderTime = order.OrderDate,
-                    totalAmount = order.TotalAmount,
-                    paymentMethod = order.PaymentMethod,
-                    deliveryType = order.DeliveryType.ToString(),
-                    deliveryAddress = order.DeliveryAddress,
-                    customerPhone = order.CustomerPhone,
-                    notes = order.Notes,
-                    estimatedCompletionTime = order.EstimatedCompletionTime,
-                    items = order.OrderItems.Select(oi => new
-                    {
-                        id = oi.Id,
-                        menuItemId = oi.MenuItemId,
-                        name = oi.MenuItemName,
-                        quantity = oi.Quantity,
-                        unitPrice = oi.UnitPrice,
-                        totalPrice = oi.TotalPrice,
-                        specialInstructions = oi.SpecialInstructions
-                    }).ToList()
-                };
-
-                return Ok(result);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(new { message = ex.Message });
+                var dto = MapToDto(order);
+                return ApiResponse<OrderResponseDto>.SuccessResult(dto);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return StatusCode(500, ApiResponse<OrderResponseDto>.ErrorResult("获取订单详情失败", ex.Message));
             }
         }
-    }
 
-    public class UpdateOrderStatusRequest
-    {
-        public string Status { get; set; } = string.Empty;
-        public DateTime? EstimatedCompletionTime { get; set; }
+        // PATCH: /api/OrderApi/{id}/status
+        [HttpPatch("{id}/status")]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateStatus(int id, [FromBody] UpdateOrderStatusDto request)
+        {
+            var vendorEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(vendorEmail))
+            {
+                return Unauthorized(ApiResponse<object>.Error("无法获取商家信息", 401));
+            }
+
+            // 校验订单归属
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            if (order == null || order.VendorEmail != vendorEmail)
+            {
+                return NotFound(ApiResponse<object>.ErrorResult("订单不存在或无权限"));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResult("请求参数不合法"));
+            }
+
+            if (!Enum.TryParse<OrderStatus>(request.Status, true, out var status))
+            {
+                return BadRequest(ApiResponse<object>.ErrorResult("无效的订单状态"));
+            }
+
+            var ok = await _orderService.UpdateOrderStatusAsync(id, status);
+            if (!ok)
+            {
+                return StatusCode(500, ApiResponse<object>.ErrorResult("更新订单状态失败"));
+            }
+
+            return Ok(ApiResponse<object>.SuccessResult(new { id, status = status.ToString() }, "状态更新成功"));
+        }
+
+        private static OrderResponseDto MapToDto(Order o)
+        {
+            return new OrderResponseDto
+            {
+                Id = o.Id,
+                OrderNumber = o.OrderNumber,
+                Status = o.Status.ToString(),
+                OrderDate = o.OrderDate,
+                TotalAmount = o.TotalAmount,
+                PaymentMethod = o.PaymentMethod,
+                DeliveryType = o.DeliveryType.ToString(),
+                DeliveryAddress = o.DeliveryAddress,
+                EstimatedCompletionTime = o.EstimatedCompletionTime,
+                Notes = o.Notes,
+                VendorEmail = o.VendorEmail,
+                CustomerName = o.User?.UserName,
+                Items = o.OrderItems.Select(oi => new OrderItemResponseDto
+                {
+                    Id = oi.Id,
+                    MenuItemId = oi.MenuItemId,
+                    MenuItemName = oi.MenuItemName,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice,
+                    TotalPrice = oi.TotalPrice,
+                    SpecialInstructions = oi.SpecialInstructions
+                }).ToList()
+            };
+        }
     }
 }

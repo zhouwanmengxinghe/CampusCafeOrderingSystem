@@ -318,10 +318,161 @@ function refreshOrders() {
     location.reload();
 }
 
-// Auto-refresh every 30 seconds
+// SignalR connection
+let signalRConnection;
+
+// Initialize SignalR connection
+function initializeSignalR() {
+    signalRConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/orderHub")
+        .build();
+
+    // Listen for new order events
+    signalRConnection.on("NewOrder", function (orderData) {
+        console.log('New order received (Admin):', orderData);
+        
+        // Show new order notification
+        showNewOrderNotification(orderData);
+        
+        // Refresh order list
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+
+    // Listen for order status update events
+    signalRConnection.on("OrderStatusUpdated", function (orderData) {
+        console.log('Order status updated (Admin):', orderData);
+        
+        // Show status update notification
+        showStatusUpdateNotification(orderData);
+        
+        // Refresh order list
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+
+    // Listen for estimated time updates
+    signalRConnection.on("EstimatedTimeUpdated", function (orderData) {
+        console.log('Estimated time updated (Admin):', orderData);
+        
+        // Show time update notification
+        showTimeUpdateNotification(orderData);
+        
+        // Refresh order list
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+
+    // Start connection
+    signalRConnection.start().then(function () {
+        console.log("SignalR connection established for Admin Orders");
+        
+        // Join admin group
+        signalRConnection.invoke("JoinAdminGroup");
+    }).catch(function (err) {
+        console.error("SignalR connection failed:", err);
+    });
+}
+
+// Show new order notification
+function showNewOrderNotification(orderData) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-plus-circle me-2"></i>
+            <div>
+                <strong>New Order Created!</strong><br>
+                Order Number: ${orderData.orderNumber}<br>
+                Customer: ${orderData.customerName}<br>
+                Vendor: ${orderData.vendorEmail}<br>
+                Amount: $${orderData.totalAmount ? orderData.totalAmount.toFixed(2) : '0.00'}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 8 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 8000);
+}
+
+// Show status update notification
+function showStatusUpdateNotification(orderData) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-sync-alt me-2"></i>
+            <div>
+                <strong>Order Status Updated!</strong><br>
+                Order Number: ${orderData.orderNumber}<br>
+                Customer: ${orderData.customerName}<br>
+                Status: ${orderData.oldStatus} → <strong>${orderData.status}</strong>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 6 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 6000);
+}
+
+// Show time update notification
+function showTimeUpdateNotification(orderData) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-clock me-2"></i>
+            <div>
+                <strong>Estimated Time Updated!</strong><br>
+                Order Number: ${orderData.orderNumber}<br>
+                Customer: ${orderData.customerName}<br>
+                Estimated Completion: ${orderData.minutes} minutes
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Initialize SignalR when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSignalR();
+});
+
+// Auto-refresh every 60 seconds as fallback (reduced frequency since we have real-time updates)
 setInterval(function() {
-    location.reload();
-}, 30000);
+    if (!signalRConnection || signalRConnection.state !== signalR.HubConnectionState.Connected) {
+        location.reload();
+    }
+}, 60000);
 </script>
 
 <style>

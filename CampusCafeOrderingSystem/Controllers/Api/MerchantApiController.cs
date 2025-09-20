@@ -24,6 +24,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             _cache = cache;
         }
         
+        // 新增：统一获取商家邮箱的方法，避免因缺少 Email Claim 导致 Unauthorized
+        private string? GetVendorEmail()
+        {
+            return User.FindFirst(ClaimTypes.Email)?.Value
+                ?? User.Identity?.Name
+                ?? User.FindFirst(ClaimTypes.Name)?.Value;
+        }
+        
         // 生成演示数据的辅助方法
         private object GenerateDemoDashboardStats()
         {
@@ -131,7 +139,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 }
                 
                 // 以下是原有的实际数据获取逻辑
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
@@ -153,13 +161,19 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var totalMenuItems = await _context.MenuItems
                     .CountAsync(m => m.VendorEmail == vendorEmail && m.IsAvailable);
 
-                // Calculate average rating (placeholder - you may need to implement reviews)
-                var avgRating = 4.5m; // Default rating
+                // Calculate average rating based on real reviews for this vendor
+                var avgRating = await _context.Reviews
+                    .Include(r => r.MenuItem)
+                    .Where(r => r.MenuItem.VendorEmail == vendorEmail && r.Status != ReviewStatus.Hidden)
+                    .AverageAsync(r => (decimal?)r.Rating) ?? 0;
+                avgRating = Math.Round(avgRating, 1);
 
                 var stats = new
                 {
                     todayOrders = todayOrders.Count,
-                    todayRevenue = todayOrders.Sum(o => o.TotalAmount),
+                    todayRevenue = todayOrders
+                        .Where(o => o.Status == OrderStatus.Completed)
+                        .Sum(o => o.TotalAmount),
                     totalMenuItems = totalMenuItems,
                     avgRating = avgRating
                 };
@@ -185,7 +199,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 }
                 
                 // 以下是原有的实际数据获取逻辑
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
@@ -205,8 +219,8 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 // 获取所有相关订单，包括已完成和其他状态的订单
                 var orders = await _context.Orders
                     .Where(o => o.VendorEmail == vendorEmail && 
-                               o.OrderDate >= startDate && 
-                               o.OrderDate <= endDate)
+                               (o.CompletedTime ?? o.OrderDate) >= startDate && 
+                               (o.CompletedTime ?? o.OrderDate) <= endDate)
                     .ToListAsync();
 
                 // 只计算已完成订单的收入
@@ -214,7 +228,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
 
                 // Group by day using completed orders only
                 var dailyData = completedOrders
-                    .GroupBy(o => o.OrderDate.Date)
+                    .GroupBy(o => (o.CompletedTime ?? o.OrderDate).Date)
                     .Select(g => new
                     {
                         date = g.Key,
@@ -262,7 +276,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 }
                 
                 // 以下是原有的实际数据获取逻辑
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
@@ -284,7 +298,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .Include(oi => oi.MenuItem)
                     .Include(oi => oi.Order)
                     .Where(oi => oi.MenuItem.VendorEmail == vendorEmail &&
-                                oi.Order.OrderDate >= last30Days)
+                                (oi.Order.CompletedTime ?? oi.Order.OrderDate) >= last30Days)
                     .ToListAsync();
 
                 // 只统计已完成订单的商品销量
@@ -337,7 +351,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 }
                 
                 // 以下是原有的实际数据获取逻辑
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
@@ -367,22 +381,54 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         }
 
         [HttpGet("reviews")]
-        public async Task<IActionResult> GetReviews([FromQuery] int page = 1, [FromQuery] int pageSize = 10, 
-            [FromQuery] int? rating = null, [FromQuery] string status = "all")
+        public async Task<IActionResult> GetReviews(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] int? rating = null,
+            [FromQuery] string status = "all",
+            [FromQuery] string? category = null,
+            [FromQuery] string? product = null,
+            [FromQuery] string? search = null)
         {
             try
             {
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
                 }
 
+                // Build email alias list to tolerate compuscafe/campuscafe domain mismatch
+                var emails = new List<string> { vendorEmail };
+                try
+                {
+                    var parts = vendorEmail.Split('@');
+                    if (parts.Length == 2)
+                    {
+                        var local = parts[0];
+                        var domain = parts[1];
+                        if (string.Equals(domain, "compuscafe.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            emails.Add($"{local}@campuscafe.com");
+                        }
+                        else if (string.Equals(domain, "campuscafe.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            emails.Add($"{local}@compuscafe.com");
+                        }
+                    }
+                }
+                catch { }
+
+                // Normalize to lowercase for case-insensitive comparison
+                var lowerEmails = emails.Select(e => e.ToLower()).ToList();
+
                 var query = _context.Reviews
                     .Include(r => r.User)
                     .Include(r => r.MenuItem)
                     .Include(r => r.Order)
-                    .Where(r => r.MenuItem.VendorEmail == vendorEmail);
+                    .Where(r => r.Status != ReviewStatus.Hidden &&
+                                ((r.MenuItem != null && lowerEmails.Contains((r.MenuItem.VendorEmail ?? string.Empty).ToLower())) ||
+                                 (r.Order != null && lowerEmails.Contains((r.Order.VendorEmail ?? string.Empty).ToLower()))));
 
                 // Apply filters
                 if (rating.HasValue)
@@ -390,16 +436,34 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     query = query.Where(r => r.Rating == rating.Value);
                 }
 
-                if (status != "all")
+                var normalizedStatus = (status ?? "all").ToLowerInvariant();
+                if (normalizedStatus != "all")
                 {
-                    if (status == "pending")
+                    if (normalizedStatus == "pending")
                     {
                         query = query.Where(r => string.IsNullOrEmpty(r.MerchantReply));
                     }
-                    else if (status == "replied")
+                    else if (normalizedStatus == "replied")
                     {
                         query = query.Where(r => !string.IsNullOrEmpty(r.MerchantReply));
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    query = query.Where(r => r.MenuItem.Category == category);
+                }
+
+                if (!string.IsNullOrWhiteSpace(product))
+                {
+                    query = query.Where(r => r.MenuItem.Name.Contains(product));
+                }
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(r => r.Comment.Contains(search) ||
+                                             (r.User.UserName != null && r.User.UserName.Contains(search)) ||
+                                             (r.MenuItem != null && r.MenuItem.Name.Contains(search)));
                 }
 
                 var totalCount = await query.CountAsync();
@@ -418,7 +482,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     product = r.MenuItem.Name,
                     comment = r.Comment,
                     createdAt = r.CreatedAt,
-                    images = string.IsNullOrEmpty(r.Images) ? new string[0] : 
+                    images = string.IsNullOrEmpty(r.Images) ? new string[0] :
                             System.Text.Json.JsonSerializer.Deserialize<string[]>(r.Images),
                     reply = string.IsNullOrEmpty(r.MerchantReply) ? null : new
                     {
@@ -456,15 +520,42 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 }
                 
                 // 以下是原有的实际数据获取逻辑
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
                 }
 
+                // Build email alias list to tolerate compuscafe/campuscafe domain mismatch
+                var emails = new List<string> { vendorEmail };
+                try
+                {
+                    var parts = vendorEmail.Split('@');
+                    if (parts.Length == 2)
+                    {
+                        var local = parts[0];
+                        var domain = parts[1];
+                        if (string.Equals(domain, "compuscafe.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            emails.Add($"{local}@campuscafe.com");
+                        }
+                        else if (string.Equals(domain, "campuscafe.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            emails.Add($"{local}@compuscafe.com");
+                        }
+                    }
+                }
+                catch { }
+
+                // Normalize to lowercase for case-insensitive comparison
+                var lowerEmails = emails.Select(e => e.ToLower()).ToList();
+
                 var reviews = await _context.Reviews
                     .Include(r => r.MenuItem)
-                    .Where(r => r.MenuItem.VendorEmail == vendorEmail)
+                    .Include(r => r.Order)
+                    .Where(r => r.Status != ReviewStatus.Hidden &&
+                                ((r.MenuItem != null && lowerEmails.Contains((r.MenuItem.VendorEmail ?? string.Empty).ToLower())) ||
+                                 (r.Order != null && lowerEmails.Contains((r.Order.VendorEmail ?? string.Empty).ToLower()))))
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -507,15 +598,42 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var vendorEmail = GetVendorEmail();
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
                     return Unauthorized();
                 }
 
+                // Build email alias list to tolerate compuscafe/campuscafe domain mismatch
+                var emails = new List<string> { vendorEmail };
+                try
+                {
+                    var parts = vendorEmail.Split('@');
+                    if (parts.Length == 2)
+                    {
+                        var local = parts[0];
+                        var domain = parts[1];
+                        if (string.Equals(domain, "compuscafe.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            emails.Add($"{local}@campuscafe.com");
+                        }
+                        else if (string.Equals(domain, "campuscafe.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            emails.Add($"{local}@compuscafe.com");
+                        }
+                    }
+                }
+                catch { }
+
+                // Normalize to lowercase for case-insensitive comparison
+                var lowerEmails = emails.Select(e => e.ToLower()).ToList();
+
                 var review = await _context.Reviews
                     .Include(r => r.MenuItem)
-                    .FirstOrDefaultAsync(r => r.Id == reviewId && r.MenuItem.VendorEmail == vendorEmail);
+                    .Include(r => r.Order)
+                    .FirstOrDefaultAsync(r => r.Id == reviewId &&
+                        ((r.MenuItem != null && lowerEmails.Contains((r.MenuItem.VendorEmail ?? string.Empty).ToLower())) ||
+                         (r.Order != null && lowerEmails.Contains((r.Order.VendorEmail ?? string.Empty).ToLower()))));
 
                 if (review == null)
                 {

@@ -286,18 +286,45 @@ async function loadDashboardData() {
 }
 
 async function loadStats() {
-    // Use fake data for demonstration
-    const fakeStats = {
-        todayOrders: 47,
-        todayRevenue: 1285.50,
-        totalMenuItems: 32,
-        avgRating: 4.7
-    };
-    
-    document.getElementById('todayOrders').textContent = fakeStats.todayOrders;
-    document.getElementById('todayRevenue').textContent = '$' + fakeStats.todayRevenue.toFixed(2);
-    document.getElementById('totalMenuItems').textContent = fakeStats.totalMenuItems;
-    document.getElementById('avgRating').textContent = fakeStats.avgRating.toFixed(1);
+    try {
+        const response = await fetch('/api/MerchantApi/dashboard-stats', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const payload = await response.json();
+        console.log('Dashboard stats API response:', payload);
+        
+        // 兼容后端两种返回：直接对象 或 ApiResponse<T> 包装
+        const stats = (payload && typeof payload === 'object' && 'data' in payload && payload.data) ? payload.data : payload;
+        
+        if (stats && typeof stats === 'object') {
+            const todayOrders = Number(stats.todayOrders) || 0;
+            const todayRevenue = Number(stats.todayRevenue) || 0;
+            const totalMenuItems = Number(stats.totalMenuItems) || 0;
+            const avgRating = Number(stats.avgRating) || 0;
+            
+            document.getElementById('todayOrders').textContent = todayOrders;
+            document.getElementById('todayRevenue').textContent = '$' + todayRevenue.toFixed(2);
+            document.getElementById('totalMenuItems').textContent = totalMenuItems;
+            document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+        } else {
+            throw new Error((payload && payload.message) || 'Failed to load dashboard statistics');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard statistics:', error);
+        // Fallback to default values if API fails
+        document.getElementById('todayOrders').textContent = '0';
+        document.getElementById('todayRevenue').textContent = '$0.00';
+        document.getElementById('totalMenuItems').textContent = '0';
+        document.getElementById('avgRating').textContent = '0.0';
+    }
 }
 
 async function loadChartData() {
@@ -323,55 +350,52 @@ async function loadChartData() {
 }
 
 async function loadRecentOrders() {
-    // Use fake recent orders data
-    const fakeOrders = [
-        {
-            orderNumber: 'ORD-2024-001',
-            customerName: 'John Smith',
-            totalAmount: 15.50,
-            status: 'Completed',
-            createdAt: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
-        },
-        {
-            orderNumber: 'ORD-2024-002',
-            customerName: 'Emily Johnson',
-            totalAmount: 22.75,
-            status: 'InProgress',
-            createdAt: new Date(Date.now() - 15 * 60 * 1000) // 15 minutes ago
-        },
-        {
-            orderNumber: 'ORD-2024-003',
-            customerName: 'Michael Brown',
-            totalAmount: 8.25,
-            status: 'Pending',
-            createdAt: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
-        },
-        {
-            orderNumber: 'ORD-2024-004',
-            customerName: 'Sarah Davis',
-            totalAmount: 31.00,
-            status: 'Completed',
-            createdAt: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
-        },
-        {
-            orderNumber: 'ORD-2024-005',
-            customerName: 'David Wilson',
-            totalAmount: 12.50,
-            status: 'InProgress',
-            createdAt: new Date(Date.now() - 10 * 60 * 1000) // 10 minutes ago
+    try {
+        const response = await fetch('/api/OrderApi?pageSize=5&sortBy=OrderDate&sortDirection=desc', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    ];
-    
-    const tbody = document.getElementById('recentOrdersTable');
-    tbody.innerHTML = fakeOrders.map(order => `
-        <tr>
-            <td>${order.orderNumber}</td>
-            <td>${order.customerName}</td>
-            <td>$${order.totalAmount.toFixed(2)}</td>
-            <td><span class="badge ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span></td>
-            <td>${order.createdAt.toLocaleTimeString()}</td>
-        </tr>
-    `).join('');
+        
+        const payload = await response.json();
+        console.log('Recent orders API response:', payload);
+        
+        // 兼容 ApiResponse<PagedResult<OrderResponseDto>> 与其他形态
+        const data = (payload && typeof payload === 'object' && 'data' in payload) ? payload.data : payload;
+        let orders = [];
+        if (data && Array.isArray(data.items)) {
+            orders = data.items;
+        } else if (Array.isArray(data?.orders)) {
+            orders = data.orders;
+        } else if (Array.isArray(payload?.items)) {
+            orders = payload.items;
+        }
+        
+        const tbody = document.getElementById('recentOrdersTable');
+        if (orders.length > 0) {
+            tbody.innerHTML = orders.map(order => `
+                <tr>
+                    <td>${order.orderNumber}</td>
+                    <td>${order.customerName}</td>
+                    <td>$${Number(order.totalAmount || 0).toFixed(2)}</td>
+                    <td><span class="badge ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span></td>
+                    <td>${new Date(order.orderDate).toLocaleTimeString()}</td>
+                </tr>
+            `).join('');
+        } else {
+            // 无订单时显示占位
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders available</td></tr>';
+        }
+    } catch (error) {
+        console.error('Error loading recent orders:', error);
+        const tbody = document.getElementById('recentOrdersTable');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders available</td></tr>';
+    }
 }
 
 function refreshDashboard() {

@@ -163,6 +163,17 @@ namespace CampusCafeOrderingSystem.Services
                 order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15); // 默认15分钟
             }
 
+            // 设置/清理完成时间
+            if (status == OrderStatus.Completed)
+            {
+                order.CompletedTime = DateTime.Now;
+            }
+            else if (oldStatus == OrderStatus.Completed && status != OrderStatus.Completed)
+            {
+                // 如果订单从已完成切换到其他状态，清空完成时间
+                order.CompletedTime = null;
+            }
+
             await _context.SaveChangesAsync();
 
             // 发送状态更新通知给商家
@@ -263,10 +274,10 @@ namespace CampusCafeOrderingSystem.Services
                 query = query.Where(o => o.VendorEmail == merchantId);
 
             if (startDate.HasValue)
-                query = query.Where(o => o.OrderDate >= startDate.Value);
+                query = query.Where(o => (o.CompletedTime ?? o.OrderDate) >= startDate.Value);
 
             if (endDate.HasValue)
-                query = query.Where(o => o.OrderDate <= endDate.Value);
+                query = query.Where(o => (o.CompletedTime ?? o.OrderDate) <= endDate.Value);
 
             return await query.SumAsync(o => o.TotalAmount);
         }

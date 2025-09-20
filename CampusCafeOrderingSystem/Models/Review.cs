@@ -74,7 +74,7 @@ namespace CampusCafeOrderingSystem.Models
     {
         public string Content { get; set; } = string.Empty;
         public DateTime Date { get; set; }
-        public string Author { get; set; } = "店长";
+        public string Author { get; set; } = "Manager";
     }
     
     public class ReviewStatsDto

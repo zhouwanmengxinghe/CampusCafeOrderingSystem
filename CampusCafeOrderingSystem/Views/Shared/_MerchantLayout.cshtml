@@ -12,10 +12,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - 商家管理系统</title>
+    <title>@ViewData["Title"] - Merchant Management System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CampusCafeOrderingSystem.styles.css" asp-append-version="true" />
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         body {
@@ -134,19 +134,19 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Merchant" asp-action="Index">商家管理系统</a>
+                <a class="navbar-brand" asp-controller="Merchant" asp-action="Index">Merchant Management System</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
                         aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarMain">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-lg-none">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Index"><i class="fas fa-home"></i> 首页</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Dashboard"><i class="fas fa-tachometer-alt"></i> 仪表盘</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="MenuManagement"><i class="fas fa-utensils"></i> 菜单管理</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="OrderManagement"><i class="fas fa-shopping-cart"></i> 订单管理</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Reports"><i class="fas fa-chart-bar"></i> 业务报表</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="ReviewManagement"><i class="fas fa-star"></i> 评价管理</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Index"><i class="fas fa-home"></i> Home</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="MenuManagement"><i class="fas fa-utensils"></i> Menu Management</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="OrderManagement"><i class="fas fa-shopping-cart"></i> Order Management</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="Reports"><i class="fas fa-chart-bar"></i> Business Reports</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Merchant" asp-action="ReviewManagement"><i class="fas fa-star"></i> Review Management</a></li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -161,37 +161,37 @@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
                            asp-controller="Merchant" asp-action="Index">
-                            <i class="fas fa-home"></i> 首页
+                            <i class="fas fa-home"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")" 
                            asp-controller="Merchant" asp-action="Dashboard">
-                            <i class="fas fa-tachometer-alt"></i> 仪表盘
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "MenuManagement" ? "active" : "")" 
                            asp-controller="Merchant" asp-action="MenuManagement">
-                            <i class="fas fa-utensils"></i> 菜单管理
+                            <i class="fas fa-utensils"></i> Menu Management
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "OrderManagement" ? "active" : "")" 
                            asp-controller="Merchant" asp-action="OrderManagement">
-                            <i class="fas fa-shopping-cart"></i> 订单管理
+                            <i class="fas fa-shopping-cart"></i> Order Management
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")" 
                            asp-controller="Merchant" asp-action="Reports">
-                            <i class="fas fa-chart-bar"></i> 业务报表
+                            <i class="fas fa-chart-bar"></i> Business Reports
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ReviewManagement" ? "active" : "")" 
                            asp-controller="Merchant" asp-action="ReviewManagement">
-                            <i class="fas fa-star"></i> 评价管理
+                            <i class="fas fa-star"></i> Review Management
                         </a>
                     </li>
                 </ul>
@@ -206,7 +206,7 @@
 
     <footer class="text-center">
         <div class="container">
-            商家管理系统 &copy; 2025 | <a asp-controller="Home" asp-action="Privacy">隐私政策</a>
+            Merchant Management System &copy; 2025 | <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
         </div>
     </footer>
 

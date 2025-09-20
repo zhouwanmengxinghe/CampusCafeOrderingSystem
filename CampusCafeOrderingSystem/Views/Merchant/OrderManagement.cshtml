@@ -485,6 +485,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
         // Global variables
         let currentPage = 1;
@@ -519,6 +520,8 @@
                 } else {
                     document.getElementById('customDateRange').style.display = 'none';
                     setDateRange(value);
+                    // 选择预设日期范围后，刷新统计
+                    loadOrderStats();
                 }
             });
             
@@ -539,6 +542,8 @@
                 
                 currentPage = 1;
                 loadOrders();
+                // 自定义日期范围应用后，刷新统计
+                loadOrderStats();
             });
             
             // Bind search box events
@@ -554,10 +559,10 @@
                 }, 500);
             });
             
-            // 加载初始订单数据
+            // Load initial order data
             loadOrders();
             
-            // 加载订单统计数据
+            // Load order statistics data
             loadOrderStats();
         });
 
@@ -569,33 +574,33 @@
             
             switch(range) {
                 case 'today':
-                    // 今天
+                    // Today
                     break;
-                    
+                
                 case 'yesterday':
-                    // 昨天
+                    // Yesterday
                     startDate.setDate(today.getDate() - 1);
                     endDate.setDate(today.getDate() - 1);
                     break;
-                    
+                
                 case 'thisWeek':
                     // This week (from Monday to today)
                     const dayOfWeek = today.getDay() || 7; // Convert Sunday's 0 to 7
                     startDate.setDate(today.getDate() - dayOfWeek + 1); // Set to this Monday
                     break;
-                    
+                
                 case 'lastWeek':
                     // Last week (from last Monday to last Sunday)
                     const lastWeekDay = today.getDay() || 7;
                     startDate.setDate(today.getDate() - lastWeekDay - 6); // Last Monday
                     endDate.setDate(today.getDate() - lastWeekDay); // Last Sunday
                     break;
-                    
+                
                 case 'thisMonth':
                     // This month (from 1st of this month to today)
                     startDate.setDate(1);
                     break;
-                    
+                
                 case 'lastMonth':
                     // Last month (from 1st of last month to last day of last month)
                     startDate.setMonth(today.getMonth() - 1);
@@ -618,6 +623,8 @@
             // Reload orders
             currentPage = 1;
             loadOrders();
+            // 预设日期范围变化后刷新统计
+            loadOrderStats();
         }
 
         // Load order data
@@ -629,33 +636,70 @@
                 // Clear error messages
                 hideError();
                 
-                // Generate fake order data
-                const fakeOrders = generateFakeOrders();
-                
-                // Apply filters
-                let filteredOrders = fakeOrders;
+                // Build API query parameters
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    pageSize: pageSize
+                });
                 
                 if (statusFilter !== 'all') {
-                    filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+                    const apiStatus = statusFilter === 'Delivering' ? 'InDelivery' : statusFilter;
+                    params.append('status', apiStatus);
                 }
                 
                 if (searchTerm) {
-                    filteredOrders = filteredOrders.filter(order => 
-                        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
+                    params.append('search', searchTerm);
                 }
                 
-                // Apply pagination
-                const startIndex = (currentPage - 1) * pageSize;
-                const endIndex = startIndex + pageSize;
-                const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+                if (dateRange && dateRange.startDate && dateRange.endDate) {
+                    params.append('startDate', dateRange.startDate);
+                    params.append('endDate', dateRange.endDate);
+                }
                 
-                // Update global variables
-                currentOrders = paginatedOrders;
-                totalPages = Math.ceil(filteredOrders.length / pageSize);
+                // Call real API to get orders
+                console.log(`Loading orders from API: /api/OrderApi?${params.toString()}`);
+                const response = await fetch(`/api/OrderApi?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
                 
-                console.log('Generated fake order data:', { orders: currentOrders, totalPages });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const apiResponse = await response.json();
+                console.log('API response:', apiResponse);
+                
+                if (apiResponse.isSuccess && apiResponse.data) {
+                    // Transform API data to match expected format
+                    currentOrders = apiResponse.data.items.map(order => ({
+                        id: order.id,
+                        orderNumber: order.orderNumber,
+                        customerName: order.customerName,
+                        customerPhone: order.customerPhone || 'N/A',
+                        customerEmail: order.customerEmail || 'N/A',
+                        deliveryAddress: order.deliveryAddress || 'N/A',
+                        status: order.status === 'InDelivery' ? 'Delivering' : order.status,
+                        orderTime: order.orderDate,
+                        totalAmount: order.totalAmount,
+                        orderItems: order.items ? order.items.map(item => ({
+                            productName: item.menuItemName,
+                            unitPrice: item.unitPrice,
+                            quantity: item.quantity
+                        })) : [],
+                        notes: order.notes || null
+                    }));
+                    
+                    totalPages = Math.ceil(apiResponse.data.totalCount / pageSize);
+                    
+                    console.log('Transformed order data:', { orders: currentOrders, totalPages });
+                } else {
+                    throw new Error(apiResponse.message || 'Failed to load orders');
+                }
                 
                 // Update UI
                 updateOrdersList();
@@ -682,31 +726,64 @@
         // Load order statistics data
         async function loadOrderStats() {
             try {
-                // Generate fake statistics data
-                const stats = {
-                    pendingCount: 8,
-                    preparingCount: 12,
-                    deliveringCount: 5,
-                    completedCount: 45,
-                    todayTotalCount: 70
-                };
+                // Build stats API query parameters with selected date range
+                const params = new URLSearchParams();
+                if (dateRange && dateRange.startDate && dateRange.endDate) {
+                    params.append('startDate', dateRange.startDate);
+                    params.append('endDate', dateRange.endDate);
+                }
+
+                const url = params.toString() ? `/api/OrderApi/stats?${params.toString()}` : '/api/OrderApi/stats';
+                console.log('Loading order statistics from API:', url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
                 
-                console.log('Generated fake order statistics data:', stats);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
-                // Update UI
-                document.getElementById('pendingCount').innerHTML = `${stats.pendingCount} <span class="notification-badge" id="pendingBadge">${stats.pendingCount}</span>`;
-                document.getElementById('preparingCount').textContent = stats.preparingCount;
-                document.getElementById('deliveringCount').textContent = stats.deliveringCount;
-                document.getElementById('completedCount').textContent = stats.completedCount;
-                document.getElementById('todayTotalCount').textContent = stats.todayTotalCount;
+                const apiResponse = await response.json();
+                console.log('Order stats API response:', apiResponse);
                 
-                // Hide notification badge if no pending orders
-                if (stats.pendingCount === 0) {
-                    document.getElementById('pendingBadge').style.display = 'none';
+                if (apiResponse.isSuccess && apiResponse.data) {
+                    const stats = {
+                        pendingCount: apiResponse.data.pendingOrders || 0,
+                        preparingCount: apiResponse.data.preparingOrders || 0,
+                        deliveringCount: apiResponse.data.inDeliveryOrders || 0,
+                        completedCount: apiResponse.data.completedOrders || 0,
+                        todayTotalCount: apiResponse.data.totalOrders || 0
+                    };
+                    
+                    console.log('Transformed order statistics data:', stats);
+                    
+                    // Update UI
+                    document.getElementById('pendingCount').innerHTML = `${stats.pendingCount} <span class="notification-badge" id="pendingBadge">${stats.pendingCount}</span>`;
+                    document.getElementById('preparingCount').textContent = stats.preparingCount;
+                    document.getElementById('deliveringCount').textContent = stats.deliveringCount;
+                    document.getElementById('completedCount').textContent = stats.completedCount;
+                    document.getElementById('todayTotalCount').textContent = stats.todayTotalCount;
+                    
+                    // Hide notification badge if no pending orders
+                    if (stats.pendingCount === 0) {
+                        document.getElementById('pendingBadge').style.display = 'none';
+                    }
+                } else {
+                    throw new Error(apiResponse.message || 'Failed to load order statistics');
                 }
             } catch (error) {
                 console.error('Error loading order statistics data:', error);
-                // Don't show error message to keep UI clean
+                // Fallback to default values if API fails
+                document.getElementById('pendingCount').innerHTML = `0 <span class="notification-badge" id="pendingBadge" style="display: none;">0</span>`;
+                document.getElementById('preparingCount').textContent = '0';
+                document.getElementById('deliveringCount').textContent = '0';
+                document.getElementById('completedCount').textContent = '0';
+                document.getElementById('todayTotalCount').textContent = '0';
             }
         }
 
@@ -927,18 +1004,50 @@
                 // Show loading indicator
                 document.body.classList.add('loading');
                 
-                // Find order in fake data
-                const fakeOrders = generateFakeOrders();
-                const order = fakeOrders.find(o => o.id === orderId);
-                
-                if (!order) {
-                    throw new Error('Order not found');
+                const numericId = typeof orderId === 'string' ? parseInt(orderId.replace('order-', ''), 10) : orderId;
+                if (!numericId || Number.isNaN(numericId)) {
+                    throw new Error('Invalid order id');
                 }
-                
-                console.log('Loaded order details:', order);
+
+                const response = await fetch(`/api/OrderApi/${numericId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const apiResponse = await response.json();
+
+                if (!apiResponse || !apiResponse.isSuccess || !apiResponse.data) {
+                    throw new Error(apiResponse?.message || 'Failed to load order details');
+                }
+
+                const dto = apiResponse.data;
+                const order = {
+                    id: dto.id,
+                    orderNumber: dto.orderNumber,
+                    customerName: dto.customerName,
+                    customerPhone: dto.customerPhone || 'N/A',
+                    customerEmail: dto.customerEmail || 'N/A',
+                    deliveryAddress: dto.deliveryAddress || 'N/A',
+                    status: dto.status === 'InDelivery' ? 'Delivering' : dto.status,
+                    orderTime: dto.orderDate,
+                    totalAmount: dto.totalAmount,
+                    orderItems: Array.isArray(dto.items) ? dto.items.map(item => ({
+                        productName: item.menuItemName,
+                        unitPrice: item.unitPrice,
+                        quantity: item.quantity
+                    })) : [],
+                    notes: dto.notes || null
+                };
                 
                 // Save current order ID
-                currentOrderId = orderId;
+                currentOrderId = numericId;
                 
                 // Update modal content
                 updateOrderDetailModal(order);
@@ -1111,14 +1220,19 @@
                 // Show loading indicator
                 document.body.classList.add('loading');
                 
+                // Map UI status to backend enum if necessary
+                const payloadStatus = newStatus === 'Delivering' ? 'InDelivery' : newStatus;
+                
                 // Send update request
-                const response = await fetch(`/api/OrderApiController/${currentOrderId}/status`, {
+                const response = await fetch(`/api/OrderApi/${currentOrderId}/status`, {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
-                        status: newStatus
+                        Status: payloadStatus
                     })
                 });
                 
@@ -1126,7 +1240,7 @@
                     throw new Error(`Failed to update order status: ${response.status} ${response.statusText}`);
                 }
                 
-                console.log(`Order ${currentOrderId} status updated to ${newStatus}`);
+                console.log(`Order ${currentOrderId} status updated to ${payloadStatus}`);
                 
                 // Close modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('orderDetailModal'));
@@ -1155,5 +1269,112 @@
         function hideError() {
             document.getElementById('errorMessage').style.display = 'none';
         }
+
+        // SignalR connection
+        let signalRConnection;
+
+        // Initialize SignalR connection
+        function initializeSignalR() {
+            signalRConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/orderHub")
+                .build();
+
+            // Listen for new order events
+            signalRConnection.on("NewOrder", function (orderData) {
+                console.log('New order received:', orderData);
+                
+                // Show new order notification
+                showNewOrderNotification(orderData);
+                
+                // Refresh order list and statistics
+                loadOrders();
+                loadOrderStats();
+                
+                // Update pending count badge
+                updatePendingBadge();
+            });
+
+            // Listen for order status update events
+            signalRConnection.on("OrderStatusUpdated", function (orderData) {
+                console.log('Order status updated:', orderData);
+                
+                // Refresh order list and statistics
+                loadOrders();
+                loadOrderStats();
+            });
+
+            // Start connection
+            signalRConnection.start().then(function () {
+                console.log("SignalR connection established for Order Management");
+                
+                // Get current merchant email and join merchant group
+                fetch('/api/account/current-user', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.email) {
+                            signalRConnection.invoke("JoinMerchantGroup", data.email);
+                        }
+                    })
+                    .catch(err => console.error('Failed to get user info:', err));
+            }).catch(function (err) {
+                console.error("SignalR connection failed:", err);
+            });
+        }
+
+        // Show new order notification
+        function showNewOrderNotification(orderData) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-bell me-2"></i>
+                    <div>
+                        <strong>New Order Notification!</strong><br>
+                Order Number: ${orderData.orderNumber}<br>
+                Customer: ${orderData.customerName}<br>
+                Amount: $${orderData.totalAmount.toFixed(2)}
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Play notification sound (if available)
+            try {
+                const audio = new Audio('/sounds/notification.mp3');
+                audio.play().catch(e => console.log('Could not play notification sound'));
+            } catch (e) {
+                console.log('Notification sound not available');
+            }
+            
+            // Auto remove after 10 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 10000);
+        }
+
+        // Update pending count badge
+        function updatePendingBadge() {
+            const pendingBadge = document.getElementById('pendingBadge');
+            if (pendingBadge) {
+                const currentCount = parseInt(pendingBadge.textContent) || 0;
+                pendingBadge.textContent = currentCount + 1;
+                pendingBadge.style.display = 'inline';
+            }
+        }
+
+        // Initialize SignalR when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSignalR();
+        });
     </script>
 }

@@ -557,6 +557,7 @@
 }
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
 <script>
 let reviews = [];
 let filteredReviews = [];
@@ -565,10 +566,13 @@ const reviewsPerPage = 10;
 let selectedReviewId = null;
 let currentFilter = {
     rating: null,
-    status: 'all'
+    status: 'all',
+    category: ''
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Load categories to populate productFilter
+    loadCategoriesForProductFilter();
     loadReviews();
     initializeSignalR();
     
@@ -583,6 +587,74 @@ document.addEventListener('DOMContentLoaded', function() {
     if (productFilter) productFilter.addEventListener('change', filterReviews);
     if (searchInput) searchInput.addEventListener('input', filterReviews);
 });
+
+async function loadCategoriesForProductFilter() {
+    try {
+        const res = await fetch('/api/MenuApi/categories', { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const categories = Array.isArray(json) ? json : (json?.data ?? json?.items ?? json?.categories ?? []);
+        const select = document.getElementById('productFilter');
+        if (!select) return;
+        // Preserve current selected value if any
+        const prev = select.value;
+        // Reset options
+        select.innerHTML = '<option value="">All Products</option>';
+        // Append categories
+        (Array.isArray(categories) ? categories : []).forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            select.appendChild(opt);
+        });
+        // Restore selection if applicable
+        if (prev && [...select.options].some(o => o.value === prev)) {
+            select.value = prev;
+        }
+    } catch (e) {
+        console.error('Failed to load categories for productFilter:', e);
+    }
+}
+
+async function loadReviews() {
+    try {
+        const params = new URLSearchParams({
+            page: currentPage,
+            pageSize: reviewsPerPage,
+            status: currentFilter.status || 'all'
+        });
+        if (currentFilter.rating) params.append('rating', currentFilter.rating);
+        if (currentFilter.category) params.append('category', currentFilter.category);
+        
+        const response = await fetch(`/api/MerchantApi/reviews?${params}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        
+        reviews = data.reviews || [];
+        filteredReviews = [...reviews];
+        renderReviews();
+        await loadReviewStats();
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        // Use mock data as fallback
+        loadMockReviews();
+    }
+}
+
+function filterReviews() {
+    const ratingFilter = document.getElementById('ratingFilter')?.value;
+    const replyFilter = document.getElementById('replyFilter')?.value;
+    const productFilter = document.getElementById('productFilter')?.value;
+    
+    currentFilter.rating = ratingFilter || null;
+    currentFilter.status = replyFilter || 'all';
+    currentFilter.category = productFilter || '';
+    
+    currentPage = 1;
+    loadReviews();
+}
 
 function initializeSignalR() {
     // Initialize SignalR connection
@@ -656,61 +728,30 @@ function showNewReviewNotification(reviewData) {
     }
 }
 
-async function loadReviews() {
-    try {
-        const params = new URLSearchParams({
-            page: currentPage,
-            pageSize: reviewsPerPage,
-            status: currentFilter.status || 'all'
-        });
-        
-        if (currentFilter.rating) {
-            params.append('rating', currentFilter.rating);
-        }
-        
-        const response = await fetch(`/api/merchant/reviews?${params}`);
-        const data = await response.json();
-        
-        if (response.ok) {
-            reviews = data.reviews || [];
-            filteredReviews = [...reviews];
-            renderReviews();
-            await loadReviewStats();
-        } else {
-            console.error('Failed to load reviews:', data.error);
-            // Use mock data as fallback
-            loadMockReviews();
-        }
-    } catch (error) {
-        console.error('Error loading reviews:', error);
-        // Use mock data as fallback
-        loadMockReviews();
-    }
-}
-
 async function loadReviewStats() {
     try {
-        const response = await fetch('/api/merchant/review-stats');
+        const response = await fetch('/api/MerchantApi/review-stats');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         const data = await response.json();
         
-        if (response.ok) {
-            // Update header stats
-            document.getElementById('avgRating').textContent = data.avgRating || '0.0';
-            document.getElementById('totalReviews').textContent = data.totalReviews || '0';
-            document.getElementById('pendingReviews').textContent = data.pendingReviews || '0';
-            
-            // Update rating breakdown
-            updateRatingBreakdown(data.ratingBreakdown || [0, 0, 0, 0, 0]);
-            
-            // Update overall rating display
-            const overallRating = document.querySelector('.rating-number');
-            const ratingStars = document.querySelector('.rating-stars');
-            const ratingCount = document.querySelector('.rating-count');
-            
-            if (overallRating) overallRating.textContent = data.avgRating || '0.0';
-            if (ratingStars) ratingStars.innerHTML = generateStars(Math.round(data.avgRating || 0));
-            if (ratingCount) ratingCount.textContent = `Based on ${data.totalReviews || 0} reviews`;
-        }
+        // Update header stats
+        document.getElementById('avgRating').textContent = data.avgRating || '0.0';
+        document.getElementById('totalReviews').textContent = data.totalReviews || '0';
+        document.getElementById('pendingReviews').textContent = data.pendingReviews || '0';
+        
+        // Update rating breakdown
+        updateRatingBreakdown(data.ratingBreakdown || [0, 0, 0, 0, 0]);
+        
+        // Update overall rating display
+        const overallRating = document.querySelector('.rating-number');
+        const ratingStars = document.querySelector('.rating-stars');
+        const ratingCount = document.querySelector('.rating-count');
+        
+        if (overallRating) overallRating.textContent = data.avgRating || '0.0';
+        if (ratingStars) ratingStars.innerHTML = generateStars(Math.round(data.avgRating || 0));
+        if (ratingCount) ratingCount.textContent = `Based on ${data.totalReviews || 0} reviews`;
     } catch (error) {
         console.error('Error loading review stats:', error);
     }
@@ -819,6 +860,16 @@ function renderReviews() {
     const reviewsToShow = reviews;
     
     const reviewsList = document.getElementById('reviewsList');
+    if (!reviewsToShow || reviewsToShow.length === 0) {
+        reviewsList.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <div style="font-size:32px;line-height:1;">💬</div>
+                <div style="margin-top:8px;">暂无评论</div>
+            </div>
+        `;
+        renderPagination();
+        return;
+    }
     reviewsList.innerHTML = reviewsToShow.map(review => `
         <div class="review-card">
             <div class="review-header">
@@ -954,7 +1005,7 @@ async function submitReply() {
     }
     
     try {
-        const response = await fetch(`/api/merchant/reply-review/${selectedReviewId}`, {
+        const response = await fetch(`/api/MerchantApi/reply-review/${selectedReviewId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -993,22 +1044,6 @@ async function submitReply() {
         console.error('Reply to review error:', error);
         alert('Reply failed, please try again later');
     }
-}
-
-function filterReviews() {
-    // Get current filter values
-    const ratingFilter = document.getElementById('ratingFilter')?.value;
-    const replyFilter = document.getElementById('replyFilter')?.value;
-    
-    // Update current filter
-    currentFilter.rating = ratingFilter || null;
-    currentFilter.status = replyFilter || 'all';
-    
-    // Reset to first page when filtering
-    currentPage = 1;
-    
-    // Reload reviews with new filters
-    loadReviews();
 }
 
 function renderPagination() {

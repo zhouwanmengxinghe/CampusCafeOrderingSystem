@@ -79,11 +79,11 @@
             <table id="reportsTable" class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th>日期</th>
-                        <th>订单数</th>
-                        <th>收入</th>
-                        <th>增长率</th>
-                        <th>趋势</th>
+                        <th>Date</th>
+                            <th>Orders</th>
+                            <th>Revenue</th>
+                            <th>Growth Rate</th>
+                            <th>Trend</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyData">
@@ -110,9 +110,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // -------- 缓存管理 --------
+        // -------- Cache Management --------
         const CACHE_PREFIX = 'reports_cache_';
-        const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+        const CACHE_DURATION = 5 * 60 * 1000; // 5-minute cache
         
         function getCacheKey(startDate, endDate) {
             return `${CACHE_PREFIX}${startDate}_${endDate}`;
@@ -130,7 +130,7 @@
                     }
                 }
             } catch (e) {
-                console.warn('缓存读取失败:', e);
+                console.warn('Cache read failed:', e);
             }
             return null;
         }
@@ -143,18 +143,18 @@
                 };
                 localStorage.setItem(key, JSON.stringify(data));
             } catch (e) {
-                console.warn('缓存存储失败:', e);
+                console.warn('Cache storage failed:', e);
             }
         }
         
-        // -------- 懒加载管理 --------
+        // -------- Lazy Loading Management --------
         let isLoading = false;
         let loadedSections = new Set();
         
         function showLoadingSpinner(containerId) {
             const container = document.getElementById(containerId);
             if (container) {
-                container.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div></div>';
+                container.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
             }
         }
         
@@ -181,7 +181,7 @@
                 if (startDate) params.append('startDate', startDate);
                 if (endDate) params.append('endDate', endDate);
                 
-                const response = await fetch(`/api/reports/dashboard-data?${params}`);
+                const response = await fetch(`/api/ReportsApi/admin-dashboard-data?${params}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

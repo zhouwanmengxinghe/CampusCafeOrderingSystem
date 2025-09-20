@@ -319,11 +319,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadMenuItems() {
     try {
-        const response = await fetch('/api/MenuApi');
+        const response = await fetch('/api/MenuApi?page=1&pageSize=20');
         if (!response.ok) {
             throw new Error('Failed to fetch menu data');
         }
-        menuItems = await response.json();
+        const apiResponse = await response.json();
+        
+        if (apiResponse.isSuccess && apiResponse.data && apiResponse.data.items) {
+            menuItems = apiResponse.data.items;
+        } else if (Array.isArray(apiResponse)) {
+            menuItems = apiResponse;
+        } else {
+            throw new Error(apiResponse.message || 'Invalid response format');
+        }
+        
         filteredItems = [...menuItems];
         renderMenuItems();
         renderPagination();
@@ -491,6 +500,7 @@ async function saveMenuItem() {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
                 },
                 body: JSON.stringify(menuData)
@@ -501,27 +511,54 @@ async function saveMenuItem() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
                 },
                 body: JSON.stringify(menuData)
             });
         }
         
+        // 统一以文本读取并尝试解析为JSON，避免HTML重定向导致的解析异常
+        const contentType = response.headers.get('content-type') || '';
+        const text = await response.text();
+        let result;
+        try {
+            result = text ? JSON.parse(text) : null;
+        } catch (e) {
+            console.error('Non-JSON response when saving menu item:', text);
+            const looksLikeHtml = text.includes('<!DOCTYPE') || text.toLowerCase().includes('<html');
+            const msg = looksLikeHtml ? '未登录或登录已过期，请重新登录后再试。' : '服务器返回了非JSON响应';
+            throw new Error(msg);
+        }
+        
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to save menu item');
+            const msg = result?.message || result?.error || `请求失败(${response.status})`;
+            throw new Error(msg);
+        }
+        
+        // 兼容 ApiResponse<T> 包装与原始对象两种返回
+        let payload = result;
+        if (result && Object.prototype.hasOwnProperty.call(result, 'isSuccess')) {
+            if (!result.isSuccess) {
+                throw new Error(result.message || '保存失败');
+            }
+            payload = result.data;
+        }
+        
+        if (!payload) {
+            throw new Error('未收到有效的返回数据');
         }
         
         // Update local data instead of reloading the entire list
         if (id) {
-            // Update existing menu item
-            const index = menuItems.findIndex(item => item.id === id);
+            // Update existing menu item（优先使用后端返回的数据）
+            const index = menuItems.findIndex(item => item.id == id);
             if (index !== -1) {
-                menuItems[index] = { ...menuItems[index], ...menuData, id: id };
+                menuItems[index] = { ...menuItems[index], ...payload, id: parseInt(id) };
             }
         } else {
-            // Add new menu item - get the returned complete menu item data
-            const newItem = await response.json();
+            // Add new menu item - use the returned complete menu item data
+            const newItem = payload;
             menuItems.push(newItem);
         }
         
@@ -608,7 +645,7 @@ function applyFilters() {
     const statusFilter = document.getElementById('statusFilter').value;
     
     filteredItems = menuItems.filter(item => {
-        const matchesSearch = item.name.toLowerCase().includes(searchTerm) ||
+        const matchesSearch = (item.name && item.name.toLowerCase().includes(searchTerm)) ||
                             (item.description && item.description.toLowerCase().includes(searchTerm));
         const matchesCategory = !categoryFilter || item.category === categoryFilter;
         const matchesStatus = !statusFilter || 

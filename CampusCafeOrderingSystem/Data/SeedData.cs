@@ -17,8 +17,17 @@ namespace CampusCafeOrderingSystem.Data
         
         private static async Task SeedMenuItems(ApplicationDbContext context)
         {
-            var vendorEmail = "vendor@campuscafe.com";
+            // Seed for vendor@campuscafe.com
+            var vendorEmail1 = "vendor@campuscafe.com";
+            await SeedMenuItemsForVendor(context, vendorEmail1);
             
+            // Seed for vendor@qq.com
+            var vendorEmail2 = "vendor@qq.com";
+            await SeedMenuItemsForVendor(context, vendorEmail2);
+        }
+        
+        private static async Task SeedMenuItemsForVendor(ApplicationDbContext context, string vendorEmail)
+        {
             if (!await context.MenuItems.AnyAsync(m => m.VendorEmail == vendorEmail))
             {
                 var menuItems = new List<MenuItem>

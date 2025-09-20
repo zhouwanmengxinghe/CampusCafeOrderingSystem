@@ -506,20 +506,128 @@ body {
 }
 </style>
 
+<script src="~/lib/signalr/signalr.min.js"></script>
 <script>
+let signalRConnection;
+
 $(document).ready(function() {
-    // Auto-refresh every 30 seconds
+    // Initialize SignalR connection
+    initializeSignalR();
+    
+    // Auto-refresh every 30 seconds as fallback
     setInterval(function() {
-        // Only refresh if the order is not completed
+        // Only refresh if the order is not completed and SignalR is not connected
         @if (Model.Status != CampusCafeOrderingSystem.Models.OrderStatus.Completed && Model.Status != CampusCafeOrderingSystem.Models.OrderStatus.Cancelled)
         {
-            @:location.reload();
+            @:if (!signalRConnection || signalRConnection.state !== signalR.HubConnectionState.Connected) {
+            @:    location.reload();
+            @:}
         }
-    }, 30000);
+    }, 60000); // Increased to 60 seconds since we have real-time updates
     
     // Add loading animation when refreshing
     $(window).on('beforeunload', function() {
         $('body').append('<div class="loading-overlay"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
     });
 });
+
+function initializeSignalR() {
+    signalRConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/orderHub")
+        .build();
+
+    // Listen for order status updates
+    signalRConnection.on("OrderStatusUpdated", function (orderData) {
+        console.log('Order status updated:', orderData);
+        
+        // Check if this is the current order
+        if (orderData.orderId == @Model.Id) {
+            // Show notification
+            showStatusUpdateNotification(orderData);
+            
+            // Refresh the page to show updated status
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+    });
+
+    // Listen for estimated time updates
+    signalRConnection.on("EstimatedTimeUpdated", function (orderData) {
+        console.log('Estimated time updated:', orderData);
+        
+        // Check if this is the current order
+        if (orderData.orderId == @Model.Id) {
+            // Show notification
+            showTimeUpdateNotification(orderData);
+            
+            // Update the estimated time display
+            updateEstimatedTimeDisplay(orderData.estimatedTime);
+        }
+    });
+
+    // Start connection
+    signalRConnection.start().then(function () {
+        console.log("SignalR connection established for Order Tracking");
+        
+        // Join customer group for this user
+        @if (User.Identity.IsAuthenticated)
+        {
+            @:signalRConnection.invoke("JoinCustomerGroup", "@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value");
+        }
+    }).catch(function (err) {
+        console.error("SignalR connection failed:", err);
+    });
+}
+
+function showStatusUpdateNotification(orderData) {
+    // Create notification element
+    const notification = $(`
+        <div class="alert alert-info alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            <strong>Order Status Updated!</strong><br>
+                Order ${orderData.orderNumber} status has been updated to: <strong>${orderData.status}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    
+    $('body').append(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.alert('close');
+    }, 5000);
+}
+
+function showTimeUpdateNotification(orderData) {
+    // Create notification element
+    const notification = $(`
+        <div class="alert alert-success alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            <strong>Estimated Completion Time Updated!</strong><br>
+                Order ${orderData.orderNumber} is estimated to be completed in ${orderData.minutes} minutes
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    
+    $('body').append(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.alert('close');
+    }, 5000);
+}
+
+function updateEstimatedTimeDisplay(estimatedTime) {
+    if (estimatedTime) {
+        const estimatedDate = new Date(estimatedTime);
+        const now = new Date();
+        const diffMinutes = Math.round((estimatedDate - now) / (1000 * 60));
+        
+        if (diffMinutes > 0) {
+            // Find and update estimated time display
+            $('.estimated-time').text(`Estimated ${diffMinutes} minutes remaining`);
+        }
+    }
+}
 </script>

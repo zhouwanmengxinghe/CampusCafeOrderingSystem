@@ -28,6 +28,9 @@
 
     <div class="container my-4">
         <h2 class="mb-4 text-center">Vendor Management</h2>
+        
+        @* Add anti-forgery token for JavaScript use *@
+        @Html.AntiForgeryToken()
 
         @if (TempData["VendorToast"] is string toast && !string.IsNullOrWhiteSpace(toast))
     {
@@ -137,31 +140,13 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center flex-wrap">
-                                      
-                                        <form asp-action="ApproveVendor" asp-controller="Admin" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
-                                            <button type="submit" class="btn btn-success btn-sm" @((v.Status == "Pending") ? "" : "disabled")>
-                                                Approve
-                                            </button>
-                                        </form>
-
-                                        <form asp-action="RejectVendor" asp-controller="Admin" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
-                                            <button type="submit" class="btn btn-danger btn-sm" @((v.Status == "Pending") ? "" : "disabled")>
-                                                Reject
-                                            </button>
-                                        </form>
-
                                        
-                                        <form asp-action="ToggleVendor" asp-controller="Admin" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@(v.Id ?? string.Empty)" />
-                                            <button type="submit" class="btn btn-warning btn-sm">
-                                                @(v.Status == "Active" ? "Disable" : "Enable")
-                                            </button>
-                                        </form>
+                                        <button type="button" 
+                                                class="btn btn-sm toggle-vendor-btn @(v.Status == "Active" ? "btn-warning" : "btn-success")"
+                                                data-vendor-id="@(v.Id ?? string.Empty)"
+                                                data-current-status="@(v.Status ?? "")">
+                                            @(v.Status == "Active" ? "Disable" : "Active")
+                                        </button>
 
                                      
                                         <button type="button"
@@ -291,6 +276,77 @@
                     modal.querySelector('#vd-menu').textContent = get('menu');
                     modal.querySelector('#vd-rating').textContent = get('rating') + ' / 5';
                 });
+
+                // Toggle vendor status
+                $(document).on('click', '.toggle-vendor-btn', function() {
+                    const btn = $(this);
+                    const vendorId = btn.data('vendor-id');
+                    const currentStatus = btn.data('current-status');
+                    
+                    if (!vendorId) {
+                        alert('Invalid vendor ID');
+                        return;
+                    }
+
+                    // Disable button to prevent duplicate clicks
+                    btn.prop('disabled', true);
+                    const originalText = btn.text();
+                    btn.text('Processing...');
+
+                    // Get anti-forgery token
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '@Url.Action("ToggleVendor", "Admin")',
+                        type: 'POST',
+                        data: {
+                            id: vendorId,
+                            __RequestVerificationToken: token
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Show success message
+                                showToast(response.message, 'success');
+                                
+                                // Refresh page to update status
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            } else {
+                                showToast(response.message || 'Operation failed', 'error');
+                                btn.prop('disabled', false);
+                                btn.text(originalText);
+                            }
+                        },
+                        error: function() {
+                            showToast('Network error, please try again later', 'error');
+                            btn.prop('disabled', false);
+                            btn.text(originalText);
+                        }
+                    });
+                });
+
+                // Function to show toast messages
+                function showToast(message, type) {
+                    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                    const toastHtml = `
+                        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                    
+                    // Remove existing alerts
+                    $('.alert').remove();
+                    
+                    // Add new alert to top of page
+                    $('.container').prepend(toastHtml);
+                    
+                    // Auto-hide after 3 seconds
+                    setTimeout(function() {
+                        $('.alert').fadeOut();
+                    }, 3000);
+                }
             });
         </script>
     }

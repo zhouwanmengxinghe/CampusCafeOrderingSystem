@@ -21,15 +21,15 @@
             </div>
             <div class="quick-stats">
                 <div class="stat-card">
-                    <div class="stat-number">156</div>
+                    <div class="stat-number" id="indexTodayOrders">0</div>
                     <div class="stat-label">Today's Orders</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">$3,248</div>
+                    <div class="stat-number" id="indexTodayRevenue">$0.00</div>
                     <div class="stat-label">Today's Revenue</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">4.8</div>
+                    <div class="stat-number" id="indexAvgRating">0.0</div>
                     <div class="stat-label">Average Rating</div>
                 </div>
             </div>
@@ -329,5 +329,25 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/MerchantApi/dashboard-stats');
+                if (!res.ok) throw new Error('Failed to load stats: ' + res.status);
+                const payload = await res.json();
+                const stats = (payload && typeof payload === 'object' && 'data' in payload && payload.data) ? payload.data : payload;
+
+                const todayOrders = Number(stats.todayOrders) || 0;
+                const todayRevenue = Number(stats.todayRevenue) || 0;
+                const avgRating = Number(stats.avgRating) || 0;
+
+                document.getElementById('indexTodayOrders').textContent = todayOrders;
+                document.getElementById('indexTodayRevenue').textContent = '$' + todayRevenue.toFixed(2);
+                document.getElementById('indexAvgRating').textContent = avgRating.toFixed(1);
+            } catch (err) {
+                console.error('Load merchant index stats failed:', err);
+            }
+        });
+    </script>
 </body>
 </html>

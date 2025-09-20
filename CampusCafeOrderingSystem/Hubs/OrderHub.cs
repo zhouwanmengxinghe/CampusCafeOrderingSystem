@@ -7,25 +7,81 @@ namespace CampusCafeOrderingSystem.Hubs
     [Authorize]
     public class OrderHub : Hub
     {
-        public async Task JoinMerchantGroup(string merchantId)
+        // 商家加入组
+        public async Task JoinMerchantGroup(string merchantEmail)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"Merchant_{merchantId}");
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"Merchant_{merchantEmail}");
         }
 
-        public async Task LeaveMerchantGroup(string merchantId)
+        // 商家离开组
+        public async Task LeaveMerchantGroup(string merchantEmail)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Merchant_{merchantId}");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Merchant_{merchantEmail}");
         }
 
-        public async Task JoinCustomerGroup(string customerId)
+        // 用户加入组
+        public async Task JoinCustomerGroup(string userId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"Customer_{customerId}");
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"Customer_{userId}");
         }
 
-        public async Task LeaveCustomerGroup(string customerId)
+        // 用户离开组
+        public async Task LeaveCustomerGroup(string userId)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Customer_{customerId}");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Customer_{userId}");
         }
+
+        // 管理员加入组
+        public async Task JoinAdminGroup()
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
+        }
+
+        // 管理员离开组
+        public async Task LeaveAdminGroup()
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Admins");
+        }
+
+        // 连接时自动加入相应组
+        public override async Task OnConnectedAsync()
+        {
+            var user = Context.User;
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    // 根据用户角色自动加入相应组
+                    if (user.IsInRole("Admin"))
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
+                    }
+                    else if (user.IsInRole("Vendor"))
+                    {
+                        var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            await Groups.AddToGroupAsync(Context.ConnectionId, $"Merchant_{email}");
+                        }
+                    }
+                    else if (user.IsInRole("Customer"))
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, $"Customer_{userId}");
+                    }
+                }
+            }
+            await base.OnConnectedAsync();
+        }
+
+        // 断开连接时清理
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            // SignalR会自动处理组的清理
+            await base.OnDisconnectedAsync(exception);
+        }
+
+
 
         // Method to send new order notification to merchant
         public async Task SendNewOrderToMerchant(string merchantEmail, object orderData)
@@ -56,11 +112,6 @@ namespace CampusCafeOrderingSystem.Hubs
         public async Task UpdateMerchantStats(string merchantEmail, object statsData)
         {
             await Clients.Group($"Merchant_{merchantEmail}").SendAsync("StatsUpdated", statsData);
-        }
-
-        public override async Task OnDisconnectedAsync(Exception exception)
-        {
-            await base.OnDisconnectedAsync(exception);
         }
     }
 }
