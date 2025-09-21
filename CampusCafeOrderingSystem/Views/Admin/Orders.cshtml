@@ -70,7 +70,7 @@
                                 <tbody>
                                     @foreach (var order in Model)
                                     {
-                                        <tr data-status="@order.Status.ToString().ToLower()">
+                                        <tr data-order-id="@order.Id" data-status="@order.Status.ToString().ToLower()">
                                             <td>
                                                 <strong>@order.OrderNumber</strong>
                                                 <br>
@@ -138,39 +138,24 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group-vertical btn-group-sm" role="group">
-                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Pending)
-                                                    {
-                                                        <button class="btn btn-outline-success btn-sm" onclick="updateStatus(@order.Id, 'Confirmed')">
-                                                            <i class="fas fa-check"></i> Confirm
-                                                        </button>
-                                                    }
-                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Confirmed)
-                                                    {
-                                                        <button class="btn btn-outline-primary btn-sm" onclick="updateStatus(@order.Id, 'Preparing')">
-                                                            <i class="fas fa-utensils"></i> Start Prep
-                                                        </button>
-                                                        <button class="btn btn-outline-info btn-sm" onclick="setEstimatedTime(@order.Id)">
-                                                            <i class="fas fa-clock"></i> Set Time
-                                                        </button>
-                                                    }
-                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Preparing)
-                                                    {
-                                                        <button class="btn btn-outline-warning btn-sm" onclick="updateStatus(@order.Id, 'Ready')">
-                                                            <i class="fas fa-bell"></i> Ready
-                                                        </button>
-                                                    }
-                                                    @if (order.Status == CampusCafeOrderingSystem.Models.OrderStatus.Ready)
-                                                    {
-                                                        <button class="btn btn-outline-success btn-sm" onclick="updateStatus(@order.Id, 'Completed')">
-                                                            <i class="fas fa-thumbs-up"></i> Complete
-                                                        </button>
-                                                    }
-                                                    @if (order.Status != CampusCafeOrderingSystem.Models.OrderStatus.Completed && order.Status != CampusCafeOrderingSystem.Models.OrderStatus.Cancelled)
-                                                    {
-                                                        <button class="btn btn-outline-danger btn-sm" onclick="updateStatus(@order.Id, 'Cancelled')">
-                                                            <i class="fas fa-times"></i> Cancel
-                                                        </button>
-                                                    }
+                                                    <button class="btn btn-outline-success btn-sm" data-action="Confirmed" onclick="updateStatus(@order.Id, 'Confirmed')">
+                                                        <i class="fas fa-check"></i> Confirm
+                                                    </button>
+                                                    <button class="btn btn-outline-primary btn-sm" data-action="Preparing" onclick="updateStatus(@order.Id, 'Preparing')">
+                                                        <i class="fas fa-utensils"></i> Start Preparing
+                                                    </button>
+                                                    <button class="btn btn-outline-info btn-sm" data-action="SetTime" onclick="setEstimatedTime(@order.Id)">
+                                                        <i class="fas fa-clock"></i> Set Time
+                                                    </button>
+                                                    <button class="btn btn-outline-warning btn-sm" data-action="Ready" onclick="updateStatus(@order.Id, 'Ready')">
+                                                        <i class="fas fa-bell"></i> Ready for Pickup
+                                                    </button>
+                                                    <button class="btn btn-outline-success btn-sm" data-action="Completed" onclick="updateStatus(@order.Id, 'Completed')">
+                                                        <i class="fas fa-thumbs-up"></i> Complete
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-sm" data-action="Cancelled" onclick="updateStatus(@order.Id, 'Cancelled')">
+                                                        <i class="fas fa-times"></i> Cancel
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -212,7 +197,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="submitEstimatedTime()">Set Time</button>
+                <button type="button" class="btn btn-primary" onclick="submitEstimatedTime()">Set</button>
             </div>
         </div>
     </div>
@@ -235,35 +220,101 @@
 }
 
 <script>
-function updateStatus(orderId, status) {
-    if (confirm(`Are you sure you want to update this order status to ${status}?`)) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '@Url.Action("UpdateOrderStatus", "Admin")';
-        
-        const orderIdInput = document.createElement('input');
-        orderIdInput.type = 'hidden';
-        orderIdInput.name = 'orderId';
-        orderIdInput.value = orderId;
-        
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = status;
-        
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = '__RequestVerificationToken';
-        tokenInput.value = $('input[name="__RequestVerificationToken"]').val();
-        
-        form.appendChild(orderIdInput);
-        form.appendChild(statusInput);
-        form.appendChild(tokenInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
+// Simple confirm dialog (Bootstrap 5)
+function showConfirmDialog(title, message, onConfirm) {
+    const modalEl = document.createElement('div');
+    modalEl.className = 'modal fade';
+    modalEl.tabIndex = -1;
+    modalEl.innerHTML = `
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">${title || 'Confirm Action'}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>${message || ''}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="__confirmOkBtn">Confirm</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(modalEl);
+    const modal = new bootstrap.Modal(modalEl);
+    const okBtn = modalEl.querySelector('#__confirmOkBtn');
+    okBtn.addEventListener('click', function() {
+        try { if (typeof onConfirm === 'function') onConfirm(); } finally { modal.hide(); }
+    });
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        modal.dispose();
+        modalEl.remove();
+    });
+    modal.show();
 }
+
+function performUpdateStatus(orderId, status) {
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenInput ? tokenInput.value : null;
+    const url = '@Url.Action("UpdateOrderStatus", "Admin")';
+
+    const body = new URLSearchParams();
+    body.append('orderId', orderId);
+    body.append('status', status);
+    if (token) body.append('__RequestVerificationToken', token);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            ...(token ? { 'RequestVerificationToken': token } : {})
+        },
+        body: body.toString()
+    })
+    .then(res => res.ok ? res.json() : res.text().then(t => { throw new Error(t || res.statusText); }))
+    .then(data => {
+        const ok = (data && (data.success === true || data.isSuccess === true || (data.data && data.data.success === true))) ? true : false;
+        const msg = (data && (data.message || (data.data && data.data.message))) || 'Order status updated successfully';
+        if (ok) {
+            showInlineToast('success', msg);
+            applyOrderStatusChange(orderId, status);
+        } else {
+            showInlineToast('danger', msg || 'Update failed');
+        }
+    })
+    .catch(err => {
+        console.error('Update status failed:', err);
+        showInlineToast('danger', 'Request failed: ' + err.message);
+    });
+}
+
+function updateStatus(orderId, status) {
+    const statusTextMap = { Confirmed: 'Confirm', Preparing: 'Start Preparing', Ready: 'Ready for Pickup', Completed: 'Complete', Cancelled: 'Cancel' };
+    const text = statusTextMap[status] || status;
+    showConfirmDialog('Confirm Action', `Are you sure you want to change the order status to "${text}"?`, function(){
+        performUpdateStatus(orderId, status);
+    });
+}
+
+// 初始化每行按钮的显示/隐藏
+function initializeRowActionButtons() {
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    rows.forEach(row => {
+        const id = row.getAttribute('data-order-id');
+        const statusLower = (row.dataset.status || '').trim();
+        if (!id || !statusLower) return;
+        const status = statusLower.charAt(0).toUpperCase() + statusLower.slice(1);
+        applyOrderStatusChange(id, status);
+    });
+}
+
+// DOMContentLoaded 时初始化按钮可见性
+document.addEventListener('DOMContentLoaded', function(){
+    if (document.getElementById('ordersTable')) {
+        initializeRowActionButtons();
+    }
+});
 
 function setEstimatedTime(orderId) {
     document.getElementById('orderIdInput').value = orderId;
@@ -318,23 +369,75 @@ function refreshOrders() {
     location.reload();
 }
 
+// Helpers: inline toast + apply UI changes without page reload
+function showInlineToast(variant, text) {
+    const alert = document.createElement('div');
+    const variantClass = {
+        success: 'alert-success',
+        info: 'alert-info',
+        warning: 'alert-warning',
+        danger: 'alert-danger'
+    }[variant] || 'alert-info';
+
+    alert.className = `alert ${variantClass} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 320px;';
+    alert.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas ${variant === 'success' ? 'fa-check-circle' : variant === 'danger' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i>
+            <div>${text}</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    setTimeout(() => { alert.classList.remove('show'); alert.addEventListener('transitionend', () => alert.remove()); }, 3000);
+}
+
+function applyOrderStatusChange(orderId, status) {
+    const row = document.querySelector(`#ordersTable tbody tr[data-order-id="${orderId}"]`);
+    if (!row) return;
+    // Update badge text and color
+    const badge = row.querySelector('.badge');
+    if (badge) {
+        const colorMap = { Pending: 'warning', Confirmed: 'info', Preparing: 'primary', Ready: 'success', Completed: 'success', Cancelled: 'danger' };
+        badge.className = badge.className.replace(/\bbg-\w+\b/g, '').trim();
+        badge.classList.add('bg-' + (colorMap[status] || 'secondary'));
+        badge.textContent = status;
+    }
+    // Update data-status for filtering
+    row.dataset.status = (status || '').toLowerCase();
+
+    // Toggle action buttons visibility according to new status
+    const group = row.querySelector('.btn-group-vertical');
+    if (group) {
+        const visibleActions = {
+            Pending: ['Confirmed', 'Cancelled'],
+            Confirmed: ['Preparing', 'SetTime', 'Cancelled'],
+            Preparing: ['Ready', 'Cancelled'],
+            Ready: ['Completed', 'Cancelled'],
+            Completed: [],
+            Cancelled: []
+        };
+        const allowed = new Set(visibleActions[status] || []);
+        group.querySelectorAll('button[data-action]').forEach(btn => {
+            const action = btn.getAttribute('data-action');
+            btn.style.display = allowed.has(action) ? '' : 'none';
+        });
+    }
+}
+
 // SignalR connection
 let signalRConnection;
 
 // Initialize SignalR connection
-function initializeSignalR() {
-    signalRConnection = new signalR.HubConnectionBuilder()
+function adminInitSignalR() {
+    signalRConnection = new window.signalR.HubConnectionBuilder()
         .withUrl("/orderHub")
         .build();
 
     // Listen for new order events
     signalRConnection.on("NewOrder", function (orderData) {
         console.log('New order received (Admin):', orderData);
-        
-        // Show new order notification
         showNewOrderNotification(orderData);
-        
-        // Refresh order list
         setTimeout(() => {
             location.reload();
         }, 1000);
@@ -343,24 +446,18 @@ function initializeSignalR() {
     // Listen for order status update events
     signalRConnection.on("OrderStatusUpdated", function (orderData) {
         console.log('Order status updated (Admin):', orderData);
-        
-        // Show status update notification
         showStatusUpdateNotification(orderData);
-        
-        // Refresh order list
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+        var id = (orderData && (orderData.orderId || orderData.id || orderData.orderID || orderData.OrderId || orderData.OrderID));
+        var newStatus = (orderData && (orderData.status || orderData.newStatus || orderData.Status || orderData.NewStatus));
+        if (id && newStatus) {
+            applyOrderStatusChange(id, newStatus);
+        }
     });
 
     // Listen for estimated time updates
     signalRConnection.on("EstimatedTimeUpdated", function (orderData) {
         console.log('Estimated time updated (Admin):', orderData);
-        
-        // Show time update notification
         showTimeUpdateNotification(orderData);
-        
-        // Refresh order list
         setTimeout(() => {
             location.reload();
         }, 1000);
@@ -369,8 +466,6 @@ function initializeSignalR() {
     // Start connection
     signalRConnection.start().then(function () {
         console.log("SignalR connection established for Admin Orders");
-        
-        // Join admin group
         signalRConnection.invoke("JoinAdminGroup");
     }).catch(function (err) {
         console.error("SignalR connection failed:", err);
@@ -382,28 +477,20 @@ function showNewOrderNotification(orderData) {
     const notification = document.createElement('div');
     notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
     notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+    const amount = (orderData && orderData.totalAmount) ? Number(orderData.totalAmount).toFixed(2) : '0.00';
     notification.innerHTML = `
         <div class="d-flex align-items-center">
             <i class="fas fa-plus-circle me-2"></i>
             <div>
-                <strong>New Order Created!</strong><br>
-                Order Number: ${orderData.orderNumber}<br>
-                Customer: ${orderData.customerName}<br>
-                Vendor: ${orderData.vendorEmail}<br>
-                Amount: $${orderData.totalAmount ? orderData.totalAmount.toFixed(2) : '0.00'}
+                <strong>A new order has been created!</strong><br>
+                Order #: ${orderData && (orderData.orderNumber || orderData.OrderNumber || '')}<br>
+                <small class="text-muted">Vendor: ${orderData && (orderData.vendorEmail || orderData.VendorEmail || '')}</small>
             </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
     document.body.appendChild(notification);
-    
-    // Auto remove after 8 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 8000);
+    setTimeout(() => { if (notification.parentNode) notification.remove(); }, 8000);
 }
 
 // Show status update notification
@@ -411,27 +498,21 @@ function showStatusUpdateNotification(orderData) {
     const notification = document.createElement('div');
     notification.className = 'alert alert-warning alert-dismissible fade show position-fixed';
     notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+    const oldS = orderData && (orderData.oldStatus || orderData.OldStatus || '');
+    const newS = orderData && (orderData.status || orderData.newStatus || orderData.Status || orderData.NewStatus || '');
     notification.innerHTML = `
         <div class="d-flex align-items-center">
             <i class="fas fa-sync-alt me-2"></i>
             <div>
-                <strong>Order Status Updated!</strong><br>
-                Order Number: ${orderData.orderNumber}<br>
-                Customer: ${orderData.customerName}<br>
-                Status: ${orderData.oldStatus} → <strong>${orderData.status}</strong>
+                <strong>Order status updated!</strong><br>
+                Order #: ${orderData && (orderData.orderNumber || orderData.OrderNumber || '')}<br>
+                <small class="text-muted">New Status: ${orderData && (orderData.status || orderData.Status || '')}</small>
             </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
     document.body.appendChild(notification);
-    
-    // Auto remove after 6 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 6000);
+    setTimeout(() => { if (notification.parentNode) notification.remove(); }, 6000);
 }
 
 // Show time update notification
@@ -439,37 +520,61 @@ function showTimeUpdateNotification(orderData) {
     const notification = document.createElement('div');
     notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
     notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+    const minutes = orderData && (orderData.minutes || orderData.Minutes || '');
     notification.innerHTML = `
         <div class="d-flex align-items-center">
             <i class="fas fa-clock me-2"></i>
             <div>
-                <strong>Estimated Time Updated!</strong><br>
-                Order Number: ${orderData.orderNumber}<br>
-                Customer: ${orderData.customerName}<br>
-                Estimated Completion: ${orderData.minutes} minutes
+                <strong>Estimated completion time updated!</strong><br>
+                Order #: ${orderData && (orderData.orderNumber || orderData.OrderNumber || '')}<br>
+                <small class="text-muted">ETA: ${minutes} minutes</small>
             </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
     document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
+    setTimeout(() => { if (notification.parentNode) notification.remove(); }, 5000);
 }
-
 // Initialize SignalR when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    initializeSignalR();
+    try {
+        if (window.signalR && typeof window.signalR.HubConnectionBuilder === 'function') {
+            adminInitSignalR();
+        } else {
+            console.warn('SignalR client not found, attempting to load from CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js';
+            script.async = true;
+            script.onload = function() {
+                try {
+                    if (window.signalR && typeof window.signalR.HubConnectionBuilder === 'function') {
+                        adminInitSignalR();
+                    } else {
+                        console.warn('SignalR still unavailable after loading script.');
+                    }
+                } catch (e) {
+                    console.warn('SignalR init after load failed:', e);
+                }
+            };
+            script.onerror = function() {
+                console.warn('Failed to load SignalR script from CDN. Real-time updates disabled for this page.');
+            };
+            document.head.appendChild(script);
+        }
+    } catch (e) {
+        console.warn('SignalR init skipped due to error:', e);
+    }
 });
 
 // Auto-refresh every 60 seconds as fallback (reduced frequency since we have real-time updates)
 setInterval(function() {
-    if (!signalRConnection || signalRConnection.state !== signalR.HubConnectionState.Connected) {
+    let connected = false;
+    try {
+        connected = !!(window.signalR && window.signalR.HubConnectionState && signalRConnection && signalRConnection.state === window.signalR.HubConnectionState.Connected);
+    } catch (e) {
+        connected = false;
+    }
+    if (!connected) {
         location.reload();
     }
 }, 60000);
