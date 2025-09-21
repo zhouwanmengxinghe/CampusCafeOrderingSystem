@@ -5,6 +5,7 @@ using CampusCafeOrderingSystem.Data;
 using CampusCafeOrderingSystem.Models;
 using CampusCafeOrderingSystem.Models.DTOs;
 using CampusCafeOrderingSystem.Services;
+using System.Security.Claims;
 
 namespace CampusCafeOrderingSystem.Controllers.Api
 {
@@ -26,7 +27,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         [HttpGet]
         public async Task<ActionResult<ApiResponse<PagedResult<OrderResponseDto>>>> GetOrders([FromQuery] OrderQueryDto query)
         {
-            var vendorEmail = User.Identity?.Name;
+            var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
                 return Unauthorized(ApiResponse<PagedResult<OrderResponseDto>>.Error("无法获取商家信息", 401));
@@ -87,7 +88,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         [HttpGet("stats")]
         public async Task<ActionResult<ApiResponse<OrderStatsDto>>> GetStats([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
-            var vendorEmail = User.Identity?.Name;
+            var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
                 return Unauthorized(ApiResponse<OrderStatsDto>.Error("无法获取商家信息", 401));
@@ -128,7 +129,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<OrderResponseDto>>> GetOrderById(int id)
         {
-            var vendorEmail = User.Identity?.Name;
+            var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
                 return Unauthorized(ApiResponse<OrderResponseDto>.Error("无法获取商家信息", 401));
@@ -155,7 +156,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         [HttpPatch("{id}/status")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateStatus(int id, [FromBody] UpdateOrderStatusDto request)
         {
-            var vendorEmail = User.Identity?.Name;
+            var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
                 return Unauthorized(ApiResponse<object>.Error("无法获取商家信息", 401));

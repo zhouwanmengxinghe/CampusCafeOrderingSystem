@@ -626,7 +626,7 @@ async function loadReviews() {
         if (currentFilter.rating) params.append('rating', currentFilter.rating);
         if (currentFilter.category) params.append('category', currentFilter.category);
         
-        const response = await fetch(`/api/MerchantApi/reviews?${params}`);
+        const response = await fetch(`/api/ReviewApi/list?${params}`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -730,7 +730,7 @@ function showNewReviewNotification(reviewData) {
 
 async function loadReviewStats() {
     try {
-        const response = await fetch('/api/MerchantApi/review-stats');
+        const response = await fetch('/api/ReviewApi/stats');
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -864,7 +864,7 @@ function renderReviews() {
         reviewsList.innerHTML = `
             <div class="text-center text-muted py-5">
                 <div style="font-size:32px;line-height:1;">💬</div>
-                <div style="margin-top:8px;">暂无评论</div>
+                <div style="margin-top:8px;">No reviews yet</div>
             </div>
         `;
         renderPagination();
