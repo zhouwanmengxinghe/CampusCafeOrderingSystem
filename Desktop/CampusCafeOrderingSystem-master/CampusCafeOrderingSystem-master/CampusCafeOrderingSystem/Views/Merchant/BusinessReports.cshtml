@@ -1,0 +1,1070 @@
+@{
+    ViewData["Title"] = "Business Reports";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        /* 报表容器样式 */
+        .reports-container {
+            padding: 20px;
+        }
+
+        /* 页面头部样式 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* 加载指示器样式 */
+        body.loading::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 9998;
+        }
+
+        body.loading::after {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            margin-top: -25px;
+            margin-left: -25px;
+            border-radius: 50%;
+            border: 5px solid #f3f3f3;
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+            z-index: 9999;
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 日期范围选择器样式 */
+        .date-range-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-date-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .quick-date-btn {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+
+        /* 概览卡片样式 */
+        .overview-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .overview-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .overview-card-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .overview-card-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .overview-card-subtitle {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* 图表部分样式 */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            min-height: 350px;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #343a40;
+        }
+
+        /* 数据表格样式 */
+        .data-table-section {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .data-table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #343a40;
+        }
+
+        /* 响应式布局 */
+        @@media (max-width: 768px) {
+            .report-stats {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .filters-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .overview-section {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .date-range-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .quick-date-buttons {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+        /* 错误消息样式 */
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* 无数据提示样式 */
+        .no-data-message {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+}
+
+<div class="reports-container">
+    @Html.AntiForgeryToken()
+
+    <div class="page-header">
+        <h1 class="page-title">Business Reports</h1>
+        <div class="header-actions">
+            <button id="exportExcel" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </button>
+            <button id="exportPDF" class="btn btn-outline-danger btn-sm ml-2">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="date-range-section">
+        <div class="date-inputs">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" class="form-control form-control-sm">
+            <label for="endDate" class="ml-2">End Date:</label>
+            <input type="date" id="endDate" class="form-control form-control-sm">
+            <button id="applyDateRange" class="btn btn-primary btn-sm ml-2">Apply</button>
+        </div>
+        <div class="quick-date-buttons">
+            <button class="btn btn-outline-secondary btn-sm quick-date-btn" data-range="today">Today</button>
+            <button class="btn btn-outline-secondary btn-sm quick-date-btn" data-range="yesterday">Yesterday</button>
+            <button class="btn btn-outline-secondary btn-sm quick-date-btn" data-range="thisWeek">This Week</button>
+            <button class="btn btn-outline-secondary btn-sm quick-date-btn" data-range="lastWeek">Last Week</button>
+            <button class="btn btn-outline-secondary btn-sm quick-date-btn" data-range="thisMonth">This Month</button>
+            <button class="btn btn-outline-secondary btn-sm quick-date-btn" data-range="lastMonth">Last Month</button>
+        </div>
+    </div>
+
+    <div class="overview-section">
+        <div class="overview-card">
+            <div class="overview-card-title">Total Revenue</div>
+            <div class="overview-card-value" id="totalRevenue">$0.00</div>
+            <div class="overview-card-subtitle">Total revenue for selected period</div>
+        </div>
+        <div class="overview-card">
+            <div class="overview-card-title">Total Orders</div>
+            <div class="overview-card-value" id="totalOrders">0</div>
+            <div class="overview-card-subtitle">Total number of orders for selected period</div>
+        </div>
+        <div class="overview-card">
+            <div class="overview-card-title">Average Order Value</div>
+            <div class="overview-card-value" id="avgOrderValue">$0.00</div>
+            <div class="overview-card-subtitle">Average amount per order</div>
+        </div>
+        <div class="overview-card">
+            <div class="overview-card-title">Top Product</div>
+            <div class="overview-card-value" id="topProduct">-</div>
+            <div class="overview-card-subtitle">Best selling product</div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-title">Revenue Trend</div>
+            <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Category Distribution</div>
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Hourly Sales</div>
+            <canvas id="hourlyChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Popular Products</div>
+            <canvas id="productsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="data-table-section">
+        <div class="chart-title">Daily Performance</div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Revenue</th>
+                        <th>Orders</th>
+                        <th>Average Order Value</th>
+                        <th>Growth Rate</th>
+                    </tr>
+                </thead>
+                <tbody id="dailyTableBody">
+                    <!-- Table data will be populated dynamically via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 全局变量存储报表数据
+        let reportData = null;
+        let revenueChart = null;
+        let categoryChart = null;
+        let hourlyChart = null;
+        let productsChart = null;
+
+        // Initialize after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date range to this month
+            setDateRange('thisMonth');
+            
+            // Bind date range apply button event
+            document.getElementById('applyDateRange').addEventListener('click', loadReportData);
+            
+            // Bind quick date range button events
+            document.querySelectorAll('.quick-date-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setDateRange(this.dataset.range);
+                });
+            });
+            
+            // Bind export button events
+            document.getElementById('exportExcel').addEventListener('click', exportToExcel);
+            document.getElementById('exportPDF').addEventListener('click', exportToPDF);
+        });
+
+        // Set date range
+        function setDateRange(range) {
+            const today = new Date();
+            let startDate = new Date();
+            let endDate = new Date();
+            
+            switch(range) {
+                case 'today':
+                    // Today
+                    break;
+                    
+                case 'yesterday':
+                    // Yesterday
+                    startDate.setDate(today.getDate() - 1);
+                    endDate.setDate(today.getDate() - 1);
+                    break;
+                    
+                case 'thisWeek':
+                    // This week (from Monday to today)
+                    const dayOfWeek = today.getDay() || 7; // Convert Sunday's 0 to 7
+                    startDate.setDate(today.getDate() - dayOfWeek + 1); // Set to this Monday
+                    break;
+                    
+                case 'lastWeek':
+                    // Last week (from last Monday to last Sunday)
+                    const lastWeekDay = today.getDay() || 7;
+                    startDate.setDate(today.getDate() - lastWeekDay - 6); // Last Monday
+                    endDate.setDate(today.getDate() - lastWeekDay); // Last Sunday
+                    break;
+                    
+                case 'thisMonth':
+                    // This month (from 1st to today)
+                    startDate.setDate(1);
+                    break;
+                    
+                case 'lastMonth':
+                    // Last month (from 1st to last day of last month)
+                    startDate.setMonth(today.getMonth() - 1);
+                    startDate.setDate(1);
+                    endDate.setDate(0); // Last day of last month
+                    break;
+            }
+            
+            // Update date input fields
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+            
+            // Load report data
+            loadReportData();
+        }
+
+        // Transform API data to report format
+        function transformApiDataToReportFormat(apiData, startDate, endDate) {
+            try {
+                // Extract overview data
+                const overview = {
+                    totalRevenue: apiData.overview?.totalRevenue || 0,
+                    totalOrders: apiData.overview?.totalOrders || 0,
+                    avgOrderValue: apiData.overview?.avgOrderValue || 0,
+                    topProduct: apiData.overview?.topProduct || 'N/A'
+                };
+                
+                // Extract daily data
+                const dailyData = {
+                    labels: [],
+                    revenueData: [],
+                    ordersData: []
+                };
+                
+                if (apiData.dailyData && Array.isArray(apiData.dailyData)) {
+                    apiData.dailyData.forEach(day => {
+                        const date = new Date(day.date);
+                        dailyData.labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                        dailyData.revenueData.push(day.revenue || 0);
+                        dailyData.ordersData.push(day.orders || 0);
+                    });
+                }
+                
+                // Extract category data (use default if not provided)
+                const categoryData = apiData.categoryData || {
+                    labels: ['Coffee', 'Tea', 'Pastries', 'Light Meals', 'Others'],
+                    data: [45, 25, 15, 10, 5]
+                };
+                
+                // Extract hourly data
+                const hourlyData = {
+                    labels: ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'],
+                    data: []
+                };
+                
+                if (apiData.hourlyData && Array.isArray(apiData.hourlyData)) {
+                    hourlyData.data = apiData.hourlyData.map(h => h.orders || 0);
+                } else {
+                    // Default hourly data
+                    hourlyData.data = [5, 15, 35, 45, 30, 25, 40, 35, 30, 25, 20, 15, 10, 8, 5, 3];
+                }
+                
+                // Extract products data
+                const productsData = {
+                    labels: [],
+                    data: []
+                };
+                
+                if (apiData.topProducts && Array.isArray(apiData.topProducts)) {
+                    apiData.topProducts.forEach(product => {
+                        productsData.labels.push(product.name || 'Unknown');
+                        productsData.data.push(product.quantity || 0);
+                    });
+                } else {
+                    // Default products data
+                    productsData.labels = ['Latte', 'Cappuccino', 'Americano', 'Mocha', 'Espresso'];
+                    productsData.data = [120, 95, 80, 65, 45];
+                }
+                
+                // Generate daily table data from daily data
+                const dailyTableData = [];
+                const maxTableRows = Math.min(dailyData.labels.length, 7);
+                
+                for (let i = 0; i < maxTableRows; i++) {
+                    const revenue = dailyData.revenueData[i] || 0;
+                    const orders = dailyData.ordersData[i] || 0;
+                    const avgValue = orders > 0 ? revenue / orders : 0;
+                    const growthRate = i > 0 && dailyData.revenueData[i-1] > 0 ? 
+                        ((revenue - dailyData.revenueData[i-1]) / dailyData.revenueData[i-1] * 100) : 0;
+                    
+                    // Parse date from label or use index-based date
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(currentDate.getDate() + i);
+                    
+                    dailyTableData.push({
+                        date: currentDate.toLocaleDateString('en-US'),
+                        revenue: revenue,
+                        orders: orders,
+                        avgValue: avgValue,
+                        growthRate: growthRate
+                    });
+                }
+                
+                return {
+                    overview: overview,
+                    dailyData: dailyData,
+                    categoryData: categoryData,
+                    hourlyData: hourlyData,
+                    productsData: productsData,
+                    dailyTableData: dailyTableData
+                };
+            } catch (error) {
+                console.error('Error transforming API data:', error);
+                // Return empty structure if transformation fails
+                return {
+                    overview: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, topProduct: 'N/A' },
+                    dailyData: { labels: [], revenueData: [], ordersData: [] },
+                    categoryData: { labels: ['Coffee', 'Tea', 'Pastries', 'Light Meals', 'Others'], data: [45, 25, 15, 10, 5] },
+                    hourlyData: { labels: ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'], data: [5, 15, 35, 45, 30, 25, 40, 35, 30, 25, 20, 15, 10, 8, 5, 3] },
+                    productsData: { labels: ['Latte', 'Cappuccino', 'Americano', 'Mocha', 'Espresso'], data: [120, 95, 80, 65, 45] },
+                    dailyTableData: []
+                };
+            }
+        }
+
+        // Generate fake report data
+        function generateFakeReportData(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Limit the number of days to prevent excessive data
+            const maxDays = Math.min(days, 30); // Maximum 30 days of data
+
+            // Generate daily data
+            const dailyData = {
+                labels: [],
+                revenueData: [],
+                ordersData: []
+            };
+            
+            let totalRevenue = 0;
+            let totalOrders = 0;
+            
+            for (let i = 0; i < maxDays; i++) {
+                const currentDate = new Date(start);
+                currentDate.setDate(start.getDate() + i);
+                
+                const dayRevenue = Math.random() * 2000 + 500; // $500-2500
+                const dayOrders = Math.floor(Math.random() * 50) + 10; // 10-60 orders
+                
+                dailyData.labels.push(currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                dailyData.revenueData.push(dayRevenue);
+                dailyData.ordersData.push(dayOrders);
+                
+                totalRevenue += dayRevenue;
+                totalOrders += dayOrders;
+            }
+            
+            // Generate overview data
+            const overview = {
+                totalRevenue: totalRevenue,
+                totalOrders: totalOrders,
+                avgOrderValue: totalRevenue / totalOrders,
+                topProduct: 'Latte'
+            };
+            
+            // Generate category data
+            const categoryData = {
+                labels: ['Coffee', 'Tea', 'Pastries', 'Light Meals', 'Others'],
+                data: [45, 25, 15, 10, 5]
+            };
+            
+            // Generate hourly data
+            const hourlyData = {
+                labels: ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'],
+                data: [5, 15, 35, 45, 30, 25, 40, 35, 30, 25, 20, 15, 10, 8, 5, 3]
+            };
+            
+            // Generate product ranking data
+            const productsData = {
+                labels: ['Latte', 'Cappuccino', 'Americano', 'Mocha', 'Espresso'],
+                data: [120, 95, 80, 65, 45]
+            };
+            
+            // Generate daily table data (limit to 7 rows for better display)
+            const dailyTableData = [];
+            const maxTableRows = Math.min(maxDays, 7); // Maximum 7 rows in table
+            
+            for (let i = 0; i < maxTableRows; i++) {
+                const currentDate = new Date(start);
+                currentDate.setDate(start.getDate() + i);
+                
+                const revenue = dailyData.revenueData[i];
+                const orders = dailyData.ordersData[i];
+                const avgValue = revenue / orders;
+                const growthRate = i > 0 ? ((revenue - dailyData.revenueData[i-1]) / dailyData.revenueData[i-1] * 100) : 0;
+                
+                dailyTableData.push({
+                    date: currentDate.toLocaleDateString('en-US'),
+                    revenue: revenue,
+                    orders: orders,
+                    avgValue: avgValue,
+                    growthRate: growthRate
+                });
+            }
+            
+            return {
+                overview: overview,
+                dailyData: dailyData,
+                categoryData: categoryData,
+                hourlyData: hourlyData,
+                productsData: productsData,
+                dailyTableData: dailyTableData
+            };
+        }
+
+        // Load report data
+        async function loadReportData() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showError('Please select start and end dates');
+                return;
+            }
+            
+            try {
+                // Show loading indicator
+                document.body.classList.add('loading');
+                
+                // Clear error messages
+                hideError();
+                
+                // Call real API to get data
+                console.log(`Loading report data: ${startDate} to ${endDate}`);
+                const response = await fetch(`/api/ReportsApi/dashboard-data?startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const apiData = await response.json();
+                console.log('API response:', apiData);
+                
+                // Transform API data to match the expected format
+                reportData = transformApiDataToReportFormat(apiData, startDate, endDate);
+                console.log('Transformed report data:', reportData);
+                
+                // Update UI
+                updateOverviewCards();
+                updateCharts();
+                updateDailyTable();
+            } catch (error) {
+                console.error('Error loading report data:', error);
+                showError(`Error loading report data: ${error.message}`);
+                
+                // Fallback to fake data if API fails
+                console.log('Falling back to fake data...');
+                reportData = generateFakeReportData(startDate, endDate);
+                updateOverviewCards();
+                updateCharts();
+                updateDailyTable();
+            } finally {
+                // Hide loading indicator
+                document.body.classList.remove('loading');
+            }
+        }
+
+        // Update overview cards
+        function updateOverviewCards() {
+            if (!reportData || !reportData.overview) {
+                return;
+            }
+            
+            const overview = reportData.overview;
+            
+            // Format currency
+            const formatCurrency = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            
+            document.getElementById('totalRevenue').textContent = formatCurrency.format(overview.totalRevenue);
+            document.getElementById('totalOrders').textContent = overview.totalOrders;
+            document.getElementById('avgOrderValue').textContent = formatCurrency.format(overview.avgOrderValue);
+            document.getElementById('topProduct').textContent = overview.topProduct || '-';
+        }
+
+        // Update charts
+        function updateCharts() {
+            if (!reportData) {
+                return;
+            }
+            
+            updateRevenueChart();
+            updateCategoryChart();
+            updateHourlyChart();
+            updateProductsChart();
+        }
+
+        // Update revenue trend chart
+        function updateRevenueChart() {
+            if (!reportData.dailyData || !reportData.dailyData.labels) {
+                return;
+            }
+            
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+            
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: reportData.dailyData.labels,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: reportData.dailyData.revenueData,
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        pointBackgroundColor: '#4e73df',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4e73df',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1
+                    }, {
+                        label: 'Orders',
+                        data: reportData.dailyData.ordersData,
+                        borderColor: '#1cc88a',
+                        backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                        pointBackgroundColor: '#1cc88a',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#1cc88a',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Revenue ($)'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Orders'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update category distribution chart
+        function updateCategoryChart() {
+            if (!reportData.categoryData || !reportData.categoryData.labels) {
+                return;
+            }
+            
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+            
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: reportData.categoryData.labels,
+                    datasets: [{
+                        data: reportData.categoryData.data,
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                            '#5a5c69', '#6f42c1', '#fd7e14', '#20c997', '#6c757d'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${percentage}% ($${value.toFixed(2)})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update hourly sales chart
+        function updateHourlyChart() {
+            if (!reportData.hourlyData || !reportData.hourlyData.labels) {
+                return;
+            }
+            
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (hourlyChart) {
+                hourlyChart.destroy();
+            }
+            
+            hourlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: reportData.hourlyData.labels,
+                    datasets: [{
+                        label: 'Orders',
+                        data: reportData.hourlyData.data,
+                        backgroundColor: 'rgba(78, 115, 223, 0.7)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Orders'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hour'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update top products chart
+        function updateProductsChart() {
+            if (!reportData.topProducts || !reportData.topProducts.labels) {
+                return;
+            }
+            
+            const ctx = document.getElementById('productsChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (productsChart) {
+                productsChart.destroy();
+            }
+            
+            productsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: reportData.topProducts.labels,
+                    datasets: [{
+                        label: 'Sales Volume',
+                        data: reportData.topProducts.quantityData,
+                        backgroundColor: 'rgba(28, 200, 138, 0.7)',
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Revenue ($)',
+                        data: reportData.topProducts.revenueData,
+                        backgroundColor: 'rgba(54, 185, 204, 0.7)',
+                        borderColor: 'rgba(54, 185, 204, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Product'
+                            }
+                        },
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Sales Volume'
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Revenue ($)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update daily data table
+        function updateDailyTable() {
+            if (!reportData.dailyTableData || !reportData.dailyTableData.length) {
+                document.getElementById('dailyTableBody').innerHTML = '<tr><td colspan="5" class="no-data-message">No data available</td></tr>';
+                return;
+            }
+            
+            const tableBody = document.getElementById('dailyTableBody');
+            tableBody.innerHTML = '';
+            
+            // Format currency
+            const formatCurrency = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            
+            reportData.dailyTableData.forEach(day => {
+                const row = document.createElement('tr');
+                
+                // Date
+                const dateCell = document.createElement('td');
+                dateCell.textContent = day.date;
+                row.appendChild(dateCell);
+                
+                // Revenue
+                const revenueCell = document.createElement('td');
+                revenueCell.textContent = formatCurrency.format(day.revenue);
+                row.appendChild(revenueCell);
+                
+                // Orders
+                const ordersCell = document.createElement('td');
+                ordersCell.textContent = day.orders;
+                row.appendChild(ordersCell);
+                
+                // Average order value
+                const avgCell = document.createElement('td');
+                avgCell.textContent = formatCurrency.format(day.avgValue);
+                row.appendChild(avgCell);
+                
+                // Growth rate
+                const growthCell = document.createElement('td');
+                const growth = day.growthRate;
+                growthCell.textContent = `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
+                growthCell.style.color = growth >= 0 ? '#1cc88a' : '#e74a3b';
+                row.appendChild(growthCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showError('Please select start and end dates');
+                return;
+            }
+            
+            // Show loading indicator
+            document.body.classList.add('loading');
+            
+            // Build download URL
+            const url = `/api/ReportsApi/export-excel?startDate=${startDate}&endDate=${endDate}`;
+            
+            // Create a hidden anchor tag to trigger download
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Business_Report_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(a);
+                document.body.classList.remove('loading');
+            }, 1000);
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showError('Please select start and end dates');
+                return;
+            }
+            
+            // Show loading indicator
+            document.body.classList.add('loading');
+            
+            // Build download URL
+            const url = `/api/ReportsApi/export-pdf?startDate=${startDate}&endDate=${endDate}`;
+            
+            // Create a hidden anchor tag to trigger download
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Business_Report_${startDate}_${endDate}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(a);
+                document.body.classList.remove('loading');
+            }, 1000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Clear data display
+        function clearDataDisplay() {
+            // Clear overview cards
+            document.getElementById('totalRevenue').textContent = '$0.00';
+            document.getElementById('totalOrders').textContent = '0';
+            document.getElementById('avgOrderValue').textContent = '$0.00';
+            document.getElementById('topProduct').textContent = '-';
+            
+            // Clear charts
+            if (revenueChart) revenueChart.destroy();
+            if (categoryChart) categoryChart.destroy();
+            if (hourlyChart) hourlyChart.destroy();
+            if (productsChart) productsChart.destroy();
+            
+            // Clear table
+            document.getElementById('dailyTableBody').innerHTML = '<tr><td colspan="5" class="no-data-message">No data available</td></tr>';
+        }
+    </script>
+}

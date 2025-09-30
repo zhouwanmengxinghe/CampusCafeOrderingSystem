@@ -1,0 +1,173 @@
+@{
+    ViewData["Title"] = "My Account";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-circle"></i> My Account Dashboard</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Profile Section -->
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Profile</h5>
+                                    <p class="card-text">Manage your personal information and account details</p>
+                                    <a asp-action="Profile" class="btn btn-primary">
+                                        <i class="fas fa-edit"></i> Edit Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preferences Section -->
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cog fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Preferences</h5>
+                                    <p class="card-text">Customize your notifications, theme, and delivery settings</p>
+                                    <a asp-action="Preferences" class="btn btn-success">
+                                        <i class="fas fa-sliders-h"></i> Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order History Section -->
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <div class="card h-100 border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shopping-bag fa-3x text-info mb-3"></i>
+                                    <h5 class="card-title">Order History</h5>
+                                    <p class="card-text">View your past orders and track current ones</p>
+                                    <a asp-controller="Order" asp-action="MyOrders" class="btn btn-info">
+                                        <i class="fas fa-list"></i> View Orders
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credits Section -->
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-coins fa-3x text-warning mb-3"></i>
+                                    <h5 class="card-title">Credits</h5>
+                                    <p class="card-text">Check your credit balance and transaction history</p>
+                                    <a asp-action="Credits" class="btn btn-warning">
+                                        <i class="fas fa-wallet"></i> View Credits
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Quick Actions -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mb-3"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-history fa-2x text-secondary mb-2"></i>
+                                            <h6>Activity History</h6>
+                                            <a asp-action="History" class="btn btn-sm btn-outline-secondary">
+                                                View History
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-comments fa-2x text-secondary mb-2"></i>
+                                            <h6>My Feedback</h6>
+                                            <a asp-controller="Support" asp-action="MyFeedback" class="btn btn-sm btn-outline-secondary">
+                                                View Feedback
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-utensils fa-2x text-secondary mb-2"></i>
+                                            <h6>Catering Requests</h6>
+                                            <a asp-controller="Catering" asp-action="Apply" class="btn btn-sm btn-outline-secondary">
+                                                New Request
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Summary -->
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mb-3"><i class="fas fa-chart-line"></i> Account Summary</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h3 class="text-primary">@ViewBag.TotalOrders</h3>
+                                        <small class="text-muted">Total Orders</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h3 class="text-success">@(((decimal?)ViewBag.TotalSpent ?? 0).ToString("C"))</h3>
+                                        <small class="text-muted">Total Spent</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h3 class="text-warning">@(((decimal?)ViewBag.CurrentCredits ?? 0).ToString("C"))</h3>
+                                        <small class="text-muted">Credits Balance</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h3 class="text-info">@ViewBag.FeedbackCount</h3>
+                                        <small class="text-muted">Feedback Given</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    .border-primary {
+        border-color: #007bff !important;
+    }
+    .border-success {
+        border-color: #28a745 !important;
+    }
+    .border-info {
+        border-color: #17a2b8 !important;
+    }
+    .border-warning {
+        border-color: #ffc107 !important;
+    }
+</style>

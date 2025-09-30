@@ -1,0 +1,1380 @@
+@{
+    ViewData["Title"] = "Order Management";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        /* Order management container styles */
+        .orders-container {
+            padding: 20px;
+        }
+
+        /* Page header styles */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Loading indicator styles */
+        body.loading::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 9998;
+        }
+
+        body.loading::after {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            margin-top: -25px;
+            margin-left: -25px;
+            border-radius: 50%;
+            border: 5px solid #f3f3f3;
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+            z-index: 9999;
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Order statistics styles */
+        .order-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+
+        /* Filter and search area styles */
+        .filters-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            margin-left: auto;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        /* Order list styles */
+        .orders-list {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .order-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .order-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 5px;
+        }
+
+        .order-time {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .order-customer {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .customer-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .customer-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .order-amount {
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .order-status {
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+
+        .status-preparing {
+            background-color: #b8daff;
+            color: #004085;
+        }
+
+        .status-delivering {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .order-actions {
+            min-width: 100px;
+            text-align: right;
+        }
+
+        /* Pagination styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Order details modal styles */
+        .order-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .order-detail-id {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .order-detail-time {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .order-detail-status {
+            text-align: right;
+        }
+
+        .order-detail-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+
+        .customer-detail {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .customer-detail p {
+            margin-bottom: 5px;
+        }
+
+        .order-items-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .order-items-table th {
+            background-color: #f8f9fa;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .order-items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .order-total {
+            text-align: right;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+
+        .order-notes {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #6c757d;
+        }
+
+        /* Error message styles */
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* No data message styles */
+        .no-orders-message {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            font-style: italic;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive layout */
+        @@media (max-width: 768px) {
+            .order-stats {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .filters-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-box {
+                margin-left: 0;
+                max-width: 100%;
+            }
+
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .order-info, .order-customer, .order-amount, .order-status, .order-actions {
+                width: 100%;
+                text-align: left;
+                min-width: auto;
+            }
+
+            .order-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+            }
+        }
+    </style>
+}
+
+<div class="orders-container">
+    @Html.AntiForgeryToken()
+
+    <div class="page-header">
+        <h1 class="page-title">Order Management</h1>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="order-stats">
+        <div class="stat-card">
+            <div class="stat-title">Pending</div>
+            <div class="stat-value" id="pendingCount">0 <span class="notification-badge" id="pendingBadge">0</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Preparing</div>
+            <div class="stat-value" id="preparingCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Delivering</div>
+            <div class="stat-value" id="deliveringCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Completed</div>
+            <div class="stat-value" id="completedCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Today Total</div>
+            <div class="stat-value" id="todayTotalCount">0</div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <div class="filter-group">
+            <label for="statusFilter">Status:</label>
+            <select id="statusFilter" class="form-control form-control-sm">
+                <option value="all">All</option>
+                <option value="Pending">Pending</option>
+                <option value="Preparing">Preparing</option>
+                <option value="Delivering">Delivering</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="dateFilter">Date Range:</label>
+            <select id="dateFilter" class="form-control form-control-sm">
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="thisWeek">This Week</option>
+                <option value="lastWeek">Last Week</option>
+                <option value="thisMonth">This Month</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+        <div class="filter-group" id="customDateRange" style="display: none;">
+            <input type="date" id="startDate" class="form-control form-control-sm">
+            <span>to</span>
+            <input type="date" id="endDate" class="form-control form-control-sm">
+            <button id="applyDateRange" class="btn btn-primary btn-sm">Apply</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search order number, customer name...">
+        </div>
+    </div>
+
+    <div id="ordersListContainer">
+        <!-- Order list will be dynamically populated by JavaScript -->
+    </div>
+
+    <div class="pagination-container">
+        <nav aria-label="Order pagination">
+            <ul class="pagination" id="ordersPagination">
+                <!-- Pagination will be dynamically populated by JavaScript -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailModalLabel">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- Order details will be dynamically populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div id="orderActionButtons">
+                    <!-- Order action buttons will be dynamically populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let currentOrders = [];
+        let currentOrderId = null;
+        let statusFilter = 'all';
+        let dateRange = {
+            type: 'today',
+            startDate: null,
+            endDate: null
+        };
+        let searchTerm = '';
+
+        // Initialize after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date range to today
+            setDateRange('today');
+            
+            // Bind filter events
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                statusFilter = this.value;
+                currentPage = 1;
+                loadOrders();
+            });
+            
+            document.getElementById('dateFilter').addEventListener('change', function() {
+                const value = this.value;
+                if (value === 'custom') {
+                    document.getElementById('customDateRange').style.display = 'flex';
+                } else {
+                    document.getElementById('customDateRange').style.display = 'none';
+                    setDateRange(value);
+                    // 选择预设日期范围后，刷新统计
+                    loadOrderStats();
+                }
+            });
+            
+            document.getElementById('applyDateRange').addEventListener('click', function() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (!startDate || !endDate) {
+                    showError('Please select start and end dates');
+                    return;
+                }
+                
+                dateRange = {
+                    type: 'custom',
+                    startDate: startDate,
+                    endDate: endDate
+                };
+                
+                currentPage = 1;
+                loadOrders();
+                // 自定义日期范围应用后，刷新统计
+                loadOrderStats();
+            });
+            
+            // Bind search box events
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    searchTerm = this.value.trim();
+                    currentPage = 1;
+                    loadOrders();
+                }, 500);
+            });
+            
+            // Load initial order data
+            loadOrders();
+            
+            // Load order statistics data
+            loadOrderStats();
+        });
+
+        // 设置日期范围
+        function setDateRange(range) {
+            const today = new Date();
+            let startDate = new Date();
+            let endDate = new Date();
+            
+            switch(range) {
+                case 'today':
+                    // Today
+                    break;
+                
+                case 'yesterday':
+                    // Yesterday
+                    startDate.setDate(today.getDate() - 1);
+                    endDate.setDate(today.getDate() - 1);
+                    break;
+                
+                case 'thisWeek':
+                    // This week (from Monday to today)
+                    const dayOfWeek = today.getDay() || 7; // Convert Sunday's 0 to 7
+                    startDate.setDate(today.getDate() - dayOfWeek + 1); // Set to this Monday
+                    break;
+                
+                case 'lastWeek':
+                    // Last week (from last Monday to last Sunday)
+                    const lastWeekDay = today.getDay() || 7;
+                    startDate.setDate(today.getDate() - lastWeekDay - 6); // Last Monday
+                    endDate.setDate(today.getDate() - lastWeekDay); // Last Sunday
+                    break;
+                
+                case 'thisMonth':
+                    // This month (from 1st of this month to today)
+                    startDate.setDate(1);
+                    break;
+                
+                case 'lastMonth':
+                    // Last month (from 1st of last month to last day of last month)
+                    startDate.setMonth(today.getMonth() - 1);
+                    startDate.setDate(1);
+                    endDate.setDate(0); // Last day of last month
+                    break;
+            }
+            
+            // Update date range
+            dateRange = {
+                type: range,
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0]
+            };
+            
+            // Update custom date input fields
+            document.getElementById('startDate').value = dateRange.startDate;
+            document.getElementById('endDate').value = dateRange.endDate;
+            
+            // Reload orders
+            currentPage = 1;
+            loadOrders();
+            // 预设日期范围变化后刷新统计
+            loadOrderStats();
+        }
+
+        // Load order data
+        async function loadOrders() {
+            try {
+                // Show loading indicator
+                document.body.classList.add('loading');
+                
+                // Clear error messages
+                hideError();
+                
+                // Build API query parameters
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    pageSize: pageSize
+                });
+                
+                if (statusFilter !== 'all') {
+                    const apiStatus = statusFilter === 'Delivering' ? 'InDelivery' : statusFilter;
+                    params.append('status', apiStatus);
+                }
+                
+                if (searchTerm) {
+                    params.append('search', searchTerm);
+                }
+                
+                if (dateRange && dateRange.startDate && dateRange.endDate) {
+                    params.append('startDate', dateRange.startDate);
+                    params.append('endDate', dateRange.endDate);
+                }
+                
+                // Call real API to get orders
+                console.log(`Loading orders from API: /api/OrderApi?${params.toString()}`);
+                const response = await fetch(`/api/OrderApi?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const apiResponse = await response.json();
+                console.log('API response:', apiResponse);
+                
+                if (apiResponse.isSuccess && apiResponse.data) {
+                    // Transform API data to match expected format
+                    currentOrders = apiResponse.data.items.map(order => ({
+                        id: order.id,
+                        orderNumber: order.orderNumber,
+                        customerName: order.customerName,
+                        customerPhone: order.customerPhone || 'N/A',
+                        customerEmail: order.customerEmail || 'N/A',
+                        deliveryAddress: order.deliveryAddress || 'N/A',
+                        status: order.status === 'InDelivery' ? 'Delivering' : order.status,
+                        orderTime: order.orderDate,
+                        totalAmount: order.totalAmount,
+                        orderItems: order.items ? order.items.map(item => ({
+                            productName: item.menuItemName,
+                            unitPrice: item.unitPrice,
+                            quantity: item.quantity
+                        })) : [],
+                        notes: order.notes || null
+                    }));
+                    
+                    totalPages = Math.ceil(apiResponse.data.totalCount / pageSize);
+                    
+                    console.log('Transformed order data:', { orders: currentOrders, totalPages });
+                } else {
+                    throw new Error(apiResponse.message || 'Failed to load orders');
+                }
+                
+                // Update UI
+                updateOrdersList();
+                updatePagination();
+            } catch (error) {
+                console.error('Error loading order data:', error);
+                showError(`Error loading order data: ${error.message}`);
+                
+                // Clear order list
+                document.getElementById('ordersListContainer').innerHTML = `
+                    <div class="no-orders-message">
+                        <i class="fas fa-exclamation-circle"></i> Unable to load order data
+                    </div>
+                `;
+                
+                // Clear pagination
+                document.getElementById('ordersPagination').innerHTML = '';
+            } finally {
+                // Hide loading indicator
+                document.body.classList.remove('loading');
+            }
+        }
+
+        // Load order statistics data
+        async function loadOrderStats() {
+            try {
+                // Build stats API query parameters with selected date range
+                const params = new URLSearchParams();
+                if (dateRange && dateRange.startDate && dateRange.endDate) {
+                    params.append('startDate', dateRange.startDate);
+                    params.append('endDate', dateRange.endDate);
+                }
+
+                const url = params.toString() ? `/api/OrderApi/stats?${params.toString()}` : '/api/OrderApi/stats';
+                console.log('Loading order statistics from API:', url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const apiResponse = await response.json();
+                console.log('Order stats API response:', apiResponse);
+                
+                if (apiResponse.isSuccess && apiResponse.data) {
+                    const stats = {
+                        pendingCount: apiResponse.data.pendingOrders || 0,
+                        preparingCount: apiResponse.data.preparingOrders || 0,
+                        deliveringCount: apiResponse.data.inDeliveryOrders || 0,
+                        completedCount: apiResponse.data.completedOrders || 0,
+                        todayTotalCount: apiResponse.data.totalOrders || 0
+                    };
+                    
+                    console.log('Transformed order statistics data:', stats);
+                    
+                    // Update UI
+                    document.getElementById('pendingCount').innerHTML = `${stats.pendingCount} <span class="notification-badge" id="pendingBadge">${stats.pendingCount}</span>`;
+                    document.getElementById('preparingCount').textContent = stats.preparingCount;
+                    document.getElementById('deliveringCount').textContent = stats.deliveringCount;
+                    document.getElementById('completedCount').textContent = stats.completedCount;
+                    document.getElementById('todayTotalCount').textContent = stats.todayTotalCount;
+                    
+                    // Hide notification badge if no pending orders
+                    if (stats.pendingCount === 0) {
+                        document.getElementById('pendingBadge').style.display = 'none';
+                    }
+                } else {
+                    throw new Error(apiResponse.message || 'Failed to load order statistics');
+                }
+            } catch (error) {
+                console.error('Error loading order statistics data:', error);
+                // Fallback to default values if API fails
+                document.getElementById('pendingCount').innerHTML = `0 <span class="notification-badge" id="pendingBadge" style="display: none;">0</span>`;
+                document.getElementById('preparingCount').textContent = '0';
+                document.getElementById('deliveringCount').textContent = '0';
+                document.getElementById('completedCount').textContent = '0';
+                document.getElementById('todayTotalCount').textContent = '0';
+            }
+        }
+
+        // Update orders list
+        function updateOrdersList() {
+            const container = document.getElementById('ordersListContainer');
+            
+            if (!currentOrders || currentOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="no-orders-message">
+                        <i class="fas fa-coffee"></i> No orders found matching the criteria
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="orders-list">';
+            
+            currentOrders.forEach(order => {
+                // Format order status
+                let statusClass = '';
+                let statusText = '';
+                
+                switch (order.status) {
+                    case 'Pending':
+                        statusClass = 'status-pending';
+                        statusText = 'Pending';
+                        break;
+                    case 'Preparing':
+                        statusClass = 'status-preparing';
+                        statusText = 'Preparing';
+                        break;
+                    case 'Delivering':
+                        statusClass = 'status-delivering';
+                        statusText = 'Delivering';
+                        break;
+                    case 'Completed':
+                        statusClass = 'status-completed';
+                        statusText = 'Completed';
+                        break;
+                    case 'Cancelled':
+                        statusClass = 'status-cancelled';
+                        statusText = 'Cancelled';
+                        break;
+                }
+                
+                // Format order time
+                const orderDate = new Date(order.orderTime);
+                const formattedDate = orderDate.toLocaleDateString('en-US');
+                const formattedTime = orderDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                
+                // Format amount
+                const formattedAmount = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(order.totalAmount);
+                
+                html += `
+                    <div class="order-item">
+                        <div class="order-info">
+                            <div class="order-id">${order.orderNumber}</div>
+                            <div class="order-time">${formattedDate} ${formattedTime}</div>
+                        </div>
+                        <div class="order-customer">
+                            <div class="customer-name">${order.customerName}</div>
+                            <div class="customer-info">${order.customerPhone || 'No phone'}</div>
+                        </div>
+                        <div class="order-amount">${formattedAmount}</div>
+                        <div class="order-status">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetail('${order.id}')">View Details</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Update pagination
+        function updatePagination() {
+            const pagination = document.getElementById('ordersPagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // Previous page button
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="${currentPage > 1 ? 'changePage(' + (currentPage - 1) + ')' : 'return false'}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            `;
+            
+            // Page number buttons
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+            
+            // Next page button
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="${currentPage < totalPages ? 'changePage(' + (currentPage + 1) + ')' : 'return false'}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > totalPages) {
+                return;
+            }
+            
+            currentPage = page;
+            loadOrders();
+        }
+
+        // Generate fake orders data
+        function generateFakeOrders() {
+            const statuses = ['Pending', 'Preparing', 'Delivering', 'Completed', 'Cancelled'];
+            const customers = [
+                { name: 'John Smith', phone: '+64-21-555-0123', email: 'john.smith@email.com' },
+                { name: 'Emily Johnson', phone: '+64-21-555-0124', email: 'emily.johnson@email.com' },
+                { name: 'Michael Brown', phone: '+64-21-555-0125', email: 'michael.brown@email.com' },
+                { name: 'Sarah Davis', phone: '+64-21-555-0126', email: 'sarah.davis@email.com' },
+                { name: 'David Wilson', phone: '+64-21-555-0127', email: 'david.wilson@email.com' },
+                { name: 'Lisa Anderson', phone: '+64-21-555-0128', email: 'lisa.anderson@email.com' },
+                { name: 'Robert Taylor', phone: '+64-21-555-0129', email: 'robert.taylor@email.com' },
+                { name: 'Jennifer Martinez', phone: '+64-21-555-0130', email: 'jennifer.martinez@email.com' }
+            ];
+            
+            const products = [
+                { name: 'Cappuccino', price: 4.50 },
+                { name: 'Latte', price: 5.00 },
+                { name: 'Americano', price: 3.50 },
+                { name: 'Espresso', price: 2.50 },
+                { name: 'Mocha', price: 5.50 },
+                { name: 'Croissant', price: 3.00 },
+                { name: 'Muffin', price: 2.75 },
+                { name: 'Sandwich', price: 7.50 }
+            ];
+            
+            const orders = [];
+            const today = new Date();
+            
+            for (let i = 1; i <= 20; i++) {
+                const customer = customers[Math.floor(Math.random() * customers.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                
+                // Generate order time (within last 7 days)
+                const orderTime = new Date(today.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000);
+                
+                // Generate order items
+                const itemCount = Math.floor(Math.random() * 4) + 1;
+                const orderItems = [];
+                let totalAmount = 0;
+                
+                for (let j = 0; j < itemCount; j++) {
+                    const product = products[Math.floor(Math.random() * products.length)];
+                    const quantity = Math.floor(Math.random() * 3) + 1;
+                    const subtotal = product.price * quantity;
+                    
+                    orderItems.push({
+                        productName: product.name,
+                        unitPrice: product.price,
+                        quantity: quantity
+                    });
+                    
+                    totalAmount += subtotal;
+                }
+                
+                orders.push({
+                    id: `order-${i}`,
+                    orderNumber: `ORD${String(i).padStart(4, '0')}`,
+                    customerName: customer.name,
+                    customerPhone: customer.phone,
+                    customerEmail: customer.email,
+                    deliveryAddress: `${Math.floor(Math.random() * 999) + 1} Main St, Campus City`,
+                    status: status,
+                    orderTime: orderTime.toISOString(),
+                    totalAmount: totalAmount,
+                    orderItems: orderItems,
+                    notes: Math.random() > 0.7 ? 'Please make it extra hot' : null
+                });
+            }
+            
+            // Sort by order time (newest first)
+            return orders.sort((a, b) => new Date(b.orderTime) - new Date(a.orderTime));
+        }
+
+        // View order details
+        async function viewOrderDetail(orderId) {
+            try {
+                // Show loading indicator
+                document.body.classList.add('loading');
+                
+                const numericId = typeof orderId === 'string' ? parseInt(orderId.replace('order-', ''), 10) : orderId;
+                if (!numericId || Number.isNaN(numericId)) {
+                    throw new Error('Invalid order id');
+                }
+
+                const response = await fetch(`/api/OrderApi/${numericId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const apiResponse = await response.json();
+
+                if (!apiResponse || !apiResponse.isSuccess || !apiResponse.data) {
+                    throw new Error(apiResponse?.message || 'Failed to load order details');
+                }
+
+                const dto = apiResponse.data;
+                const order = {
+                    id: dto.id,
+                    orderNumber: dto.orderNumber,
+                    customerName: dto.customerName,
+                    customerPhone: dto.customerPhone || 'N/A',
+                    customerEmail: dto.customerEmail || 'N/A',
+                    deliveryAddress: dto.deliveryAddress || 'N/A',
+                    status: dto.status === 'InDelivery' ? 'Delivering' : dto.status,
+                    orderTime: dto.orderDate,
+                    totalAmount: dto.totalAmount,
+                    orderItems: Array.isArray(dto.items) ? dto.items.map(item => ({
+                        productName: item.menuItemName,
+                        unitPrice: item.unitPrice,
+                        quantity: item.quantity
+                    })) : [],
+                    notes: dto.notes || null
+                };
+                
+                // Save current order ID
+                currentOrderId = numericId;
+                
+                // Update modal content
+                updateOrderDetailModal(order);
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                showError(`Error loading order details: ${error.message}`);
+            } finally {
+                // Hide loading indicator
+                document.body.classList.remove('loading');
+            }
+        }
+
+        // Update order details modal
+        function updateOrderDetailModal(order) {
+            const content = document.getElementById('orderDetailContent');
+            
+            // Format order status
+            let statusClass = '';
+            let statusText = '';
+            
+            switch (order.status) {
+                case 'Pending':
+                    statusClass = 'status-pending';
+                    statusText = 'Pending';
+                    break;
+                case 'Preparing':
+                    statusClass = 'status-preparing';
+                    statusText = 'Preparing';
+                    break;
+                case 'Delivering':
+                    statusClass = 'status-delivering';
+                    statusText = 'Delivering';
+                    break;
+                case 'Completed':
+                    statusClass = 'status-completed';
+                    statusText = 'Completed';
+                    break;
+                case 'Cancelled':
+                    statusClass = 'status-cancelled';
+                    statusText = 'Cancelled';
+                    break;
+            }
+            
+            // Format order time
+            const orderDate = new Date(order.orderTime);
+            const formattedDate = orderDate.toLocaleDateString('en-US');
+            const formattedTime = orderDate.toLocaleTimeString('en-US');
+            
+            // Format currency
+            const formatCurrency = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            });
+            
+            // Build order details HTML
+            let html = `
+                <div class="order-detail-header">
+                    <div>
+                        <div class="order-detail-id">Order Number: ${order.orderNumber}</div>
+                        <div class="order-detail-time">Order Time: ${formattedDate} ${formattedTime}</div>
+                    </div>
+                    <div class="order-detail-status">
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                
+                <div class="order-detail-section">
+                    <div class="section-title">Customer Information</div>
+                    <div class="customer-detail">
+                        <p><strong>Name:</strong> ${order.customerName}</p>
+                        <p><strong>Phone:</strong> ${order.customerPhone || 'None'}</p>
+                        <p><strong>Email:</strong> ${order.customerEmail || 'None'}</p>
+                        <p><strong>Delivery Address:</strong> ${order.deliveryAddress || 'None'}</p>
+                    </div>
+                </div>
+                
+                <div class="order-detail-section">
+                    <div class="section-title">Order Items</div>
+                    <table class="order-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Unit Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Add order items
+            order.orderItems.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.productName}</td>
+                        <td>${formatCurrency.format(item.unitPrice)}</td>
+                        <td>${item.quantity}</td>
+                        <td>${formatCurrency.format(item.unitPrice * item.quantity)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="order-total">Total: ${formatCurrency.format(order.totalAmount)}</div>
+                </div>
+            `;
+            
+            // Add order notes (if any)
+            if (order.notes) {
+                html += `
+                    <div class="order-detail-section">
+                        <div class="section-title">Order Notes</div>
+                        <div class="order-notes">${order.notes}</div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = html;
+            
+            // Update action buttons
+            updateOrderActionButtons(order.status);
+        }
+
+        // Update order action buttons
+        function updateOrderActionButtons(status) {
+            const buttonsContainer = document.getElementById('orderActionButtons');
+            
+            let html = '';
+            
+            switch (status) {
+                case 'Pending':
+                    html = `
+                        <button type="button" class="btn btn-primary" onclick="updateOrderStatus('Preparing')">Accept Order</button>
+                        <button type="button" class="btn btn-danger" onclick="updateOrderStatus('Cancelled')">Cancel Order</button>
+                    `;
+                    break;
+                case 'Preparing':
+                    html = `
+                        <button type="button" class="btn btn-success" onclick="updateOrderStatus('Delivering')">Start Delivery</button>
+                        <button type="button" class="btn btn-danger" onclick="updateOrderStatus('Cancelled')">Cancel Order</button>
+                    `;
+                    break;
+                case 'Delivering':
+                    html = `
+                        <button type="button" class="btn btn-success" onclick="updateOrderStatus('Completed')">Mark Completed</button>
+                    `;
+                    break;
+                case 'Completed':
+                case 'Cancelled':
+                    // Completed or cancelled orders have no action buttons
+                    break;
+            }
+            
+            buttonsContainer.innerHTML = html;
+        }
+
+        // Update order status
+        async function updateOrderStatus(newStatus) {
+            if (!currentOrderId) {
+                return;
+            }
+            
+            try {
+                // Show loading indicator
+                document.body.classList.add('loading');
+                
+                // Map UI status to backend enum if necessary
+                const payloadStatus = newStatus === 'Delivering' ? 'InDelivery' : newStatus;
+                
+                // Send update request
+                const response = await fetch(`/api/OrderApi/${currentOrderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        Status: payloadStatus
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to update order status: ${response.status} ${response.statusText}`);
+                }
+                
+                console.log(`Order ${currentOrderId} status updated to ${payloadStatus}`);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('orderDetailModal'));
+                modal.hide();
+                
+                // Reload order data and statistics
+                loadOrders();
+                loadOrderStats();
+            } catch (error) {
+                console.error('Error updating order status:', error);
+                showError(`Error updating order status: ${error.message}`);
+            } finally {
+                // Hide loading indicator
+                document.body.classList.remove('loading');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // SignalR connection
+        let signalRConnection;
+
+        // Initialize SignalR connection
+        function initializeSignalR() {
+            signalRConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/orderHub")
+                .build();
+
+            // Listen for new order events
+            signalRConnection.on("NewOrder", function (orderData) {
+                console.log('New order received:', orderData);
+                
+                // Show new order notification
+                showNewOrderNotification(orderData);
+                
+                // Refresh order list and statistics
+                loadOrders();
+                loadOrderStats();
+                
+                // Update pending count badge
+                updatePendingBadge();
+            });
+
+            // Listen for order status update events
+            signalRConnection.on("OrderStatusUpdated", function (orderData) {
+                console.log('Order status updated:', orderData);
+                
+                // Refresh order list and statistics
+                loadOrders();
+                loadOrderStats();
+            });
+
+            // Start connection
+            signalRConnection.start().then(function () {
+                console.log("SignalR connection established for Order Management");
+                
+                // Get current merchant email and join merchant group
+                fetch('/api/account/current-user', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.email) {
+                            signalRConnection.invoke("JoinMerchantGroup", data.email);
+                        }
+                    })
+                    .catch(err => console.error('Failed to get user info:', err));
+            }).catch(function (err) {
+                console.error("SignalR connection failed:", err);
+            });
+        }
+
+        // Show new order notification
+        function showNewOrderNotification(orderData) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-bell me-2"></i>
+                    <div>
+                        <strong>New Order Notification!</strong><br>
+                Order Number: ${orderData.orderNumber}<br>
+                Customer: ${orderData.customerName}<br>
+                Amount: $${orderData.totalAmount.toFixed(2)}
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Play notification sound (if available)
+            try {
+                const audio = new Audio('/sounds/notification.mp3');
+                audio.play().catch(e => console.log('Could not play notification sound'));
+            } catch (e) {
+                console.log('Notification sound not available');
+            }
+            
+            // Auto remove after 10 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 10000);
+        }
+
+        // Update pending count badge
+        function updatePendingBadge() {
+            const pendingBadge = document.getElementById('pendingBadge');
+            if (pendingBadge) {
+                const currentCount = parseInt(pendingBadge.textContent) || 0;
+                pendingBadge.textContent = currentCount + 1;
+                pendingBadge.style.display = 'inline';
+            }
+        }
+
+        // Initialize SignalR when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSignalR();
+        });
+    </script>
+}
