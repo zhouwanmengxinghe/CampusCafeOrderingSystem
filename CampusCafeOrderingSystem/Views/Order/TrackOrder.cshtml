@@ -1,0 +1,261 @@
+@{
+    ViewData["Title"] = "Track Your Order";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card track-card">
+                <div class="card-header text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-search"></i> Track Your Order
+                    </h3>
+                    <p class="mb-0 mt-2">Enter your order number to check the status</p>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            @ViewBag.ErrorMessage
+                        </div>
+                    }
+                    
+                    <form asp-action="Track" method="get" class="track-form">
+                        <div class="form-group mb-4">
+                            <label for="orderNumber" class="form-label">
+                                <i class="fas fa-hashtag"></i> Order Number
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="orderNumber" 
+                                   name="orderNumber" 
+                                   placeholder="Enter your order number (e.g., ORD20240101123456789)" 
+                                   required 
+                                   autocomplete="off">
+                            <div class="form-text">
+                                You can find your order number in the payment confirmation or receipt.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search"></i> Track Order
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="help-section mt-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-question-circle"></i> Need Help?
+                        </h6>
+                        <div class="help-content">
+                            <p class="small text-muted mb-2">
+                                <strong>Where to find your order number:</strong>
+                            </p>
+                            <ul class="small text-muted">
+                                <li>Check your payment confirmation page</li>
+                                <li>Look in your email receipt (if provided)</li>
+                                <li>Order numbers start with "ORD" followed by date and time</li>
+                            </ul>
+                            
+                            <div class="contact-info mt-3 p-3 bg-light rounded">
+                                <p class="small mb-1">
+                                    <i class="fas fa-headset text-primary"></i>
+                                    <strong>Customer Service:</strong> 400-123-4567
+                                </p>
+                                <p class="small mb-0">
+                                    <i class="fas fa-clock text-primary"></i>
+                                    <strong>Hours:</strong> 8:00 AM - 10:00 PM
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Access for Logged-in Users -->
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="text-center mt-4">
+                    <p class="text-muted">Already logged in?</p>
+                    <a asp-action="MyOrders" class="btn btn-outline-success">
+                        <i class="fas fa-list"></i> View All My Orders
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-green: #4CAF50;
+    --light-green: #8BC34A;
+    --background-gray: #F9F9F9;
+    --text-primary: #333333;
+    --text-secondary: #777777;
+    --hover-green: #C8E6C9;
+}
+
+body {
+    background-color: var(--background-gray);
+}
+
+.track-card {
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    background-color: white;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.track-card .card-header {
+    background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+    color: white;
+    border-bottom: none;
+    padding: 2rem 1.5rem;
+}
+
+.track-card .card-header h3 {
+    font-weight: 600;
+}
+
+.track-form .form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.track-form .form-label i {
+    margin-right: 0.5rem;
+    color: var(--primary-green);
+}
+
+.form-control-lg {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control-lg:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+.form-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--light-green), var(--primary-green));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-outline-success {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.btn-outline-success:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.help-section {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1.5rem;
+}
+
+.help-section h6 {
+    font-weight: 600;
+}
+
+.help-content ul {
+    padding-left: 1.2rem;
+}
+
+.help-content li {
+    margin-bottom: 0.25rem;
+}
+
+.contact-info {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e9ecef;
+}
+
+.contact-info i {
+    width: 16px;
+    margin-right: 0.5rem;
+}
+
+.alert-danger {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+    color: #721c24;
+    border-radius: 10px;
+}
+
+.text-primary {
+    color: var(--primary-green) !important;
+}
+
+@@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .track-card .card-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .track-card .card-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .form-control-lg {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Auto-focus on the order number input
+    $('#orderNumber').focus();
+    
+    // Format order number input (optional)
+    $('#orderNumber').on('input', function() {
+        let value = $(this).val().toUpperCase();
+        $(this).val(value);
+    });
+    
+    // Form validation
+    $('.track-form').on('submit', function(e) {
+        const orderNumber = $('#orderNumber').val().trim();
+        
+        if (orderNumber.length < 3) {
+            e.preventDefault();
+            alert('Please enter a valid order number.');
+            $('#orderNumber').focus();
+        }
+    });
+});
+</script>

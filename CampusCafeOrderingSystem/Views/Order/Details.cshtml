@@ -1,0 +1,791 @@
+@model CampusCafeOrderingSystem.Models.Order
+@{
+    ViewData["Title"] = "Order Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+:root {
+    --primary-green: #4CAF50;
+    --light-green: #8BC34A;
+    --background-gray: #F9F9F9;
+    --text-primary: #333333;
+    --text-secondary: #777777;
+    --hover-green: #C8E6C9;
+}
+
+body {
+    background-color: var(--background-gray);
+}
+
+.order-hero {
+    background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+}
+
+.order-hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.order-hero p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border-radius: 15px;
+    overflow: hidden;
+    background-color: white;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 2px solid var(--primary-green);
+    padding: 1.25rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-item i {
+    width: 20px;
+    text-align: center;
+    margin-top: 0.25rem;
+}
+
+.info-content strong {
+    display: block;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.info-content p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-green) !important;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.badge-lg {
+    font-size: 1rem;
+    padding: 0.75rem 1.25rem;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-success {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn {
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1.25rem;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+    border-width: 2px;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+    border: none;
+    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+    border-width: 2px;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    transform: translateY(-2px);
+}
+
+@@media (max-width: 768px) {
+    .order-hero {
+        padding: 1.5rem 0;
+    }
+    
+    .order-hero h1 {
+        font-size: 1.75rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .info-item {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="order-hero text-center">
+        <div class="container">
+            <h1><i class="fas fa-receipt me-3"></i>Order Details</h1>
+            <p>View complete information about your order</p>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-primary mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Order Information
+                </h3>
+                <a asp-action="MyOrders" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Orders
+                </a>
+            </div>
+            
+            <!-- Order Info Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Order @Model.OrderNumber</h5>
+                        <span class="badge badge-@GetStatusClass(Model.Status) badge-lg">@Model.Status</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-calendar text-primary"></i>
+                                <div class="info-content">
+                                    <strong>Order Date</strong>
+                                    <p>@Model.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-credit-card text-primary"></i>
+                                <div class="info-content">
+                                    <strong>Payment Method</strong>
+                                    <p>@GetPaymentMethodDisplay(Model.PaymentMethod)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-hashtag text-primary"></i>
+                                <div class="info-content">
+                                    <strong>Transaction ID</strong>
+                                    <p>@Model.TransactionId</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-dollar-sign text-success"></i>
+                                <div class="info-content">
+                                    <strong>Total Amount</strong>
+                                    <p class="amount">¥@Model.TotalAmount.ToString("F2")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (Model.EstimatedCompletionTime.HasValue)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <i class="fas fa-clock text-info"></i>
+                                    <div class="info-content">
+                                        <strong>Estimated Completion</strong>
+                                        <p>@Model.EstimatedCompletionTime.Value.ToString("yyyy-MM-dd HH:mm")</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (Model.CompletedTime.HasValue)
+                            {
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        <div class="info-content">
+                                            <strong>Completed Time</strong>
+                                            <p>@Model.CompletedTime.Value.ToString("yyyy-MM-dd HH:mm")</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Order Items Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-cart"></i> Order Items (@Model.OrderItems.Count)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="item-info">
+                                                <h6 class="mb-0">@item.MenuItemName</h6>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-secondary">@item.Quantity</span>
+                                        </td>
+                                        <td class="text-end">¥@item.UnitPrice.ToString("F2")</td>
+                                        <td class="text-end font-weight-bold">¥@item.TotalPrice.ToString("F2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="3" class="text-end">Total Amount:</th>
+                                    <th class="text-end text-success">¥@Model.TotalAmount.ToString("F2")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Status Progress -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks"></i> Order Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-progress">
+                        @{
+                            var statuses = new[] {
+                                (CampusCafeOrderingSystem.Models.OrderStatus.Confirmed, "Order Confirmed", "fas fa-check-circle"),
+        (CampusCafeOrderingSystem.Models.OrderStatus.Preparing, "Preparing", "fas fa-utensils"),
+        (CampusCafeOrderingSystem.Models.OrderStatus.Ready, "Ready for Pickup", "fas fa-bell"),
+        (CampusCafeOrderingSystem.Models.OrderStatus.Completed, "Completed", "fas fa-thumbs-up")
+                            };
+                        }
+                        
+                        @for (int i = 0; i < statuses.Length; i++)
+                        {
+                            var (status, label, icon) = statuses[i];
+                            var isActive = (int)Model.Status >= (int)status;
+                            var isCurrent = Model.Status == status;
+                            
+                            <div class="progress-step @(isActive ? "active" : "") @(isCurrent ? "current" : "")">
+                                <div class="step-icon">
+                                    <i class="@icon"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">@label</h6>
+                                    @if (isCurrent)
+                                    {
+                                        <small class="text-primary">Current Status</small>
+                                    }
+                                </div>
+                                @if (i < statuses.Length - 1)
+                                {
+                                    <div class="step-connector @(isActive ? "active" : "")"></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Review Section for Completed Orders -->
+            @if (Model.Status == CampusCafeOrderingSystem.Models.OrderStatus.Completed)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-star"></i> Rate Your Order
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">How was your experience? Share your feedback to help us improve!</p>
+                        
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <div class="review-item mb-4 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">@item.MenuItemName</h6>
+                                    <div class="rating-stars" data-item-id="@item.MenuItemId">
+                                        <span class="star" data-rating="1">★</span>
+                                        <span class="star" data-rating="2">★</span>
+                                        <span class="star" data-rating="3">★</span>
+                                        <span class="star" data-rating="4">★</span>
+                                        <span class="star" data-rating="5">★</span>
+                                    </div>
+                                </div>
+                                <textarea class="form-control review-comment" data-item-id="@item.MenuItemId" 
+                                         placeholder="Share your thoughts about this item..." rows="3"></textarea>
+                            </div>
+                        }
+                        
+                        <div class="text-center mt-3">
+                            <button class="btn btn-primary" onclick="submitReviews()">
+                                <i class="fas fa-paper-plane"></i> Submit Reviews
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="text-center">
+                <a asp-action="Track" asp-route-orderNumber="@Model.OrderNumber" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Track Order
+                </a>
+                <a asp-controller="Menu" asp-action="Index" class="btn btn-success">
+                    <i class="fas fa-utensils"></i> Order Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(CampusCafeOrderingSystem.Models.OrderStatus status)
+{
+    return status switch
+    {
+        CampusCafeOrderingSystem.Models.OrderStatus.Pending => "warning",
+        CampusCafeOrderingSystem.Models.OrderStatus.Confirmed => "info",
+        CampusCafeOrderingSystem.Models.OrderStatus.Preparing => "primary",
+        CampusCafeOrderingSystem.Models.OrderStatus.Ready => "success",
+        CampusCafeOrderingSystem.Models.OrderStatus.Completed => "secondary",
+        CampusCafeOrderingSystem.Models.OrderStatus.Cancelled => "danger",
+        _ => "secondary"
+    };
+}
+    
+    string GetPaymentMethodDisplay(string paymentMethod)
+    {
+        return paymentMethod switch
+        {
+            "CreditCard" => "Credit/Debit Card",
+            "CampusCard" => "Campus Card",
+            "MobileWallet" => "Mobile Wallet",
+            _ => paymentMethod
+        };
+    }
+}
+
+<style>
+:root {
+    --primary-green: #4CAF50;
+    --light-green: #8BC34A;
+    --background-gray: #F9F9F9;
+    --text-primary: #333333;
+    --text-secondary: #777777;
+    --hover-green: #C8E6C9;
+}
+
+body {
+    background-color: var(--background-gray);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: white;
+}
+
+.card-header {
+    background-color: var(--primary-green);
+    color: white;
+    border-bottom: none;
+}
+
+.badge-lg {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.info-item i {
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    margin-top: 0.2rem;
+    width: 20px;
+    text-align: center;
+}
+
+.info-content {
+    flex: 1;
+}
+
+.info-content strong {
+    display: block;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.info-content p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.amount {
+    font-size: 1.2rem !important;
+    font-weight: bold !important;
+    color: var(--primary-green) !important;
+}
+
+.item-info h6 {
+    color: var(--text-primary);
+}
+
+.order-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    position: relative;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.progress-step.active {
+    opacity: 1;
+}
+
+.progress-step.current .step-icon {
+    background-color: var(--primary-green);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active .step-icon {
+    background-color: var(--light-green);
+    color: white;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.step-connector {
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    width: 2px;
+    height: 20px;
+    background-color: #e9ecef;
+    transition: background-color 0.3s ease;
+}
+
+.step-connector.active {
+    background-color: var(--light-green);
+}
+
+@@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+.btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.btn-primary:hover {
+    background-color: var(--hover-green);
+    border-color: var(--light-green);
+    color: var(--text-primary);
+}
+
+.btn-success {
+    background-color: var(--light-green);
+    border-color: var(--light-green);
+}
+
+.btn-success:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.text-primary {
+    color: var(--primary-green) !important;
+}
+
+.text-success {
+    color: var(--primary-green) !important;
+}
+
+/* Review Section Styles */
+.review-item {
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.review-item:hover {
+    background-color: #e9ecef;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.rating-stars .star {
+    font-size: 24px;
+    color: #ddd;
+    transition: color 0.2s ease;
+    user-select: none;
+}
+
+.rating-stars .star:hover,
+.rating-stars .star.active {
+    color: #ffc107;
+}
+
+.rating-stars .star.filled {
+    color: #ffc107;
+}
+
+.review-comment {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+.review-comment:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+@@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .info-item i {
+        margin-bottom: 0.5rem;
+    }
+    
+    .rating-stars {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rating stars
+    const ratingContainers = document.querySelectorAll('.rating-stars');
+    
+    ratingContainers.forEach(container => {
+        const stars = container.querySelectorAll('.star');
+        let currentRating = 0;
+        
+        stars.forEach((star, index) => {
+            star.addEventListener('mouseenter', () => {
+                highlightStars(stars, index + 1);
+            });
+            
+            star.addEventListener('mouseleave', () => {
+                highlightStars(stars, currentRating);
+            });
+            
+            star.addEventListener('click', () => {
+                currentRating = index + 1;
+                highlightStars(stars, currentRating);
+                container.setAttribute('data-rating', currentRating);
+            });
+        });
+    });
+});
+
+function highlightStars(stars, rating) {
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('filled');
+        } else {
+            star.classList.remove('filled');
+        }
+    });
+}
+
+async function submitReviews() {
+    const reviewItems = document.querySelectorAll('.review-item');
+    const reviews = [];
+    
+    reviewItems.forEach(item => {
+        const ratingContainer = item.querySelector('.rating-stars');
+        const commentTextarea = item.querySelector('.review-comment');
+        const menuItemId = ratingContainer.getAttribute('data-item-id');
+        const rating = ratingContainer.getAttribute('data-rating');
+        const comment = commentTextarea.value.trim();
+        
+        if (rating && rating > 0) {
+            reviews.push({
+                menuItemId: parseInt(menuItemId),
+                rating: parseInt(rating),
+                comment: comment || ''
+            });
+        }
+    });
+    
+    if (reviews.length === 0) {
+        alert('Please rate at least one item before submitting.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/ReviewApi/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({
+                orderId: @Model.Id,
+                reviews: reviews
+            })
+        });
+        
+        if (response.ok) {
+            alert('Thank you for your feedback! Your reviews have been submitted.');
+            // Hide the review section
+            document.querySelector('.card:has(.rating-stars)').style.display = 'none';
+        } else {
+            const error = await response.text();
+            alert('Failed to submit reviews: ' + error);
+        }
+    } catch (error) {
+        console.error('Error submitting reviews:', error);
+        alert('An error occurred while submitting your reviews. Please try again.');
+    }
+}
+</script>

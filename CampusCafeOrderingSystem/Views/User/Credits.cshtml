@@ -1,0 +1,126 @@
+@model UserCreditsViewModel
+@{
+    ViewData["Title"] = "My Credits";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <!-- Credits Overview -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><i class="fas fa-coins"></i> Current Credits</h5>
+                            <h2 class="mb-0">@Model.CurrentCredits.ToString("C")</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><i class="fas fa-arrow-up"></i> Total Earned</h5>
+                            <h2 class="mb-0">@Model.TotalEarned.ToString("C")</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><i class="fas fa-arrow-down"></i> Total Spent</h5>
+                            <h2 class="mb-0">@Model.TotalSpent.ToString("C")</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Earn Credits -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb"></i> How to Earn Credits</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-star text-warning"></i> <strong>Order & Review:</strong> Earn 5% back on every order</li>
+                                <li><i class="fas fa-users text-primary"></i> <strong>Refer Friends:</strong> Get $5 for each friend who joins</li>
+                                <li><i class="fas fa-birthday-cake text-success"></i> <strong>Birthday Bonus:</strong> Special credits on your birthday</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-calendar-check text-info"></i> <strong>Daily Check-in:</strong> Earn credits for daily app visits</li>
+                                <li><i class="fas fa-trophy text-warning"></i> <strong>Achievements:</strong> Complete challenges for bonus credits</li>
+                                <li><i class="fas fa-heart text-danger"></i> <strong>Loyalty Program:</strong> More credits as you order more</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credit History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Credit History</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.CreditHistory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in Model.CreditHistory)
+                                    {
+                                        <tr>
+                                            <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
+                                            <td>@transaction.Description</td>
+                                            <td>
+                                                @if (transaction.Type == "Earned")
+                                                {
+                                                    <span class="badge bg-success">@transaction.Type</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">@transaction.Type</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (transaction.Type == "Earned")
+                                                {
+                                                    <span class="text-success">+@transaction.Amount.ToString("C")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger">-@transaction.Amount.ToString("C")</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No credit history yet. Start ordering to earn credits!</p>
+                            <a asp-controller="Menu" asp-action="Index" class="btn btn-primary">
+                                <i class="fas fa-utensils"></i> Browse Menu
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

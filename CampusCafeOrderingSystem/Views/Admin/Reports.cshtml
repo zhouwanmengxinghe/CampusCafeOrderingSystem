@@ -1,0 +1,751 @@
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<h2 class="mb-4 text-center">📊 System Reports</h2>
+
+<!-- Filters -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label">From</label>
+                <input type="date" id="fromDate" class="form-control" />
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label">To</label>
+                <input type="date" id="toDate" class="form-control" />
+            </div>
+            <div class="col-12 col-md-3">
+                <button id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div id="overview-cards" class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm text-center p-3">
+            <div class="text-muted small">Total Orders</div>
+            <div id="kpiOrders" class="fs-2 fw-bold text-primary">0</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm text-center p-3">
+            <div class="text-muted small">Total Revenue (GMV)</div>
+            <div id="kpiRevenue" class="fs-2 fw-bold text-success">$0</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm text-center p-3">
+            <div class="text-muted small">Avg Order Value</div>
+            <div id="kpiUsers" class="fs-2 fw-bold text-warning">$0</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm text-center p-3">
+            <div class="text-muted small">Top Product</div>
+            <div id="kpiPending" class="fs-2 fw-bold text-danger">-</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div id="charts-section" class="row g-3 mb-4">
+    <div class="col-12 col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Revenue Trend</h5>
+                <canvas id="revenueChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Orders Trend</h5>
+                <canvas id="ordersChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vendors Performance -->
+<div id="vendors-section" class="row g-3 mb-4">
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Top Vendors by Revenue</h5>
+                <canvas id="vendorsChart" height="160"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Vendors Summary</h5>
+                <div class="table-responsive">
+                    <table id="vendorsTable" class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Vendor</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>AOV</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendorsTbody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div id="reports-table" class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title">Sales Summary</h5>
+        <div class="table-responsive">
+            <table id="reportsTable" class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Orders</th>
+                        <th>Revenue</th>
+                        <th>Growth Rate</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyData">
+                    @* Rendered by JS *@
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- DataTables + Buttons (temporarily disabled to isolate _DT_CellIndex error) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" />
+    <!-- DataTables scripts removed temporarily -->
+    <!-- <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
+    <!-- <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script> -->
+    <!-- <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script> -->
+    <!-- <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script> -->
+    <!-- <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script> -->
+    <!-- <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script> -->
+
+    <!-- Chart.js (full import to avoid conflicts) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Feature flags
+        const ENABLE_DATATABLES = false; // keep disabled
+        const SCRIPT_BUILD_ID = 'reports-debug-2025-09-21T01:00Z';
+
+        // Early diagnostics for DT presence and versioning
+        try {
+            console.error('[Reports] Build:', SCRIPT_BUILD_ID, 'ENABLE_DATATABLES:', ENABLE_DATATABLES, 'jQuery:', !!window.jQuery, 'DataTablesFn:', !!(window.jQuery && jQuery.fn && (jQuery.fn.DataTable || jQuery.fn.dataTable)));
+        } catch (e) { /* no-op */ }
+
+        // -------- Cache Management --------
+        const CACHE_PREFIX = 'reports_cache_';
+        const CACHE_DURATION = 5 * 60 * 1000; // 5-minute cache
+        
+        function getCacheKey(startDate, endDate) {
+            return `${CACHE_PREFIX}${startDate}_${endDate}`;
+        }
+        
+        function getFromCache(key) {
+            try {
+                const cached = localStorage.getItem(key);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    if (Date.now() - data.timestamp < CACHE_DURATION) {
+                        return data.value;
+                    } else {
+                        localStorage.removeItem(key);
+                    }
+                }
+            } catch (e) {
+                console.warn('Cache read failed:', e);
+            }
+            return null;
+        }
+        
+        function setToCache(key, value) {
+            try {
+                const data = {
+                    value: value,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.warn('Cache storage failed:', e);
+            }
+        }
+        
+        // -------- Lazy Loading Management --------
+        let isLoading = false;
+        let loadedSections = new Set();
+        
+        function showLoadingSpinner(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                // Create or reuse overlay spinner instead of replacing innerHTML (to keep child DOM like tbody/canvas)
+                if (getComputedStyle(container).position === 'static') {
+                    container.style.position = 'relative';
+                }
+                let overlay = container.querySelector('.loading-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'loading-overlay';
+                    overlay.style.position = 'absolute';
+                    overlay.style.inset = '0';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+                    overlay.style.background = 'rgba(255,255,255,0.6)';
+                    overlay.innerHTML = '<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>';
+                    container.appendChild(overlay);
+                }
+            }
+        }
+
+        function hideLoadingSpinner(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const overlay = container.querySelector('.loading-overlay');
+                if (overlay) overlay.remove();
+            }
+        }
+        
+        // -------- Data (Single Source of Truth) --------
+        const currency = 'USD'; // Or change to NZD: 'NZD'
+        let reportData = null;
+
+        // -------- Async Data Loading --------
+        async function loadReportData(startDate, endDate) {
+            if (isLoading) return null;
+            
+            const cacheKey = getCacheKey(startDate || '', endDate || '');
+            
+            // Try cache
+            const cachedData = getFromCache(cacheKey);
+            if (cachedData) {
+                console.error('[Reports] Using cached data');
+                return cachedData;
+            }
+            
+            isLoading = true;
+            try {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                
+                console.error('[Reports] Fetch start', `/api/ReportsApi/admin-dashboard-data?${params}`);
+                const response = await fetch(`/api/ReportsApi/admin-dashboard-data?${params}`);
+                console.error('[Reports] Fetch done status', response.status);
+                if (!response.ok) {
+                    const text = await response.text().catch(() => '');
+                    throw new Error(`HTTP ${response.status} ${response.statusText} ${text}`);
+                }
+                
+                const data = await response.json();
+                console.error('[Reports] Data keys', Object.keys(data || {}));
+                
+                // Cache it
+                setToCache(cacheKey, data);
+                
+                return data;
+            } catch (error) {
+                console.error('[Reports] loadReportData error:', error);
+                return null;
+            } finally {
+                isLoading = false;
+            }
+        }
+        
+        // -------- Lazy Load Helper --------
+        async function lazyLoadSection(sectionId, loadFunction) {
+            if (loadedSections.has(sectionId)) return;
+            
+            showLoadingSpinner(sectionId);
+            
+            try {
+                await loadFunction();
+                loadedSections.add(sectionId);
+            } catch (error) {
+                console.error(`[Reports] Load ${sectionId} failed:`, error);
+                const el = document.getElementById(sectionId);
+                if (el) el.innerHTML = '<div class="alert alert-danger">Failed to load. Please try again.</div>';
+            } finally {
+                hideLoadingSpinner(sectionId);
+            }
+        }
+        
+        // -------- Helpers --------
+        const fmtCurrency = (n) => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n ?? 0);
+        const parseDate = (s) => new Date(s + 'T00:00:00');
+
+        // -------- Update Overview Cards --------
+        function updateOverviewCards(data) {
+            try {
+                console.error('[Reports] step:updateOverviewCards');
+                if (!data || !data.overview) return;
+                
+                const overview = data.overview;
+                document.getElementById('kpiOrders').textContent = (overview.totalOrders || 0).toLocaleString();
+                document.getElementById('kpiRevenue').textContent = fmtCurrency(overview.totalRevenue || 0);
+                document.getElementById('kpiUsers').textContent = fmtCurrency(overview.avgOrderValue || 0);
+                document.getElementById('kpiPending').textContent = overview.topProduct || '-';
+                console.error('[Reports] step:updateOverviewCards:ok');
+            } catch (e) {
+                console.error('[Reports] step:updateOverviewCards:error', e);
+                throw e;
+            }
+        }
+
+        // -------- Render Daily Table --------
+        function renderTable(data) {
+            console.error('[Reports] step:renderTable');
+            const tbody = document.getElementById('tbodyData');
+            try {
+                if (!data || !data.dailyData || !Array.isArray(data.dailyData) || data.dailyData.length === 0) {
+                    if (tbody) tbody.innerHTML = '';
+                    console.error('[Reports] step:renderTable:empty');
+                    return;
+                }
+
+                if (!tbody) return;
+                tbody.innerHTML = data.dailyData.map(r => `
+                        <tr>
+                            <td>${r.date}</td>
+                            <td>${r.orders || 0}</td>
+                            <td>${fmtCurrency(r.revenue || 0)}</td>
+                            <td>${r.growth ? (r.growth > 0 ? '+' : '') + Number(r.growth).toFixed(1) + '%' : '0%'}</td>
+                            <td><span class="badge ${r.growth > 0 ? 'bg-success' : r.growth < 0 ? 'bg-danger' : 'bg-secondary'}">${r.growth > 0 ? 'Up' : r.growth < 0 ? 'Down' : 'Flat'}</span></td>
+                        </tr>
+                    `).join('');
+                console.error('[Reports] step:renderTable:ok rows', data.dailyData.length);
+            } catch (e) {
+                console.error('[Reports] step:renderTable:error', e);
+                throw e;
+            }
+        }
+
+        function updateKPIs(data) {
+            const sum = (key) => data.reduce((a, b) => a + (b[key] ?? 0), 0);
+            document.getElementById('kpiOrders').textContent = sum('orders').toLocaleString();
+            document.getElementById('kpiRevenue').textContent = fmtCurrency(sum('revenue'));
+            document.getElementById('kpiUsers').textContent = sum('users').toLocaleString();
+            document.getElementById('kpiPending').textContent = sum('pending').toLocaleString();
+        }
+
+        let dt; // DataTable instance for daily table
+        let vendorsDt; // DataTable instance for vendors table
+        let revenueChart, ordersChart, vendorsChart;
+
+        function initDailyDataTable() {
+            if (!ENABLE_DATATABLES) return; // guard: skip for now
+            const table = $('#reportsTable');
+            if ($.fn.DataTable.isDataTable(table)) {
+                table.DataTable().destroy();
+            }
+            try {
+                // Guard: ensure column counts match
+                const headerCols = document.querySelectorAll('#reportsTable thead th').length;
+                const badRow = Array.from(document.querySelectorAll('#reportsTable tbody tr')).find(tr => tr.cells.length !== headerCols);
+                if (badRow) {
+                    console.warn('Skip DataTable init: tbody row column count mismatch.', { headerCols, rowCols: badRow.cells.length });
+                    return;
+                }
+
+                table.DataTable({
+                    pageLength: 10,
+                    order: [[0, 'desc']],
+                    dom: 'Bfrtip',
+                    buttons: [
+                        { extend: 'csvHtml5', title: 'reports' },
+                        { extend: 'excelHtml5', title: 'reports' },
+                        { extend: 'print', title: 'System Reports' }
+                    ],
+                    columnDefs: [
+                        { targets: 0, type: 'date' }
+                    ],
+                    deferRender: true,
+                    autoWidth: false,
+                    language: {
+                        emptyTable: 'No data available for selected range'
+                    }
+                });
+            } catch (e) {
+                console.warn('DataTable init failed for reportsTable:', e);
+            }
+        }
+
+        function initVendorsDataTable() {
+            if (!ENABLE_DATATABLES) return; // guard: skip for now
+            const table = $('#vendorsTable');
+            if ($.fn.DataTable.isDataTable(table)) {
+                table.DataTable().destroy();
+            }
+            try {
+                const headerCols = document.querySelectorAll('#vendorsTable thead th').length;
+                const badRow = Array.from(document.querySelectorAll('#vendorsTable tbody tr')).find(tr => tr.cells.length !== headerCols);
+                if (badRow) {
+                    console.warn('Skip DataTable init: vendors tbody row column count mismatch.', { headerCols, rowCols: badRow.cells.length });
+                    return;
+                }
+
+                table.DataTable({
+                    pageLength: 10,
+                    order: [[2, 'desc']], // sort by revenue
+                    dom: 'Bfrtip',
+                    buttons: [
+                        { extend: 'csvHtml5', title: 'vendors' },
+                        { extend: 'excelHtml5', title: 'vendors' },
+                        { extend: 'print', title: 'Vendors Summary' }
+                    ],
+                    deferRender: true,
+                    autoWidth: false,
+                    language: {
+                        emptyTable: 'No data available for vendors'
+                    }
+                });
+            } catch (e) {
+                console.warn('DataTable init failed for vendorsTable:', e);
+            }
+        }
+
+        async function renderCharts(data) {
+            try {
+                console.error('[Reports] step:renderCharts');
+                if (!data || !data.dailyData || !Array.isArray(data.dailyData)) {
+                    console.warn('Invalid chart data');
+                    return;
+                }
+
+                const labels = data.dailyData.map(r => r.date);
+                const revenue = data.dailyData.map(r => r.revenue || 0);
+                const orders = data.dailyData.map(r => r.orders || 0);
+
+                // Destroy old charts
+                if (revenueChart) revenueChart.destroy();
+                if (ordersChart) ordersChart.destroy();
+
+                // Revenue line chart (with gradient)
+                const ctx1 = document.getElementById('revenueChart')?.getContext('2d');
+                if (ctx1) {
+                    const grad = ctx1.createLinearGradient(0, 0, 0, 200);
+                    grad.addColorStop(0, 'rgba(76, 175, 80, 0.35)');
+                    grad.addColorStop(1, 'rgba(76, 175, 80, 0.05)');
+
+                    revenueChart = new Chart(ctx1, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: `Revenue (${currency})`,
+                                data: revenue,
+                                fill: true,
+                                backgroundColor: grad,
+                                borderColor: 'rgba(76, 175, 80, 1)',
+                                tension: 0.3,
+                                pointRadius: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { 
+                                legend: { position: 'top' },
+                                title: {
+                                    display: true,
+                                    text: 'Revenue Trend'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: (v) => fmtCurrency(v)
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Orders bar chart
+                const ctx2 = document.getElementById('ordersChart')?.getContext('2d');
+                if (ctx2) {
+                    ordersChart = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: 'Orders',
+                                data: orders,
+                                backgroundColor: 'rgba(33, 150, 243, 0.35)',
+                                borderColor: 'rgba(33, 150, 243, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { 
+                                legend: { position: 'top' },
+                                title: {
+                                    display: true,
+                                    text: 'Orders Trend'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { precision: 0 }
+                                }
+                            }
+                        }
+                    });
+                }
+                console.error('[Reports] step:renderCharts:ok');
+            } catch (e) {
+                console.error('[Reports] step:renderCharts:error', e);
+                throw e;
+            }
+        }
+
+        function renderVendorsSection(data) {
+            console.error('[Reports] step:renderVendorsSection');
+            try {
+                // Chart
+                const vData = data?.chartData?.vendors;
+                const labels = vData?.labels || (data?.vendorPerformance || []).map(v => v.vendorEmail);
+                const revenues = vData?.data || (data?.vendorPerformance || []).map(v => v.revenue || 0);
+
+                if (vendorsChart) vendorsChart.destroy();
+                const ctx = document.getElementById('vendorsChart')?.getContext('2d');
+                if (ctx) {
+                    vendorsChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: `Revenue (${currency})`,
+                                data: revenues,
+                                backgroundColor: 'rgba(255, 159, 64, 0.4)',
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            scales: {
+                                x: { ticks: { callback: (v) => fmtCurrency(v) } }
+                            },
+                            plugins: {
+                                legend: { display: true },
+                                title: { display: true, text: 'Top Vendors by Revenue' }
+                            }
+                        }
+                    });
+                }
+
+                // Table
+                const tbody = document.getElementById('vendorsTbody');
+                const list = (data?.vendorPerformance || []).map(v => ({
+                    vendor: v.vendorEmail,
+                    orders: v.orders || 0,
+                    revenue: v.revenue || 0,
+                    aov: v.avgOrderValue || 0
+                }));
+
+                if (tbody) {
+                    if (!list.length) {
+                        tbody.innerHTML = '';
+                    } else {
+                        tbody.innerHTML = list.map(v => `
+                            <tr>
+                                <td>${v.vendor}</td>
+                                <td>${v.orders}</td>
+                                <td>${fmtCurrency(v.revenue)}</td>
+                                <td>${fmtCurrency(v.aov)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                console.error('[Reports] step:renderVendorsSection:ok rows', list.length);
+                initVendorsDataTable();
+            } catch (e) {
+                console.error('[Reports] step:renderVendorsSection:error', e);
+                throw e;
+            }
+        }
+
+        async function refreshAll() {
+            const startDate = document.getElementById('fromDate').value;
+            const endDate = document.getElementById('toDate').value;
+            
+            // Defensive: teardown any lingering DataTables instances/wrappers before manipulating tables
+            try {
+                if (window.jQuery && $.fn && $.fn.DataTable) {
+                    ['#reportsTable', '#vendorsTable'].forEach(sel => {
+                        const $t = $(sel);
+                        if ($t.length && $.fn.DataTable.isDataTable($t)) {
+                            try { $t.DataTable().clear().destroy(); } catch(_) {}
+                        }
+                    });
+                }
+                // Remove DataTables wrappers if any
+                ['reportsTable', 'vendorsTable'].forEach(id => {
+                    const wrapper = document.getElementById(id + '_wrapper');
+                    if (wrapper) {
+                        const table = wrapper.querySelector('table');
+                        if (table && wrapper.parentNode) {
+                            wrapper.parentNode.insertBefore(table, wrapper);
+                        }
+                        wrapper.remove();
+                    }
+                });
+                // Normalize table attributes/classes possibly left by DT
+                ['reportsTable', 'vendorsTable'].forEach(id => {
+                    const t = document.getElementById(id);
+                    if (t) {
+                        t.classList.remove('dataTable', 'no-footer', 'dtr-inline');
+                        t.removeAttribute('role');
+                        t.removeAttribute('aria-describedby');
+                        t.removeAttribute('aria-sort');
+                    }
+                });
+            } catch (e) {
+                console.error('[Reports] teardown DataTables failed', e);
+            }
+            
+            // Loading states (use overlay to avoid removing DOM needed for rendering)
+            showLoadingSpinner('overview-cards');
+            showLoadingSpinner('reports-table');
+            showLoadingSpinner('charts-section');
+            showLoadingSpinner('vendors-section');
+            
+            try {
+                console.error('[Reports] step:loadReportData');
+                // Load data
+                reportData = await loadReportData(startDate, endDate);
+                console.error('[Reports] step:loadReportData:done', !!reportData);
+                
+                if (reportData) {
+                    // Overview
+                    updateOverviewCards(reportData);
+                    
+                    // Daily table
+                    renderTable(reportData);
+                    console.error('[Reports] step:initDailyDataTable:skipOrStart');
+                    initDailyDataTable();
+                    console.error('[Reports] step:initDailyDataTable:doneOrSkipped');
+                    
+                    // Charts
+                    await lazyLoadSection('charts-section', async () => {
+                        await renderCharts(reportData);
+                    });
+
+                    // Vendors (no lazy load to ensure visible immediately)
+                    renderVendorsSection(reportData);
+                } else {
+                    throw new Error('Failed to load data');
+                }
+            } catch (error) {
+                console.error('Refresh failed:', error);
+                // Error messages (keep DOM, show alert in sections)
+                const oc = document.getElementById('overview-cards');
+                if (oc) oc.insertAdjacentHTML('afterbegin', '<div class="alert alert-danger w-100">Failed to load data. Please try again.</div>');
+                const vs = document.getElementById('vendors-section');
+                if (vs) vs.insertAdjacentHTML('afterbegin', '<div class="alert alert-danger w-100">Failed to load data. Please try again.</div>');
+            } finally {
+                // Hide loading overlays
+                hideLoadingSpinner('overview-cards');
+                hideLoadingSpinner('reports-table');
+                hideLoadingSpinner('charts-section');
+                hideLoadingSpinner('vendors-section');
+            }
+        }
+
+        // -------- Intersection Observer (lazy for charts) --------
+        function setupIntersectionObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        if (sectionId === 'charts-section' && reportData) {
+                            lazyLoadSection(sectionId, async () => {
+                                await renderCharts(reportData);
+                            });
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            // Observe chart section
+            const chartsSection = document.getElementById('charts-section');
+            if (chartsSection) {
+                observer.observe(chartsSection);
+            }
+        }
+        
+        // -------- Page Init --------
+        $(document).ready(async function() {
+            console.error('[Reports] DOM ready:', SCRIPT_BUILD_ID);
+            // Set default dates (last 7 days)
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+
+            // Setup intersection observer
+            setupIntersectionObserver();
+
+            // Bind events
+            document.getElementById('fromDate').addEventListener('change', refreshAll);
+            document.getElementById('toDate').addEventListener('change', refreshAll);
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
+                document.getElementById('toDate').value = today.toISOString().split('T')[0];
+                refreshAll();
+            });
+
+            // Defensive: teardown possible DT on initial load too
+            try {
+                if (window.jQuery && $.fn && $.fn.DataTable) {
+                    ['#reportsTable', '#vendorsTable'].forEach(sel => {
+                        const $t = $(sel);
+                        if ($t.length && $.fn.DataTable.isDataTable($t)) {
+                            try { $t.DataTable().clear().destroy(); } catch(_) {}
+                        }
+                    });
+                }
+                ['reportsTable', 'vendorsTable'].forEach(id => {
+                    const wrapper = document.getElementById(id + '_wrapper');
+                    if (wrapper) {
+                        const table = wrapper.querySelector('table');
+                        if (table && wrapper.parentNode) {
+                            wrapper.parentNode.insertBefore(table, wrapper);
+                        }
+                        wrapper.remove();
+                    }
+                });
+            } catch (e) { console.error('[Reports] initial teardown failed', e); }
+
+            // Initial load
+            await refreshAll();
+        });
+    </script>
+}

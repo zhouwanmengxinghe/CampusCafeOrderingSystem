@@ -1,0 +1,543 @@
+@model CampusCafeOrderingSystem.Models.PaymentModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-credit-card"></i> Select Payment Method</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                    
+                    @{
+                        var applicationId = ViewBag.ApplicationId as int?;
+                        var isFromCatering = applicationId.HasValue;
+                        var actionName = isFromCatering ? "ProcessCateringPayment" : "ProcessPayment";
+                        var controllerName = isFromCatering ? "Catering" : "Cart";
+                    }
+                    
+                    <form asp-controller="@controllerName" asp-action="@actionName" method="post" id="paymentForm">
+                        @Html.HiddenFor(m => m.TotalAmount)
+                        @Html.HiddenFor(m => m.CartItems)
+                        @if (isFromCatering)
+                        {
+                            <input type="hidden" name="applicationId" value="@applicationId" />
+                        }
+                        
+                        <!-- 配送选项 -->
+                        <div class="delivery-options mb-4">
+                            <h5><i class="fas fa-truck"></i> Delivery Options</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="delivery-option" data-delivery="Pickup">
+                                        <input type="radio" name="DeliveryType" value="Pickup" id="pickup" class="delivery-radio" checked>
+                                        <label for="pickup" class="delivery-label">
+                                            <div class="delivery-card">
+                                                <i class="fas fa-store fa-2x text-primary"></i>
+                                                <h6>Pickup</h6>
+                                                <p class="text-muted">Pick up at store</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="delivery-option" data-delivery="Delivery">
+                                        <input type="radio" name="DeliveryType" value="Delivery" id="delivery" class="delivery-radio">
+                                        <label for="delivery" class="delivery-label">
+                                            <div class="delivery-card">
+                                                <i class="fas fa-motorcycle fa-2x text-success"></i>
+                                                <h6>Delivery</h6>
+                                                <p class="text-muted">Deliver to address</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 配送地址表单 -->
+                        <div id="deliveryAddressForm" class="delivery-address-form mb-4" style="display: none;">
+                            <h5><i class="fas fa-map-marker-alt"></i> Delivery Address</h5>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="DeliveryAddress" class="form-label">Delivery Address</label>
+                                    <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Please enter your delivery address"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 支付方式选择 -->
+                        <div class="payment-methods mb-4">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="payment-option" data-payment="CreditCard">
+                                        <input type="radio" name="SelectedPaymentMethod" value="CreditCard" id="creditCard" class="payment-radio">
+                                        <label for="creditCard" class="payment-label">
+                                            <div class="payment-card">
+                                                <i class="fas fa-credit-card fa-2x text-primary"></i>
+                                                <h5>Credit/Debit Card</h5>
+                                                <p class="text-muted">Visa, MasterCard, UnionPay</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="payment-option" data-payment="CampusCard">
+                                        <input type="radio" name="SelectedPaymentMethod" value="CampusCard" id="campusCard" class="payment-radio">
+                                        <label for="campusCard" class="payment-label">
+                                            <div class="payment-card">
+                                                <i class="fas fa-id-card fa-2x text-success"></i>
+                                                <h5>Campus Card</h5>
+                                                <p class="text-muted">Campus ID Card</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="payment-option" data-payment="MobileWallet">
+                                        <input type="radio" name="SelectedPaymentMethod" value="MobileWallet" id="mobileWallet" class="payment-radio">
+                                        <label for="mobileWallet" class="payment-label">
+                                            <div class="payment-card">
+                                                <i class="fas fa-mobile-alt fa-2x text-warning"></i>
+                                                <h5>Mobile Wallet</h5>
+                                                <p class="text-muted">Alipay, WeChat Pay</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 信用卡支付表单 -->
+                        <div id="creditCardForm" class="payment-form" style="display: none;">
+                            <h5><i class="fas fa-credit-card"></i> Credit Card Information</h5>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="CardNumber" class="form-label">Card Number</label>
+                                    <input asp-for="CardNumber" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="CardholderName" class="form-label">Cardholder Name</label>
+                                    <input asp-for="CardholderName" class="form-control" placeholder="John Doe">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
+                                    <input asp-for="ExpiryDate" class="form-control" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="CVV" class="form-label">CVV</label>
+                                    <input asp-for="CVV" class="form-control" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 校园卡支付表单 -->
+                        <div id="campusCardForm" class="payment-form" style="display: none;">
+                            <h5><i class="fas fa-id-card"></i> Campus Card Information</h5>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="CampusCardNumber" class="form-label">Campus Card Number</label>
+                                    <input asp-for="CampusCardNumber" class="form-control" placeholder="Enter campus card number">
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="CampusCardPin" class="form-label">Password</label>
+                                    <input asp-for="CampusCardPin" type="password" class="form-control" placeholder="Enter password">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 移动钱包支付表单 -->
+                        <div id="mobileWalletForm" class="payment-form" style="display: none;">
+                            <h5><i class="fas fa-mobile-alt"></i> Mobile Wallet Information</h5>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="WalletType" class="form-label">Wallet Type</label>
+                                    <select asp-for="WalletType" class="form-select">
+                                        <option value="">Select wallet type</option>
+                                        <option value="Alipay">Alipay</option>
+                                        <option value="WeChat">WeChat Pay</option>
+                                        <option value="UnionPay">UnionPay</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="MobileNumber" class="form-label">Phone Number</label>
+                                    <input asp-for="MobileNumber" class="form-control" placeholder="Enter phone number">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg" id="payButton" disabled>
+                                <i class="fas fa-lock"></i> Pay Now ¥@Model.TotalAmount.ToString("F2")
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 订单摘要 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-shopping-cart"></i> Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.CartItems)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>@item.Name</strong>
+                                <br>
+                                <small class="text-muted">Quantity: @item.Quantity</small>
+                            </div>
+                            <span>¥@((item.Price * item.Quantity).ToString("F2"))</span>
+                        </div>
+                        <hr>
+                    }
+                    
+                    <!-- 积分使用选项 -->
+                    @if (Model.AvailableCredits > 0)
+                    {
+                        <div class="credits-section mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="useCredits" name="UseCredits" value="true">
+                                <label class="form-check-label" for="useCredits">
+                                    <i class="fas fa-coins text-warning"></i> Use Credits
+                                </label>
+                            </div>
+                            <div class="credits-info mt-2">
+                                <small class="text-muted">Available Credits: <strong>¥@Model.AvailableCredits.ToString("F2")</strong></small>
+                            </div>
+                            <div class="credits-input mt-2" id="creditsInput" style="display: none;">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">¥</span>
+                                    <input type="number" class="form-control" id="creditsToUse" name="CreditsToUse" 
+                                           min="0" max="@Math.Min(Model.AvailableCredits, Model.TotalAmount)" 
+                                           step="0.01" placeholder="0.00">
+                                    <button class="btn btn-outline-secondary" type="button" id="useMaxCredits">
+                                        Max
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                    }
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Subtotal:</span>
+                        <span>¥@Model.TotalAmount.ToString("F2")</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2" id="creditsDiscount" style="display: none;">
+                        <span class="text-warning">Credits Used:</span>
+                        <span class="text-warning">-¥<span id="creditsAmount">0.00</span></span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>Total:</strong>
+                        <strong class="text-success" id="finalTotal">¥@Model.TotalAmount.ToString("F2")</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> Back to Cart
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-green: #4CAF50;
+    --light-green: #8BC34A;
+    --background-gray: #F9F9F9;
+    --text-primary: #333333;
+    --text-secondary: #777777;
+    --hover-green: #C8E6C9;
+}
+
+body {
+    background-color: var(--background-gray);
+    color: var(--text-primary);
+}
+
+.payment-option, .delivery-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-card, .delivery-card {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+}
+
+.delivery-card {
+    height: 120px;
+}
+
+.payment-option:hover .payment-card,
+.delivery-option:hover .delivery-card {
+    border-color: var(--primary-green);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1);
+    background-color: var(--hover-green);
+}
+
+.payment-radio,
+.delivery-radio {
+    display: none;
+}
+
+.payment-radio:checked + .payment-label .payment-card,
+.delivery-radio:checked + .delivery-label .delivery-card {
+    border-color: var(--primary-green);
+    background-color: var(--hover-green);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.payment-form {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    background-color: white;
+}
+
+.payment-form h5 {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--light-green);
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+.btn-success {
+    border-radius: 10px;
+    font-weight: bold;
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: var(--hover-green);
+    border-color: var(--light-green);
+    color: var(--text-primary);
+}
+
+.btn-outline-secondary {
+    border-color: var(--text-secondary);
+    color: var(--text-secondary);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--text-secondary);
+    border-color: var(--text-secondary);
+    color: white;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+.card-header {
+    background-color: var(--primary-green);
+    color: white;
+    border-bottom: none;
+}
+
+.text-success {
+    color: var(--primary-green) !important;
+}
+
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+.payment-card i {
+    color: var(--primary-green);
+}
+
+.payment-card h5 {
+    color: var(--text-primary);
+}
+
+.payment-card p {
+    color: var(--text-secondary);
+}
+
+@@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .payment-card {
+        padding: 15px;
+    }
+    
+    .payment-form {
+        padding: 15px;
+    }
+}
+</style>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Payment method selection
+    $('.payment-option').click(function() {
+        const paymentType = $(this).data('payment');
+        const radio = $(this).find('input[type="radio"]');
+        
+        // Select current option
+        radio.prop('checked', true);
+        
+        // Hide all payment forms
+        $('.payment-form').hide();
+        
+        // Show corresponding payment form
+        let formId = paymentType.toLowerCase() + 'Form';
+        if (paymentType === 'MobileWallet') {
+            formId = 'mobileWalletForm';
+        } else if (paymentType === 'CreditCard') {
+            formId = 'creditCardForm';
+        } else if (paymentType === 'CampusCard') {
+            formId = 'campusCardForm';
+        }
+        $('#' + formId).show();
+        
+        // Enable payment button
+        $('#payButton').prop('disabled', false);
+    });
+    
+    // Delivery method selection
+    $('.delivery-option').click(function() {
+        const deliveryType = $(this).data('delivery');
+        const radio = $(this).find('input[type="radio"]');
+        
+        // Select current option
+        radio.prop('checked', true);
+        
+        // Show or hide delivery address form
+        if (deliveryType === 'Delivery') {
+            $('#deliveryAddressForm').show();
+            $('textarea[name="DeliveryAddress"]').prop('required', true);
+        } else {
+            $('#deliveryAddressForm').hide();
+            $('textarea[name="DeliveryAddress"]').prop('required', false).val('');
+        }
+    });
+    
+    // Delivery type radio button change event
+    $('input[name="DeliveryType"]').change(function() {
+        const deliveryType = $(this).val();
+        if (deliveryType === 'Delivery') {
+            $('#deliveryAddressForm').show();
+            $('textarea[name="DeliveryAddress"]').prop('required', true);
+        } else {
+            $('#deliveryAddressForm').hide();
+            $('textarea[name="DeliveryAddress"]').prop('required', false).val('');
+        }
+    });
+    
+    // Format credit card number
+    $('input[name="CardNumber"]').on('input', function() {
+        let value = $(this).val().replace(/\s/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        $(this).val(formattedValue);
+    });
+    
+    // Format expiry date
+    $('input[name="ExpiryDate"]').on('input', function() {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        $(this).val(value);
+    });
+    
+    // Only allow numeric input for CVV
+    $('input[name="CVV"]').on('input', function() {
+        $(this).val($(this).val().replace(/[^0-9]/g, ''));
+    });
+    
+    // Phone number formatting
+    $('input[name="PhoneNumber"]').on('input', function() {
+        $(this).val($(this).val().replace(/[^0-9]/g, ''));
+    });
+    
+    // 积分使用逻辑
+    const totalAmount = @Model.TotalAmount;
+    const availableCredits = @Model.AvailableCredits;
+    
+    $('#useCredits').change(function() {
+        if ($(this).is(':checked')) {
+            $('#creditsInput').show();
+        } else {
+            $('#creditsInput').hide();
+            $('#creditsToUse').val('');
+            updateTotal();
+        }
+    });
+    
+    $('#creditsToUse').on('input', function() {
+        updateTotal();
+    });
+    
+    $('#useMaxCredits').click(function() {
+        const maxCredits = Math.min(availableCredits, totalAmount);
+        $('#creditsToUse').val(maxCredits.toFixed(2));
+        updateTotal();
+    });
+    
+    function updateTotal() {
+        const creditsUsed = parseFloat($('#creditsToUse').val()) || 0;
+        const finalAmount = Math.max(0, totalAmount - creditsUsed);
+        
+        if (creditsUsed > 0) {
+            $('#creditsDiscount').show();
+            $('#creditsAmount').text(creditsUsed.toFixed(2));
+        } else {
+            $('#creditsDiscount').hide();
+        }
+        
+        $('#finalTotal').text('¥' + finalAmount.toFixed(2));
+        
+        // 更新支付按钮文本
+        $('#payButton').html('<i class="fas fa-lock"></i> Pay Now ¥' + finalAmount.toFixed(2));
+    }
+});
+</script>
+}

@@ -1,0 +1,1125 @@
+@using CampusCafeOrderingSystem.Models
+@inject CampusCafeOrderingSystem.Services.IOrderService OrderService
+@{
+    ViewData["Title"] = "Review Management";
+}
+
+<div class="review-management-container">
+    <div class="page-header">
+        <h1>Review Management</h1>
+        <div class="header-stats">
+            <span class="stat-item">
+                <strong id="avgRating">4.5</strong>
+                <small>Average Rating</small>
+            </span>
+            <span class="stat-item">
+                <strong id="totalReviews">128</strong>
+                <small>Total Reviews</small>
+            </span>
+            <span class="stat-item">
+                <strong id="pendingReviews">5</strong>
+                <small>Pending Replies</small>
+            </span>
+        </div>
+    </div>
+
+    <!-- Review Statistics -->
+    <div class="rating-overview">
+        <div class="rating-summary">
+            <div class="overall-rating">
+                <div class="rating-number">4.5</div>
+                <div class="rating-stars">
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                    <span class="star half">★</span>
+                </div>
+                <div class="rating-count">Based on 128 reviews</div>
+            </div>
+        </div>
+        
+        <div class="rating-breakdown">
+            <div class="rating-bar">
+                <span class="rating-label">5 Stars</span>
+                <div class="bar-container">
+                    <div class="bar" style="width: 65%"></div>
+                </div>
+                <span class="rating-count">83</span>
+            </div>
+            <div class="rating-bar">
+                <span class="rating-label">4 Stars</span>
+                <div class="bar-container">
+                    <div class="bar" style="width: 20%"></div>
+                </div>
+                <span class="rating-count">26</span>
+            </div>
+            <div class="rating-bar">
+                <span class="rating-label">3 Stars</span>
+                <div class="bar-container">
+                    <div class="bar" style="width: 10%"></div>
+                </div>
+                <span class="rating-count">13</span>
+            </div>
+            <div class="rating-bar">
+                <span class="rating-label">2 Stars</span>
+                <div class="bar-container">
+                    <div class="bar" style="width: 3%"></div>
+                </div>
+                <span class="rating-count">4</span>
+            </div>
+            <div class="rating-bar">
+                <span class="rating-label">1 Star</span>
+                <div class="bar-container">
+                    <div class="bar" style="width: 2%"></div>
+                </div>
+                <span class="rating-count">2</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <div class="filter-group">
+            <label>Rating Filter:</label>
+            <select id="ratingFilter" class="form-select" onchange="filterReviews()">
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Reply Status:</label>
+            <select id="replyFilter" class="form-select" onchange="filterReviews()">
+                <option value="">All Status</option>
+                <option value="replied">Replied</option>
+                <option value="pending">Pending Reply</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Product Filter:</label>
+            <select id="productFilter" class="form-select" onchange="filterReviews()">
+                <option value="">All Products</option>
+                <option value="Latte">Latte</option>
+                <option value="Americano">Americano</option>
+                <option value="Cappuccino">Cappuccino</option>
+                <option value="Tiramisu">Tiramisu</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Search:</label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search review content or customer name">
+            <button class="btn btn-outline-secondary" onclick="filterReviews()">Search</button>
+        </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-section">
+        <div class="reviews-list" id="reviewsList">
+            <!-- Dynamic loading reviews -->
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <nav>
+            <ul class="pagination" id="pagination">
+                <!-- Dynamic pagination -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Reply Review Modal -->
+<div class="modal fade" id="replyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reply to Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="original-review" id="originalReview">
+                    <!-- Display original review -->
+                </div>
+                <div class="reply-form">
+                    <label for="replyContent" class="form-label">Reply Content:</label>
+                    <textarea class="form-control" id="replyContent" rows="4" placeholder="Enter your reply..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReply()">Send Reply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.review-management-container {
+    padding: 20px;
+    background-color: #F9F9F9;
+    min-height: 100vh;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.page-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.page-header h1 {
+    color: #4CAF50;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.header-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item strong {
+    display: block;
+    font-size: 24px;
+    color: #4CAF50;
+    font-weight: 700;
+}
+
+.stat-item small {
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.rating-overview {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.rating-overview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.rating-summary {
+    text-align: center;
+}
+
+.overall-rating {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.rating-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.rating-stars {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.star {
+    color: #ddd;
+}
+
+.star.filled {
+    color: #ffc107;
+}
+
+.star.half {
+    background: linear-gradient(90deg, #ffc107 50%, #ddd 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.rating-count {
+    color: #666;
+    font-size: 14px;
+}
+
+.rating-breakdown {
+    flex: 1;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 15px;
+}
+
+.rating-label {
+    width: 30px;
+    font-size: 14px;
+    color: #333;
+}
+
+.bar-container {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background: #ffc107;
+    transition: width 0.3s ease;
+}
+
+.filters-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: end;
+    transition: all 0.3s ease;
+}
+
+.filters-section:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.reviewer-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.reviewer-details h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.reviewer-details .review-date {
+    color: #666;
+    font-size: 12px;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-stars {
+    font-size: 16px;
+}
+
+.review-score {
+    font-weight: bold;
+    color: #333;
+}
+
+.review-product {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.review-content {
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.review-images {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.review-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 5px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.review-reply {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #007bff;
+    margin-bottom: 15px;
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.reply-author {
+    font-weight: bold;
+    color: #007bff;
+    font-size: 14px;
+}
+
+.reply-date {
+    color: #666;
+    font-size: 12px;
+}
+
+.reply-content {
+    color: #333;
+    line-height: 1.5;
+}
+
+.review-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-replied {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.original-review {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+@@media (max-width: 768px) {
+    .review-management-container {
+        padding: 15px;
+    }
+    
+    .rating-overview {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .filters-section {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .header-stats {
+        gap: 20px;
+    }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+<script>
+let reviews = [];
+let filteredReviews = [];
+let currentPage = 1;
+const reviewsPerPage = 10;
+let selectedReviewId = null;
+let currentFilter = {
+    rating: null,
+    status: 'all',
+    category: ''
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load categories to populate productFilter
+    loadCategoriesForProductFilter();
+    loadReviews();
+    initializeSignalR();
+    
+    // Bind filter events
+    const ratingFilter = document.getElementById('ratingFilter');
+    const replyFilter = document.getElementById('replyFilter');
+    const productFilter = document.getElementById('productFilter');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (ratingFilter) ratingFilter.addEventListener('change', filterReviews);
+    if (replyFilter) replyFilter.addEventListener('change', filterReviews);
+    if (productFilter) productFilter.addEventListener('change', filterReviews);
+    if (searchInput) searchInput.addEventListener('input', filterReviews);
+});
+
+async function loadCategoriesForProductFilter() {
+    try {
+        const res = await fetch('/api/MenuApi/categories', { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const categories = Array.isArray(json) ? json : (json?.data ?? json?.items ?? json?.categories ?? []);
+        const select = document.getElementById('productFilter');
+        if (!select) return;
+        // Preserve current selected value if any
+        const prev = select.value;
+        // Reset options
+        select.innerHTML = '<option value="">All Products</option>';
+        // Append categories
+        (Array.isArray(categories) ? categories : []).forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            select.appendChild(opt);
+        });
+        // Restore selection if applicable
+        if (prev && [...select.options].some(o => o.value === prev)) {
+            select.value = prev;
+        }
+    } catch (e) {
+        console.error('Failed to load categories for productFilter:', e);
+    }
+}
+
+async function loadReviews() {
+    try {
+        const params = new URLSearchParams({
+            page: currentPage,
+            pageSize: reviewsPerPage,
+            status: currentFilter.status || 'all'
+        });
+        if (currentFilter.rating) params.append('rating', currentFilter.rating);
+        if (currentFilter.category) params.append('category', currentFilter.category);
+        
+        const response = await fetch(`/api/ReviewApi/list?${params}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        
+        reviews = data.reviews || [];
+        filteredReviews = [...reviews];
+        renderReviews();
+        await loadReviewStats();
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        // Use mock data as fallback
+        loadMockReviews();
+    }
+}
+
+function filterReviews() {
+    const ratingFilter = document.getElementById('ratingFilter')?.value;
+    const replyFilter = document.getElementById('replyFilter')?.value;
+    const productFilter = document.getElementById('productFilter')?.value;
+    
+    currentFilter.rating = ratingFilter || null;
+    currentFilter.status = replyFilter || 'all';
+    currentFilter.category = productFilter || '';
+    
+    currentPage = 1;
+    loadReviews();
+}
+
+function initializeSignalR() {
+    // Initialize SignalR connection
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/orderHub")
+        .build();
+    
+    // Listen for new review events
+    connection.on("NewReview", function (reviewData) {
+        console.log('New review received:', reviewData);
+        
+        // Show new review notification
+        showNewReviewNotification(reviewData);
+        
+        // Refresh review list
+        loadReviews();
+    });
+    
+    // Start connection
+    connection.start().then(function () {
+        console.log("SignalR connection established for Reviews");
+        
+        // Get current merchant email and join merchant group
+        fetch('/api/account/current-user')
+            .then(response => response.json())
+            .then(data => {
+                if (data.email) {
+                    connection.invoke("JoinMerchantGroup", data.email);
+                }
+            })
+            .catch(err => console.error('Failed to get user info:', err));
+    }).catch(function (err) {
+        console.error("SignalR connection failed for Reviews:", err);
+    });
+}
+
+function showNewReviewNotification(reviewData) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+    
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-star text-warning me-2"></i>
+            <div>
+                <h6 class="mb-1">New Review Received!</h6>
+                <p class="mb-1"><strong>Product:</strong> ${reviewData.product}</p>
+                <p class="mb-1"><strong>Rating:</strong> ${reviewData.rating} stars</p>
+                <p class="mb-0"><strong>Customer:</strong> ${reviewData.customerName}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove notification after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+    
+    // Play notification sound (optional)
+    try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+        audio.play().catch(() => {});
+    } catch (error) {
+        // Ignore audio playback errors
+    }
+}
+
+async function loadReviewStats() {
+    try {
+        const response = await fetch('/api/ReviewApi/stats');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        
+        // Update header stats
+        document.getElementById('avgRating').textContent = data.avgRating || '0.0';
+        document.getElementById('totalReviews').textContent = data.totalReviews || '0';
+        document.getElementById('pendingReviews').textContent = data.pendingReviews || '0';
+        
+        // Update rating breakdown
+        updateRatingBreakdown(data.ratingBreakdown || [0, 0, 0, 0, 0]);
+        
+        // Update overall rating display
+        const overallRating = document.querySelector('.rating-number');
+        const ratingStars = document.querySelector('.rating-stars');
+        const ratingCount = document.querySelector('.rating-count');
+        
+        if (overallRating) overallRating.textContent = data.avgRating || '0.0';
+        if (ratingStars) ratingStars.innerHTML = generateStars(Math.round(data.avgRating || 0));
+        if (ratingCount) ratingCount.textContent = `Based on ${data.totalReviews || 0} reviews`;
+    } catch (error) {
+        console.error('Error loading review stats:', error);
+    }
+}
+
+function loadMockReviews() {
+    // Mock review data as fallback
+    reviews = [
+        {
+            id: 1,
+            customerName: 'John Smith',
+            customerAvatar: 'Z',
+            rating: 5,
+            product: 'Latte Coffee',
+            comment: 'The coffee is very fragrant, the milk foam is delicate, and the service attitude is great! Will come again.',
+            createdAt: '2024-01-15T14:30:00',
+            images: [],
+            reply: {
+                content: 'Thank you for your positive review! We will continue to strive to provide quality coffee and service.',
+                date: '2024-01-15T16:00:00',
+                author: 'Manager'
+            },
+            status: 'replied'
+        },
+        {
+            id: 2,
+            customerName: 'Mike Johnson',
+            customerAvatar: 'L',
+            rating: 4,
+            product: 'Americano Coffee',
+            comment: 'The coffee tastes good, but it is a bit bitter. Hope you can provide more sugar packets.',
+            createdAt: '2024-01-15T13:20:00',
+            images: [],
+            reply: null,
+            status: 'pending'
+        },
+        {
+            id: 3,
+            customerName: 'David Wilson',
+            customerAvatar: 'W',
+            rating: 5,
+            product: 'Tiramisu',
+            comment: 'The dessert is exquisitely made, with rich taste layers and beautiful packaging. Highly recommended!',
+            createdAt: '2024-01-15T12:45:00',
+            images: [],
+            reply: {
+                content: 'Thank you for your recommendation! Our pastry chef will be happy to hear your praise.',
+                date: '2024-01-15T15:30:00',
+                author: 'Manager'
+            },
+            status: 'replied'
+        },
+        {
+            id: 4,
+            customerName: 'Robert Brown',
+            customerAvatar: 'Z',
+            rating: 3,
+            product: 'Cappuccino',
+            comment: 'The coffee is average, the milk foam is a bit rough, but the environment is okay.',
+            createdAt: '2024-01-15T11:15:00',
+            images: [],
+            reply: null,
+            status: 'pending'
+        },
+        {
+            id: 5,
+            customerName: 'Steven Davis',
+            customerAvatar: 'S',
+            rating: 2,
+            product: 'Latte Coffee',
+            comment: 'Waited a long time for the coffee, and the temperature was not hot enough. A bit disappointed.',
+            createdAt: '2024-01-15T10:30:00',
+            images: [],
+            reply: {
+                content: 'We are very sorry for the poor experience. We have strengthened our service speed and temperature control. Welcome to visit again.',
+                date: '2024-01-15T17:00:00',
+                author: 'Manager'
+            },
+            status: 'replied'
+        }
+    ];
+    
+    filteredReviews = [...reviews];
+    renderReviews();
+    updateStats();
+}
+
+
+
+function updateRatingBreakdown(breakdown) {
+    const total = breakdown.reduce((sum, count) => sum + count, 0);
+    
+    for (let i = 0; i < 5; i++) {
+        const count = breakdown[4 - i]; // Reverse order (5 stars first)
+        const percentage = total > 0 ? (count / total) * 100 : 0;
+        
+        const barElement = document.querySelector(`.rating-bar:nth-child(${i + 1}) .bar`);
+        const countElement = document.querySelector(`.rating-bar:nth-child(${i + 1}) .rating-count`);
+        
+        if (barElement) barElement.style.width = percentage + '%';
+        if (countElement) countElement.textContent = count;
+    }
+}
+
+function renderReviews() {
+    const reviewsToShow = reviews;
+    
+    const reviewsList = document.getElementById('reviewsList');
+    if (!reviewsToShow || reviewsToShow.length === 0) {
+        reviewsList.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <div style="font-size:32px;line-height:1;">💬</div>
+                <div style="margin-top:8px;">No reviews yet</div>
+            </div>
+        `;
+        renderPagination();
+        return;
+    }
+    reviewsList.innerHTML = reviewsToShow.map(review => `
+        <div class="review-card">
+            <div class="review-header">
+                <div class="reviewer-info">
+                    <div class="reviewer-avatar">${review.customerAvatar}</div>
+                    <div class="reviewer-details">
+                        <h4>${review.customerName}</h4>
+                        <div class="review-date">${formatDateTime(review.createdAt || review.date)}</div>
+                    </div>
+                </div>
+                <div class="review-rating">
+                    <div class="review-stars">
+                        ${generateStars(review.rating)}
+                    </div>
+                    <span class="review-score">${review.rating}.0</span>
+                </div>
+            </div>
+            
+            <div class="review-product">Product: ${review.product}</div>
+            
+            <div class="review-content">${review.comment || review.content}</div>
+            
+            ${review.images.length > 0 ? `
+                <div class="review-images">
+                    ${review.images.map(img => `
+                        <img src="${img}" alt="Review Image" class="review-image" 
+                             onerror="this.src='/images/placeholder.jpg'">
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            ${review.reply ? `
+                <div class="review-reply">
+                    <div class="reply-header">
+                        <span class="reply-author">${review.reply.author}</span>
+                        <span class="reply-date">${formatDateTime(review.reply.date)}</span>
+                    </div>
+                    <div class="reply-content">${review.reply.content}</div>
+                </div>
+            ` : ''}
+            
+            <div class="review-actions">
+                <span class="status-badge status-${review.status}">
+                    ${review.status === 'replied' ? 'Replied' : 'Pending Reply'}
+                </span>
+                ${review.status === 'pending' ? `
+                    <button class="btn btn-sm btn-primary" onclick="showReplyModal(${review.id})">
+                        Reply to Review
+                    </button>
+                ` : `
+                    <button class="btn btn-sm btn-outline-secondary" onclick="showReplyModal(${review.id})">
+                        View Reply
+                    </button>
+                `}
+            </div>
+        </div>
+    `).join('');
+    
+    renderPagination();
+}
+
+function generateStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            stars += '<span class="star filled">★</span>';
+        } else {
+            stars += '<span class="star">★</span>';
+        }
+    }
+    return stars;
+}
+
+function formatDateTime(date) {
+    if (!date) return '';
+    return new Date(date).toLocaleString('zh-NZ', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function updateStats() {
+    const totalReviews = reviews.length;
+    const pendingReviews = reviews.filter(r => r.status === 'pending').length;
+    const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+    
+    document.getElementById('totalReviews').textContent = totalReviews;
+    document.getElementById('pendingReviews').textContent = pendingReviews;
+    document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+}
+
+function showReplyModal(reviewId) {
+    const review = reviews.find(r => r.id === reviewId);
+    if (review) {
+        selectedReviewId = reviewId;
+        
+        const originalReviewHtml = `
+            <div class="review-info">
+                <div class="reviewer-info">
+                    <strong>${review.customerName}</strong>
+                    <span class="review-rating">
+                        ${generateStars(review.rating)} ${review.rating}.0
+                    </span>
+                </div>
+                <div class="review-product">Product: ${review.product}</div>
+                <div class="review-content">${review.comment || review.content}</div>
+                <div class="review-date">Review Date: ${formatDateTime(review.createdAt || review.date)}</div>
+            </div>
+        `;
+        
+        document.getElementById('originalReview').innerHTML = originalReviewHtml;
+        
+        // If there's already a reply, show it in the text box
+        if (review.reply) {
+            document.getElementById('replyContent').value = review.reply.content;
+        } else {
+            document.getElementById('replyContent').value = '';
+        }
+        
+        new bootstrap.Modal(document.getElementById('replyModal')).show();
+    }
+}
+
+async function submitReply() {
+    const replyContent = document.getElementById('replyContent').value.trim();
+    
+    if (!replyContent) {
+        alert('Please enter reply content');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/MerchantApi/reply-review/${selectedReviewId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reply: replyContent
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Update local data
+            const review = reviews.find(r => r.id === selectedReviewId);
+            if (review) {
+                review.reply = {
+                    content: replyContent,
+                    date: new Date(),
+                    author: 'Manager'
+                };
+                review.status = 'replied';
+            }
+            
+            // Re-render
+            filterReviews();
+            await loadReviewStats();
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('replyModal')).hide();
+            
+            showToast('Reply sent successfully!');
+        } else {
+            alert('Reply failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Reply to review error:', error);
+        alert('Reply failed, please try again later');
+    }
+}
+
+function renderPagination() {
+    const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
+    const pagination = document.getElementById('pagination');
+    
+    let paginationHTML = '';
+    
+    // Previous page
+    paginationHTML += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                Previous
+            </a>
+        </li>
+    `;
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        paginationHTML += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+            </li>
+        `;
+    }
+    
+    // Next page
+    paginationHTML += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                Next
+            </a>
+        </li>
+    `;
+    
+    pagination.innerHTML = paginationHTML;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        renderReviews();
+    }
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Add CSS animation
+const style = document.createElement('style');
+style.textContent = `
+    @@keyframes slideIn {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+`;
+document.head.appendChild(style);
+</script>

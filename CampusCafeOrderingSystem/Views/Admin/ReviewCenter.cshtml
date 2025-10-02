@@ -5,7 +5,12 @@
     ViewData["Title"] = "Review Center";
 
     string Stars(int r) => new string('⭐', Math.Clamp(r,1,5)) + new string('☆', Math.Clamp(5-r,0,5));
-
+    string Badge(string status) => status switch
+    {
+        "Approved" => "<span class=\"badge bg-success\">Approved</span>",
+        "Rejected" => "<span class=\"badge bg-danger\">Rejected</span>",
+        _ => "<span class=\"badge bg-secondary\">Pending</span>"
+    };
         }
 
         <h2 class="mb-4 text-center">Review Center</h2>
@@ -37,8 +42,16 @@
                             <option value="5">⭐ 5</option>
                         </select>
                     </div>
-
-                    <div class="col-12 col-md-3 text-md-end">
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-2 text-md-end">
                         <button id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
                     </div>
                 </div>
@@ -57,12 +70,14 @@
                                 <th>Comment</th>
                                 <th style="width:120px;">Rating</th>
                                 <th style="width:130px;">Date</th>
-
+                                <th style="width:120px;">Status</th>
+                                <th style="width:180px;" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var r in Model)
                 {
+                    var isPending = r.Status == "Pending";
                             <tr>
                                 <td>@r.Id</td>
                                 <td>@r.CustomerName</td>
@@ -83,7 +98,23 @@
                                     <div class="small text-muted">@r.Rating / 5</div>
                                 </td>
                                 <td>@r.CreatedAt.ToString("yyyy-MM-dd")</td>
-
+                                <td>@Html.Raw(Badge(r.Status))</td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                        <form asp-action="ModerateReview" asp-controller="Admin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@r.Id" />
+                                            <input type="hidden" name="decision" value="Approve" />
+                                            <button type="submit" class="btn btn-success btn-sm" @(isPending ? "" : "disabled")>Approve</button>
+                                        </form>
+                                        <form asp-action="ModerateReview" asp-controller="Admin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@r.Id" />
+                                            <input type="hidden" name="decision" value="Reject" />
+                                            <button type="submit" class="btn btn-danger btn-sm" @(isPending ? "" : "disabled")>Reject</button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                 }
                         </tbody>
@@ -141,23 +172,28 @@
                         dt.search(this.value).draw();
                     });
 
-                    $('#ratingFilter').on('change', function () { applyFilters(); });
+                    $('#ratingFilter, #statusFilter').on('change', function () { applyFilters(); });
 
                     $('#resetFilters').on('click', function () {
                         $('#searchBox').val('');
                         $('#ratingFilter').val('');
+                        $('#statusFilter').val('');
                         dt.search('').draw();
                         dt.columns().search('').draw();
                     });
 
                     function applyFilters() {
                         const minRating = $('#ratingFilter').val();
+                        const status = $('#statusFilter').val();
 
                         // Clear all searches
                         dt.columns().search('');
 
+                        // Status in column 5 (starting from 0: 0..6)
+                        if (status) dt.column(5).search(status, true, false);
+
                         // Rating in column 3, but text contains "★", needs special handling for filtering. Assuming small text contains "x / 5"
-                        if (minRating) dt.column(3).search(`^(${minRating}|${minRating}\\s\/\\s5|[${minRating}-5])`, true, false);
+                        if (minRating) dt.column(3).search(`^(${minRating}|${minRating}\\s\\/\\s5|[${minRating}-5])`, true, false);
 
                         dt.draw();
                     }

@@ -1,0 +1,151 @@
+@model CampusCafeOrderingSystem.Models.SettingsViewModel
+
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<h2 class="mb-4 text-center">System Settings</h2>
+
+@if (TempData["SettingsSaved"] is string msg && !string.IsNullOrWhiteSpace(msg))
+{
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    @msg
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <ul class="nav nav-pills mb-3" id="settings-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-general" data-bs-toggle="pill" data-bs-target="#pane-general" type="button" role="tab">General</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-orders" data-bs-toggle="pill" data-bs-target="#pane-orders" type="button" role="tab">Orders</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-notify" data-bs-toggle="pill" data-bs-target="#pane-notify" type="button" role="tab">Notifications</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-advanced" data-bs-toggle="pill" data-bs-target="#pane-advanced" type="button" role="tab">Advanced</button>
+            </li>
+        </ul>
+
+        <form asp-action="Settings" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="tab-content">
+                <!-- General -->
+                <div class="tab-pane fade show active" id="pane-general" role="tabpanel" aria-labelledby="tab-general">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SystemName" class="form-label"></label>
+                            <input asp-for="SystemName" class="form-control" />
+                            <span asp-validation-for="SystemName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Currency" class="form-label"></label>
+                            <select asp-for="Currency" class="form-select">
+                                <option value="NZD">NZD - New Zealand Dollar</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="AUD">AUD - Australian Dollar</option>
+                                <option value="CNY">CNY - Chinese Yuan</option>
+                                <option value="EUR">EUR - Euro</option>
+                            </select>
+                            <span asp-validation-for="Currency" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DefaultTimeZone" class="form-label"></label>
+                            <input asp-for="DefaultTimeZone" class="form-control" placeholder="e.g. Pacific/Auckland" />
+                            <span asp-validation-for="DefaultTimeZone" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders -->
+                <div class="tab-pane fade" id="pane-orders" role="tabpanel" aria-labelledby="tab-orders">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="OrderTimeoutMinutes" class="form-label"></label>
+                            <input asp-for="OrderTimeoutMinutes" type="number" min="5" max="240" class="form-control" />
+                            <span asp-validation-for="OrderTimeoutMinutes" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12 col-md-6 d-flex align-items-center">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" asp-for="MaintenanceMode" />
+                                <label class="form-check-label" asp-for="MaintenanceMode"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="tab-pane fade" id="pane-notify" role="tabpanel" aria-labelledby="tab-notify">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="EnableEmail" />
+                                <label class="form-check-label" asp-for="EnableEmail"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="EnableSms" />
+                                <label class="form-check-label" asp-for="EnableSms"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DailyReportTime" class="form-label"></label>
+                            <input asp-for="DailyReportTime" type="time" class="form-control" />
+                            <span asp-validation-for="DailyReportTime" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced -->
+                <div class="tab-pane fade" id="pane-advanced" role="tabpanel" aria-labelledby="tab-advanced">
+                    <div class="alert alert-warning">
+                        Use with caution. Advanced settings may impact system stability.
+                    </div>
+                    <p class="text-muted mb-0">No advanced options yet. You can add API keys, feature flags, etc.</p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+
+        <form asp-action="ResetSettings" method="post" class="mt-2">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-danger"
+                    onclick="return confirm('Reset all settings to default values?');">
+                Reset to Defaults
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        
+        const tabs = document.querySelectorAll('#settings-tabs [data-bs-toggle="pill"]');
+        tabs.forEach(t => {
+            t.addEventListener('shown.bs.tab', e => {
+                const target = e.target.getAttribute('data-bs-target');
+                history.replaceState(null, '', target);
+            });
+        });
+        const hash = location.hash;
+        if (hash) {
+            const triggerEl = document.querySelector(`[data-bs-target="${hash}"]`);
+            if (triggerEl) new bootstrap.Tab(triggerEl).show();
+        }
+    </script>
+}
