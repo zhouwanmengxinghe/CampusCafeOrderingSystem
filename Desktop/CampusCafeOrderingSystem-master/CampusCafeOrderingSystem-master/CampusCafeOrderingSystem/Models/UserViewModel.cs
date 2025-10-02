@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CampusCafeOrderingSystem.Models
 {
-    // UserViewModel - 用于Admin管理用户页面
+    // UserViewModel - for Admin user management page
     public class UserViewModel
     {
         public string Id { get; set; } = string.Empty;
@@ -14,9 +14,9 @@ namespace CampusCafeOrderingSystem.Models
         public DateTime? LastLoginDate { get; set; }
     }
 
-    // 删除重复的 UserProfileViewModel 定义，因为它已经在 ViewModels/UserProfileViewModel.cs 中定义了
+    // Remove duplicate UserProfileViewModel definition, as it's already defined in ViewModels/UserProfileViewModel.cs
     
-    // UserCreditsViewModel - 适应 Credits 页面的数据
+    // UserCreditsViewModel - adapted for Credits page data
     public class UserCreditsViewModel
     {
         public string UserId { get; set; } = string.Empty;
@@ -26,7 +26,7 @@ namespace CampusCafeOrderingSystem.Models
         public List<CreditTransaction> CreditHistory { get; set; } = new List<CreditTransaction>();
     }
 
-    // CreditTransaction - 积分交易记录
+    // CreditTransaction - credit transaction record
     public class CreditTransaction
     {
         public int Id { get; set; }
@@ -37,17 +37,17 @@ namespace CampusCafeOrderingSystem.Models
         public int BalanceAfter { get; set; }
     }
 
-    // CreditHistoryItem - 用来显示用户的消费记录
+    // CreditHistoryItem - for displaying user consumption records
     public class CreditHistoryItem
     {
         public DateTime Date { get; set; }
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public decimal BalanceAfter { get; set; }
-        public string Type { get; set; } = string.Empty;        // 添加 Type 字段
+        public string Type { get; set; } = string.Empty;        // Add Type field
     }
 
-    // UserHistoryViewModel - 适应 History 页面的数据
+    // UserHistoryViewModel - adapted for History page data
     public class UserHistoryViewModel
     {
         public string UserId { get; set; } = string.Empty;
@@ -59,29 +59,29 @@ namespace CampusCafeOrderingSystem.Models
         public int TotalPages { get; set; }
     }
 
-    // OrderSummary - 适应订单页面显示
+    // OrderSummary - adapted for order page display
     public class OrderSummary
     {
-        public int Id { get; set; }                          // 视图使用的 Id
+        public int Id { get; set; }                          // View uses Id
         public int OrderId { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }
         public string OrderNumber { get; set; } = string.Empty;
-        public CampusCafeOrderingSystem.Models.OrderStatus Status { get; set; } = CampusCafeOrderingSystem.Models.OrderStatus.Pending; // 改为枚举类型
+        public CampusCafeOrderingSystem.Models.OrderStatus Status { get; set; } = CampusCafeOrderingSystem.Models.OrderStatus.Pending; // Changed to enum type
         public List<string> OrderItems { get; set; } = new();
         public string PaymentMethod { get; set; } = string.Empty;
     }
 
-    // FeedbackSummary - 用于历史反馈页面显示
+    // FeedbackSummary - for historical feedback page display
     public class FeedbackSummary
     {
         public int FeedbackId { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Subject { get; set; } = string.Empty;
-        public FeedbackStatus Status { get; set; } = FeedbackStatus.Open;  // 使用已有的枚举类型（来自 Models/Feedback.cs）
+        public FeedbackStatus Status { get; set; } = FeedbackStatus.Open;  // Use existing enum type (from Models/Feedback.cs)
         public string Category { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
-        public int? Rating { get; set; }                     // 可空，支持 HasValue
+        public int? Rating { get; set; }                     // Nullable, supports HasValue
         public string AdminReply { get; set; } = string.Empty;
         public DateTime? RepliedAt { get; set; }
     }

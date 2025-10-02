@@ -126,7 +126,7 @@ namespace CampusCafeOrderingSystem.Data
                     for (int i = 1; i <= 10; i++)
                     {
                         var orderDate = DateTime.UtcNow.AddDays(-random.Next(1, 30));
-                        // 使用已存在的用户ID（admin或customer）
+                        // Use existing user ID (admin or customer)
                         var existingUser = await context.Users.FirstOrDefaultAsync();
                         if (existingUser == null) continue;
                         

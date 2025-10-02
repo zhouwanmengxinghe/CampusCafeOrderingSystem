@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace CampusCafeOrderingSystem.Models.DTOs
 {
     /// <summary>
-    /// 标准API响应格式
+    /// Standard API response format
     /// </summary>
-    /// <typeparam name="T">响应数据类型</typeparam>
+    /// <typeparam name="T">Response data type</typeparam>
     public class ApiResponse<T>
     {
         public bool IsSuccess { get; set; }
@@ -14,7 +14,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
         public List<string> Errors { get; set; } = new List<string>();
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-        public static ApiResponse<T> SuccessResult(T data, string message = "操作成功")
+        public static ApiResponse<T> SuccessResult(T data, string message = "Operation successful")
         {
             return new ApiResponse<T>
             {
@@ -44,8 +44,8 @@ namespace CampusCafeOrderingSystem.Models.DTOs
             };
         }
 
-        // 添加简化的静态方法以匹配控制器中的使用
-        public static ApiResponse<T> Success(T data, string message = "操作成功")
+        // Add simplified static methods to match usage in controllers
+        public static ApiResponse<T> Success(T data, string message = "Operation successful")
         {
             return SuccessResult(data, message);
         }
@@ -62,9 +62,9 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 分页响应格式
+    /// Paged response format
     /// </summary>
-    /// <typeparam name="T">数据类型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public class PagedApiResponse<T> : ApiResponse<IEnumerable<T>>
     {
         public int TotalCount { get; set; }
@@ -74,7 +74,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
         public bool HasNextPage => CurrentPage < TotalPages;
         public bool HasPreviousPage => CurrentPage > 1;
 
-        public static PagedApiResponse<T> SuccessResult(IEnumerable<T> data, int totalCount, int currentPage, int pageSize, string message = "操作成功")
+        public static PagedApiResponse<T> SuccessResult(IEnumerable<T> data, int totalCount, int currentPage, int pageSize, string message = "Operation successful")
         {
             return new PagedApiResponse<T>
             {
@@ -90,9 +90,9 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 分页结果类
+    /// Paged result class
     /// </summary>
-    /// <typeparam name="T">数据类型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public class PagedResult<T>
     {
         public List<T> Items { get; set; } = new List<T>();

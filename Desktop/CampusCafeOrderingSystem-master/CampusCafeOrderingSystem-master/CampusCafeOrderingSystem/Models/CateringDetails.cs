@@ -47,12 +47,18 @@ namespace CampusCafeOrderingSystem.Models
         
         public string UserId { get; set; } = string.Empty;
         
-        // 添加视图需要的属性
+        // Add properties needed for views
+        public string? CustomerName { get; set; }
+        public string? CustomerPhone { get; set; }
+
+        // Properties added for view compatibility
+        public string? ImageUrl { get; set; }
+        public string? VendorName { get; set; }
         public List<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
         
         public decimal TotalAmount { get; set; }
         
-        // 为视图兼容性添加的属性
+        // Properties added for view compatibility
         public int PeopleCount => ExpectedGuests;
     }
 }

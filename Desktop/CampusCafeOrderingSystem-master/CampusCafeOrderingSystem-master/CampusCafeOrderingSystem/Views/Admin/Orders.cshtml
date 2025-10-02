@@ -297,8 +297,8 @@ function updateStatus(orderId, status) {
     });
 }
 
-// 初始化每行按钮的显示/隐藏
-function initializeRowActionButtons() {
+// Initialize button visibility when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
     const rows = document.querySelectorAll('#ordersTable tbody tr');
     rows.forEach(row => {
         const id = row.getAttribute('data-order-id');
@@ -308,13 +308,6 @@ function initializeRowActionButtons() {
         applyOrderStatusChange(id, status);
     });
 }
-
-// DOMContentLoaded 时初始化按钮可见性
-document.addEventListener('DOMContentLoaded', function(){
-    if (document.getElementById('ordersTable')) {
-        initializeRowActionButtons();
-    }
-});
 
 function setEstimatedTime(orderId) {
     document.getElementById('orderIdInput').value = orderId;

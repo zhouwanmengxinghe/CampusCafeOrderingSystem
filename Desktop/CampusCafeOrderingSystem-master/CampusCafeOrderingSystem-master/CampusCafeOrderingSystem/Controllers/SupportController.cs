@@ -321,7 +321,7 @@ namespace CampusCafeOrderingSystem.Controllers
         public string Address { get; set; } = string.Empty;
         public string Hours { get; set; } = string.Empty;
 
-        // 改成字典
+        // Changed to dictionary
         public Dictionary<string, string> SocialMedia { get; set; } = new Dictionary<string, string>();
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace CampusCafeOrderingSystem.Filters
 {
     /// <summary>
-    /// 模型验证过滤器
+    /// Model validation filter
     /// </summary>
     public class ModelValidationFilter : ActionFilterAttribute
     {
@@ -19,7 +19,7 @@ namespace CampusCafeOrderingSystem.Filters
                     .Select(x => x.ErrorMessage)
                     .ToList();
 
-                var response = ApiResponse<object>.ErrorResult("数据验证失败", errors);
+                var response = ApiResponse<object>.ErrorResult("Data validation failed", errors);
                 
                 context.Result = new BadRequestObjectResult(response);
             }
@@ -27,13 +27,13 @@ namespace CampusCafeOrderingSystem.Filters
     }
 
     /// <summary>
-    /// API响应格式化过滤器
+    /// API response formatting filter
     /// </summary>
     public class ApiResponseFilter : ActionFilterAttribute
     {
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            // 跳过视图、文件和重定向等非JSON响应
+            // Skip views, files, redirects and other non-JSON responses
             if (context.Result is ViewResult ||
                 context.Result is FileResult ||
                 context.Result is RedirectResult ||
@@ -44,13 +44,13 @@ namespace CampusCafeOrderingSystem.Filters
                 return;
             }
 
-            // 处理包含对象负载的结果
+            // Handle results containing object payload
             if (context.Result is ObjectResult objectResult)
             {
                 var statusCode = objectResult.StatusCode ?? 200;
                 var value = objectResult.Value;
 
-                // 已经是 ApiResponse<T>，则不再包装
+                // Already ApiResponse<T>, no need to wrap again
                 if (value != null)
                 {
                     var valueType = value.GetType();
@@ -68,7 +68,7 @@ namespace CampusCafeOrderingSystem.Filters
                 }
                 else
                 {
-                    string message = "操作失败";
+                    string message = "Operation failed";
                     var errors = new List<string>();
 
                     if (value is ProblemDetails pd)
@@ -78,12 +78,12 @@ namespace CampusCafeOrderingSystem.Filters
                     }
                     else if (value is ValidationProblemDetails vpd)
                     {
-                        message = vpd.Title ?? "数据验证失败";
+                        message = vpd.Title ?? "Data validation failed";
                         foreach (var e in vpd.Errors.SelectMany(kv => kv.Value)) errors.Add(e);
                     }
                     else if (value != null)
                     {
-                        // 尝试从匿名对象中提取 message / error(s)
+                        // Try to extract message/error(s) from anonymous object
                         var type = value.GetType();
                         var msgProp = type.GetProperty("message") ?? type.GetProperty("Message");
                         if (msgProp?.GetValue(value) is string m && !string.IsNullOrWhiteSpace(m))
@@ -110,7 +110,7 @@ namespace CampusCafeOrderingSystem.Filters
                 return;
             }
 
-            // 处理 JsonResult
+            // Handle JsonResult
             if (context.Result is JsonResult jsonResult)
             {
                 var statusCode = jsonResult.StatusCode ?? 200;
@@ -123,7 +123,7 @@ namespace CampusCafeOrderingSystem.Filters
                 }
                 else
                 {
-                    context.Result = new ObjectResult(ApiResponse<object>.ErrorResult("操作失败"))
+                    context.Result = new ObjectResult(ApiResponse<object>.ErrorResult("Operation failed"))
                     {
                         StatusCode = statusCode
                     };
@@ -131,7 +131,7 @@ namespace CampusCafeOrderingSystem.Filters
                 return;
             }
 
-            // 处理仅有状态码的结果（如 OkResult/NoContent/Unauthorized/NotFound 等）
+            // Handle status code only results (like OkResult/NoContent/Unauthorized/NotFound etc.)
             if (context.Result is StatusCodeResult statusCodeResult)
             {
                 var code = statusCodeResult.StatusCode;
@@ -146,14 +146,14 @@ namespace CampusCafeOrderingSystem.Filters
                 {
                     string message = code switch
                     {
-                        400 => "错误的请求",
-                        401 => "未授权",
-                        403 => "禁止访问",
-                        404 => "资源未找到",
-                        409 => "冲突",
-                        422 => "无法处理的实体",
-                        500 => "服务器内部错误",
-                        _ => "操作失败"
+                        400 => "Bad Request",
+                        401 => "Unauthorized",
+                        403 => "Forbidden",
+                        404 => "Resource Not Found",
+                        409 => "Conflict",
+                        422 => "Unprocessable Entity",
+                        500 => "Internal Server Error",
+                        _ => "Operation Failed"
                     };
                     context.Result = new ObjectResult(ApiResponse<object>.ErrorResult(message))
                     {
@@ -163,7 +163,7 @@ namespace CampusCafeOrderingSystem.Filters
                 return;
             }
 
-            // 处理空结果
+            // Handle empty results
             if (context.Result is EmptyResult)
             {
                 context.Result = new ObjectResult(ApiResponse<object>.SuccessResult(null))
@@ -173,7 +173,7 @@ namespace CampusCafeOrderingSystem.Filters
                 return;
             }
 
-            // 处理文本内容结果
+            // Handle text content results
             if (context.Result is ContentResult contentResult)
             {
                 context.Result = new ObjectResult(ApiResponse<object>.SuccessResult(contentResult.Content))
@@ -186,7 +186,7 @@ namespace CampusCafeOrderingSystem.Filters
     }
 
     /// <summary>
-    /// 速率限制过滤器
+    /// Rate limiting filter
     /// </summary>
     public class RateLimitFilter : ActionFilterAttribute
     {
@@ -215,14 +215,14 @@ namespace CampusCafeOrderingSystem.Filters
 
                 var requests = _requestHistory[clientId];
                 
-                // 清理过期的请求记录
+                // Clean up expired request records
                 requests.RemoveAll(time => now - time > _timeWindow);
 
                 if (requests.Count >= _maxRequests)
                 {
                     var response = ApiResponse<object>.ErrorResult(
-                        "请求过于频繁", 
-                        $"每{_timeWindow.TotalMinutes}分钟最多允许{_maxRequests}次请求"
+                        "Too many requests", 
+                        $"Maximum {_maxRequests} requests allowed per {_timeWindow.TotalMinutes} minutes"
                     );
                     
                     context.Result = new ObjectResult(response)
@@ -238,7 +238,7 @@ namespace CampusCafeOrderingSystem.Filters
 
         private string GetClientIdentifier(HttpContext context)
         {
-            // 优先使用用户ID，其次使用IP地址
+            // Prefer user ID, fallback to IP address
             var userId = context.User?.Identity?.Name;
             if (!string.IsNullOrEmpty(userId))
             {
@@ -251,7 +251,7 @@ namespace CampusCafeOrderingSystem.Filters
     }
 
     /// <summary>
-    /// 输入清理过滤器
+    /// Input sanitization filter
     /// </summary>
     public class InputSanitizationFilter : ActionFilterAttribute
     {
@@ -270,7 +270,7 @@ namespace CampusCafeOrderingSystem.Filters
         {
             if (obj == null) return;
 
-            // 避免对原始 JsonElement 进行反射清理（其包含索引器/内部结构，反射访问可能触发异常）
+            // Avoid reflection cleanup on JsonElement (contains indexers/internal structures that may throw exceptions on reflection access)
             if (obj is System.Text.Json.JsonElement)
             {
                 return;
@@ -278,7 +278,7 @@ namespace CampusCafeOrderingSystem.Filters
 
             var type = obj.GetType();
             
-            // 处理字符串属性（跳过索引器属性）
+            // Handle string properties (skip indexer properties)
             var stringProperties = type.GetProperties()
                 .Where(p => p.GetIndexParameters().Length == 0 && p.PropertyType == typeof(string) && p.CanWrite && p.CanRead);
 
@@ -287,13 +287,13 @@ namespace CampusCafeOrderingSystem.Filters
                 var value = property.GetValue(obj) as string;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    // 基本的HTML标签清理
+                    // Basic HTML tag cleanup
                     var sanitized = SanitizeString(value);
                     property.SetValue(obj, sanitized);
                 }
             }
 
-            // 递归处理复杂对象（跳过索引器属性）
+            // Recursively handle complex objects (skip indexer properties)
             var complexProperties = type.GetProperties()
                 .Where(p => p.GetIndexParameters().Length == 0 &&
                            !p.PropertyType.IsPrimitive && 
@@ -311,7 +311,7 @@ namespace CampusCafeOrderingSystem.Filters
                 }
                 catch
                 {
-                    // 安全兜底：某些属性在反射读取时可能需要参数或抛出异常，直接跳过
+                    // Safety fallback: some properties may require parameters or throw exceptions during reflection access, skip them directly
                     continue;
                 }
 
@@ -322,7 +322,7 @@ namespace CampusCafeOrderingSystem.Filters
                         foreach (var item in enumerable)
                         {
                             if (item == null) continue;
-                            if (item is System.Text.Json.JsonElement) continue; // 避免对 JsonElement 递归
+                            if (item is System.Text.Json.JsonElement) continue; // Avoid recursion on JsonElement
                             SanitizeObject(item);
                         }
                     }
@@ -336,7 +336,7 @@ namespace CampusCafeOrderingSystem.Filters
 
         private string SanitizeString(string input)
         {
-            // 非严格清理：移除基本的HTML标签
+            // Non-strict cleanup: remove basic HTML tags
             return System.Text.RegularExpressions.Regex.Replace(input, "<.*?>", string.Empty);
         }
     }

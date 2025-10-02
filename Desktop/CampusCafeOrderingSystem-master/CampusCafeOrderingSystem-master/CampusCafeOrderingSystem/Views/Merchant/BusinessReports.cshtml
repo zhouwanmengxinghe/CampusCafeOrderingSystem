@@ -5,12 +5,12 @@
 
 @section Styles {
     <style>
-        /* 报表容器样式 */
+        /* Report */
         .reports-container {
             padding: 20px;
         }
 
-        /* 页面头部样式 */
+        /* Page Header Styles */
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -24,7 +24,7 @@
             margin: 0;
         }
 
-        /* 加载指示器样式 */
+        /* Loading Indicator Styles */
         body.loading::before {
             content: "";
             position: fixed;
@@ -57,7 +57,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 日期范围选择器样式 */
+        /* Date Range Selector Styles */
         .date-range-section {
             background-color: #f8f9fa;
             padding: 15px;
@@ -89,7 +89,7 @@
             border-radius: 4px;
         }
 
-        /* 概览卡片样式 */
+        /* Overview Card Styles */
         .overview-section {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -127,7 +127,7 @@
             color: #6c757d;
         }
 
-        /* 图表部分样式 */
+        /* Chart Section Styles */
         .charts-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
@@ -150,7 +150,7 @@
             color: #343a40;
         }
 
-        /* 数据表格样式 */
+        /* Data Table Styles */
         .data-table-section {
             background-color: #fff;
             border-radius: 8px;
@@ -166,7 +166,7 @@
             color: #343a40;
         }
 
-        /* 响应式布局 */
+        /* Responsive Layout */
         @@media (max-width: 768px) {
             .report-stats {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -195,7 +195,7 @@
             }
         }
 
-        /* 错误消息样式 */
+        /* Error Message Styles */
         .error-message {
             background-color: #f8d7da;
             color: #721c24;
@@ -205,7 +205,7 @@
             display: none;
         }
 
-        /* 无数据提示样式 */
+        /* No Data Message Styles */
         .no-data-message {
             text-align: center;
             padding: 30px;
@@ -316,7 +316,7 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // 全局变量存储报表数据
+        // Global variables to store report data
         let reportData = null;
         let revenueChart = null;
         let categoryChart = null;

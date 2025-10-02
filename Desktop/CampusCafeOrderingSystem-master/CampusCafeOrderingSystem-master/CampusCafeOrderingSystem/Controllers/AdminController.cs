@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CampusCafeOrderingSystem.Models;
+using CampusCafeOrderingSystem.Models.ViewModels;
 using CampusCafeOrderingSystem.Services;
 using CampusCafeOrderingSystem.Data;
 using CampusCafeOrderingSystem.Hubs;
@@ -124,7 +125,7 @@ namespace CampusCafeOrderingSystem.Controllers
         // ========= Vendor Management =========
         public async Task<IActionResult> Vendors()
         {
-            // 获取所有具有Vendor角色的用户
+            // Get all users with Vendor role
             var vendorRole = await _roleManager.FindByNameAsync("Vendor");
             if (vendorRole == null)
             {
@@ -136,21 +137,21 @@ namespace CampusCafeOrderingSystem.Controllers
 
             foreach (var vendor in vendorUsers)
             {
-                // 获取该商家的菜单项数量
+                // Get menu item count for this vendor
                 var menuItemCount = await _context.MenuItems
                     .CountAsync(m => m.VendorEmail == vendor.Email);
 
-                // 获取该商家的平均评分
+                // Get average rating for this vendor
                 var averageRating = await _context.Reviews
                     .Include(r => r.MenuItem)
                     .Where(r => r.MenuItem.VendorEmail == vendor.Email)
                     .AverageAsync(r => (decimal?)r.Rating) ?? 0;
 
-                // 获取该商家的订单数量
+                // Get order count for this vendor
                 var orderCount = await _context.Orders
                     .CountAsync(o => o.VendorEmail == vendor.Email);
 
-                // 确定商家状态
+                // Determine vendor status
                 string status;
                 if (vendor.LockoutEnd.HasValue && vendor.LockoutEnd > DateTimeOffset.Now)
                 {
@@ -173,7 +174,7 @@ namespace CampusCafeOrderingSystem.Controllers
                     Phone = vendor.PhoneNumber ?? "N/A",
                     Status = status,
                     RegisteredAt = vendor.LockoutEnd?.DateTime ?? DateTime.Now,
-                    Address = "Campus Location", // 可以从用户配置文件获取
+                    Address = "Campus Location", // Can be obtained from user profile
                     MenuItems = menuItemCount,
                     Rating = averageRating,
                     OrderCount = orderCount
@@ -297,7 +298,7 @@ namespace CampusCafeOrderingSystem.Controllers
         // ========= Order Management =========
         public async Task<IActionResult> Orders()
         {
-            // 获取所有订单，包含相关数据
+            // Get all orders with related data
             var orders = await _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.MenuItem)
@@ -316,30 +317,30 @@ namespace CampusCafeOrderingSystem.Controllers
                 var order = await _context.Orders.FindAsync(orderId);
                 if (order == null)
                 {
-                    return Json(new { success = false, message = "订单未找到" });
+                    return Json(new { success = false, message = "Order not found" });
                 }
 
-                // 将字符串转换为OrderStatus枚举
+                // Convert string to OrderStatus enum
                 if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
                 {
                     order.Status = orderStatus;
                 }
                 else
                 {
-                    return Json(new { success = false, message = "无效的订单状态" });
+                    return Json(new { success = false, message = "Invalid order status" });
                 }
                 
                 order.UpdatedAt = DateTime.Now;
 
-                // 如果状态是"准备中"，设置预计完成时间
+                // If status is "Preparing", set estimated completion time
                 if (order.Status == OrderStatus.Preparing)
                 {
-                    order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15); // 默认15分钟
+                    order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15); // Default 15 minutes
                 }
 
                 await _context.SaveChangesAsync();
 
-                // 发送SignalR通知
+                // Send SignalR notification
                 await _hubContext.Clients.User(order.UserId).SendAsync("OrderStatusUpdated", new
                 {
                     orderId = order.Id,
@@ -347,11 +348,11 @@ namespace CampusCafeOrderingSystem.Controllers
                     estimatedTime = order.EstimatedCompletionTime
                 });
 
-                return Json(new { success = true, message = "订单状态更新成功" });
+                return Json(new { success = true, message = "Order status updated successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "更新失败: " + ex.Message });
+                return Json(new { success = false, message = "Update failed: " + ex.Message });
             }
         }
 
@@ -363,32 +364,32 @@ namespace CampusCafeOrderingSystem.Controllers
                 var order = await _context.Orders.FindAsync(orderId);
                 if (order == null)
                 {
-                    return Json(new { success = false, message = "订单未找到" });
+                    return Json(new { success = false, message = "Order not found" });
                 }
 
                 order.EstimatedCompletionTime = DateTime.Now.AddMinutes(minutes);
                 order.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
 
-                // 发送SignalR通知
+                // Send SignalR notification
                 await _hubContext.Clients.User(order.UserId).SendAsync("EstimatedTimeUpdated", new
                 {
                     orderId = order.Id,
                     estimatedTime = order.EstimatedCompletionTime
                 });
 
-                return Json(new { success = true, message = "预计完成时间设置成功" });
+                return Json(new { success = true, message = "Estimated completion time set successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "设置失败: " + ex.Message });
+                return Json(new { success = false, message = "Setting failed: " + ex.Message });
             }
         }
 
         // ========= Reports =========
         public async Task<IActionResult> Reports()
         {
-            // 计算总体统计数据
+            // Calculate overall statistical data
             var totalRevenue = await _context.Orders
                 .Where(o => o.Status == OrderStatus.Completed)
                 .SumAsync(o => o.TotalAmount);
@@ -397,7 +398,7 @@ namespace CampusCafeOrderingSystem.Controllers
             var totalCustomers = await _userManager.GetUsersInRoleAsync("Customer");
             var totalVendors = await _userManager.GetUsersInRoleAsync("Vendor");
 
-            // 获取过去30天的每日收入数据
+            // Get daily revenue data for the past 30 days
             var thirtyDaysAgo = DateTime.Now.AddDays(-30);
             var dailyRevenue = await _context.Orders
                 .Where(o => o.CreatedAt >= thirtyDaysAgo && o.Status == OrderStatus.Completed)
@@ -411,7 +412,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 .OrderBy(d => d.Date)
                 .ToListAsync();
 
-            // 获取热门商品数据
+            // Get popular items data
             var popularItems = await _context.OrderItems
                 .Include(oi => oi.MenuItem)
                 .Include(oi => oi.Order)
@@ -427,7 +428,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 .Take(10)
                 .ToListAsync();
 
-            // 获取商家表现数据
+            // Get vendor performance data
             var vendorPerformance = await _context.Orders
                 .Where(o => o.Status == OrderStatus.Completed)
                 .GroupBy(o => o.VendorEmail)
@@ -460,7 +461,7 @@ namespace CampusCafeOrderingSystem.Controllers
         // ========= Review Center =========
         public async Task<IActionResult> ReviewCenter()
         {
-            // 获取所有评论，包含相关数据
+            // Get all reviews with related data
             var reviews = await _context.Reviews
                 .Include(r => r.MenuItem)
                 .Include(r => r.User)
@@ -489,17 +490,17 @@ namespace CampusCafeOrderingSystem.Controllers
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    return Json(new { success = false, message = "评论未找到" });
+                    return Json(new { success = false, message = "Review not found" });
                 }
 
                 review.Status = ReviewStatus.Replied;
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "评论审核通过" });
+                return Json(new { success = true, message = "Review approved successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "操作失败: " + ex.Message });
+                return Json(new { success = false, message = "Operation failed: " + ex.Message });
             }
         }
 
@@ -511,24 +512,24 @@ namespace CampusCafeOrderingSystem.Controllers
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    return Json(new { success = false, message = "评论未找到" });
+                    return Json(new { success = false, message = "Review not found" });
                 }
 
                 review.Status = ReviewStatus.Hidden;
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "评论已拒绝" });
+                return Json(new { success = true, message = "Review rejected successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "操作失败: " + ex.Message });
+                return Json(new { success = false, message = "Operation failed: " + ex.Message });
             }
         }
 
         // ========= Feedback Center =========
         public async Task<IActionResult> FeedbackCenter()
         {
-            // 获取所有用户反馈，包含相关数据
+            // Get all user feedback with related data
             var feedbacks = await _context.Feedbacks
                 .Include(f => f.User)
                 .OrderByDescending(f => f.CreatedAt)
@@ -545,7 +546,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 var feedback = await _context.Feedbacks.FindAsync(feedbackId);
                 if (feedback == null)
                 {
-                    return Json(new { success = false, message = "反馈未找到" });
+                    return Json(new { success = false, message = "Feedback not found" });
                 }
 
                 var adminUser = await _userManager.GetUserAsync(User);
@@ -557,11 +558,11 @@ namespace CampusCafeOrderingSystem.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "回复已发送" });
+                return Json(new { success = true, message = "Reply sent successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "操作失败: " + ex.Message });
+                return Json(new { success = false, message = "Operation failed: " + ex.Message });
             }
         }
 
@@ -573,18 +574,18 @@ namespace CampusCafeOrderingSystem.Controllers
                 var feedback = await _context.Feedbacks.FindAsync(feedbackId);
                 if (feedback == null)
                 {
-                    return Json(new { success = false, message = "反馈未找到" });
+                    return Json(new { success = false, message = "Feedback not found" });
                 }
 
                 feedback.Status = status;
                 feedback.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "状态已更新" });
+                return Json(new { success = true, message = "Status updated successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "操作失败: " + ex.Message });
+                return Json(new { success = false, message = "Operation failed: " + ex.Message });
             }
         }
 

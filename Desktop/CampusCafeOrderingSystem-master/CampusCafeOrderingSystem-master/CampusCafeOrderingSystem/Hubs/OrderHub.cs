@@ -7,43 +7,43 @@ namespace CampusCafeOrderingSystem.Hubs
     [Authorize]
     public class OrderHub : Hub
     {
-        // 商家加入组
+        // Merchant join group
         public async Task JoinMerchantGroup(string merchantEmail)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"Merchant_{merchantEmail}");
         }
 
-        // 商家离开组
+        // Merchant leave group
         public async Task LeaveMerchantGroup(string merchantEmail)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Merchant_{merchantEmail}");
         }
 
-        // 用户加入组
+        // User join group
         public async Task JoinCustomerGroup(string userId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"Customer_{userId}");
         }
 
-        // 用户离开组
+        // User leave group
         public async Task LeaveCustomerGroup(string userId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Customer_{userId}");
         }
 
-        // 管理员加入组
+        // Admin join group
         public async Task JoinAdminGroup()
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
         }
 
-        // 管理员离开组
+        // Admin leave group
         public async Task LeaveAdminGroup()
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Admins");
         }
 
-        // 连接时自动加入相应组
+        // Automatically join appropriate group on connection
         public override async Task OnConnectedAsync()
         {
             var user = Context.User;
@@ -52,7 +52,7 @@ namespace CampusCafeOrderingSystem.Hubs
                 var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    // 根据用户角色自动加入相应组
+                    // Automatically join appropriate group based on user role
                     if (user.IsInRole("Admin"))
                     {
                         await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
@@ -74,10 +74,10 @@ namespace CampusCafeOrderingSystem.Hubs
             await base.OnConnectedAsync();
         }
 
-        // 断开连接时清理
+        // Cleanup on disconnect
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            // SignalR会自动处理组的清理
+            // SignalR automatically handles group cleanup
             await base.OnDisconnectedAsync(exception);
         }
 

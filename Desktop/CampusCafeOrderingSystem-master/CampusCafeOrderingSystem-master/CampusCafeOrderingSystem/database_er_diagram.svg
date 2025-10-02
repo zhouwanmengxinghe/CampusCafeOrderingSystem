@@ -16,7 +16,7 @@
   </defs>
   
   <!-- Title -->
-  <text x="900" y="30" class="title">校园咖啡订餐系统 - 完整功能数据库ER图</text>
+  <text x="900" y="30" class="title">Campus Cafe Ordering System - Complete Database ER Diagram</text>
   
   <!-- Core User Management -->
   <!-- Users (ASP.NET Identity) -->
@@ -404,11 +404,11 @@
   
   <!-- Legend -->
   <rect x="50" y="1050" width="300" height="120" class="legend"/>
-  <text x="200" y="1070" class="entity-title">图例 (Legend)</text>
-  <text x="60" y="1090" class="pk">主键 (Primary Key - PK)</text>
-  <text x="60" y="1105" class="fk">外键 (Foreign Key - FK)</text>
-  <text x="60" y="1120" class="attribute">普通属性 (Regular Attribute)</text>
-  <text x="60" y="1135" class="relationship-label">1:1 = 一对一关系, 1:N = 一对多关系</text>
-  <text x="60" y="1150" class="legend-text">完整功能包含：用户管理、商家管理、菜单管理、订单管理、支付系统、评价反馈、通知系统、配送管理等</text>
+  <text x="200" y="1070" class="entity-title">Legend</text>
+  <text x="60" y="1090" class="pk">Primary Key (PK)</text>
+  <text x="60" y="1105" class="fk">Foreign Key (FK)</text>
+  <text x="60" y="1120" class="attribute">Regular Attribute</text>
+  <text x="60" y="1135" class="relationship-label">1:1 = One-to-One Relationship, 1:N = One-to-Many Relationship</text>
+  <text x="60" y="1150" class="legend-text">Complete features include: User Management, Merchant Management, Menu Management, Order Management, Payment System, Review & Feedback, Notification System, Delivery Management, etc.</text>
   
 </svg>

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CampusCafeOrderingSystem.Middleware
 {
     /// <summary>
-    /// 全局异常处理中间件
+    /// Global exception handling middleware
     /// </summary>
     public class GlobalExceptionMiddleware
     {
@@ -46,37 +46,37 @@ namespace CampusCafeOrderingSystem.Middleware
             {
                 case ValidationException validationEx:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response = ApiResponse<object>.ErrorResult("数据验证失败", validationEx.Message);
+                    response = ApiResponse<object>.ErrorResult("Data validation failed", validationEx.Message);
                     break;
 
                 case ArgumentNullException nullEx:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response = ApiResponse<object>.ErrorResult("必需参数缺失", nullEx.ParamName ?? "未知参数");
+                    response = ApiResponse<object>.ErrorResult("Required parameter missing", nullEx.ParamName ?? "Unknown parameter");
                     break;
 
                 case ArgumentException argEx:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response = ApiResponse<object>.ErrorResult("请求参数无效", argEx.Message);
+                    response = ApiResponse<object>.ErrorResult("Invalid request parameter", argEx.Message);
                     break;
 
                 case UnauthorizedAccessException:
                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    response = ApiResponse<object>.ErrorResult("未授权访问", "您没有权限执行此操作");
+                    response = ApiResponse<object>.ErrorResult("Unauthorized access", "You do not have permission to perform this operation");
                     break;
 
                 case KeyNotFoundException:
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    response = ApiResponse<object>.ErrorResult("资源未找到", "请求的资源不存在");
+                    response = ApiResponse<object>.ErrorResult("Resource not found", "The requested resource does not exist");
                     break;
 
                 case InvalidOperationException invalidOpEx:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response = ApiResponse<object>.ErrorResult("操作无效", invalidOpEx.Message);
+                    response = ApiResponse<object>.ErrorResult("Invalid operation", invalidOpEx.Message);
                     break;
 
                 case TimeoutException:
                     context.Response.StatusCode = (int)HttpStatusCode.RequestTimeout;
-                    response = ApiResponse<object>.ErrorResult("请求超时", "服务器处理请求超时，请稍后重试");
+                    response = ApiResponse<object>.ErrorResult("Request timeout", "Server processing request timed out, please try again later");
                     break;
 
                 default:
@@ -84,15 +84,15 @@ namespace CampusCafeOrderingSystem.Middleware
                     
                     if (_environment.IsDevelopment())
                     {
-                        response = ApiResponse<object>.ErrorResult("服务器内部错误", new List<string>
+                        response = ApiResponse<object>.ErrorResult("Internal server error", new List<string>
                         {
                             exception.Message,
-                            exception.StackTrace ?? "无堆栈跟踪信息"
+                            exception.StackTrace ?? "No stack trace information"
                         });
                     }
                     else
                     {
-                        response = ApiResponse<object>.ErrorResult("服务器内部错误", "服务器遇到了一个错误，请稍后重试");
+                        response = ApiResponse<object>.ErrorResult("Internal server error", "The server encountered an error, please try again later");
                     }
                     break;
             }
@@ -108,7 +108,7 @@ namespace CampusCafeOrderingSystem.Middleware
     }
 
     /// <summary>
-    /// 自定义验证异常
+    /// Custom validation exception
     /// </summary>
     public class ValidationException : Exception
     {
@@ -117,34 +117,38 @@ namespace CampusCafeOrderingSystem.Middleware
     }
 
     /// <summary>
-    /// 业务逻辑异常
+    /// Business logic exception
     /// </summary>
     public class BusinessException : Exception
     {
         public string ErrorCode { get; }
-
-        public BusinessException(string message, string errorCode = "BUSINESS_ERROR") : base(message)
+        
+        public BusinessException(string message) : base(message) 
+        {
+            ErrorCode = "BUSINESS_ERROR";
+        }
+        
+        public BusinessException(string errorCode, string message) : base(message)
         {
             ErrorCode = errorCode;
         }
-
-        public BusinessException(string message, Exception innerException, string errorCode = "BUSINESS_ERROR") 
-            : base(message, innerException)
+        
+        public BusinessException(string message, Exception innerException) : base(message, innerException)
         {
-            ErrorCode = errorCode;
+            ErrorCode = "BUSINESS_ERROR";
         }
     }
 
     /// <summary>
-    /// 资源不存在异常
+    /// Resource not found exception
     /// </summary>
     public class ResourceNotFoundException : Exception
     {
         public string ResourceType { get; }
         public string ResourceId { get; }
-
+        
         public ResourceNotFoundException(string resourceType, string resourceId) 
-            : base($"{resourceType} with ID '{resourceId}' was not found.")
+            : base($"{resourceType} with ID '{resourceId}' was not found")
         {
             ResourceType = resourceType;
             ResourceId = resourceId;
@@ -152,14 +156,14 @@ namespace CampusCafeOrderingSystem.Middleware
     }
 
     /// <summary>
-    /// 权限不足异常
+    /// Insufficient permissions exception
     /// </summary>
-    public class InsufficientPermissionException : Exception
+    public class InsufficientPermissionsException : Exception
     {
         public string RequiredPermission { get; }
-
-        public InsufficientPermissionException(string requiredPermission) 
-            : base($"Insufficient permission. Required: {requiredPermission}")
+        
+        public InsufficientPermissionsException(string requiredPermission) 
+            : base($"Insufficient permissions. Required: {requiredPermission}")
         {
             RequiredPermission = requiredPermission;
         }

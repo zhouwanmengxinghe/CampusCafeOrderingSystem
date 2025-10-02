@@ -3,40 +3,40 @@ using System.ComponentModel.DataAnnotations;
 namespace CampusCafeOrderingSystem.Models.DTOs
 {
     /// <summary>
-    /// 创建评价请求DTO
+    /// Create review request DTO
     /// </summary>
     public class CreateReviewRequest
     {
-        [Required(ErrorMessage = "订单ID不能为空")]
-        [Range(1, int.MaxValue, ErrorMessage = "订单ID必须大于0")]
+        [Required(ErrorMessage = "Order ID cannot be empty")]
+        [Range(1, int.MaxValue, ErrorMessage = "Order ID must be greater than 0")]
         public int OrderId { get; set; }
 
-        [Required(ErrorMessage = "菜品ID不能为空")]
-        [Range(1, int.MaxValue, ErrorMessage = "菜品ID必须大于0")]
+        [Required(ErrorMessage = "Menu item ID cannot be empty")]
+        [Range(1, int.MaxValue, ErrorMessage = "Menu item ID must be greater than 0")]
         public int MenuItemId { get; set; }
 
-        [Required(ErrorMessage = "评分不能为空")]
-        [Range(1, 5, ErrorMessage = "评分必须在1-5之间")]
+        [Required(ErrorMessage = "Rating cannot be empty")]
+        [Range(1, 5, ErrorMessage = "Rating must be between 1-5")]
         public int Rating { get; set; }
 
-        [StringLength(1000, ErrorMessage = "评价内容不能超过1000个字符")]
+        [StringLength(1000, ErrorMessage = "Review content cannot exceed 1000 characters")]
         public string? Comment { get; set; }
 
         public List<string> Images { get; set; } = new List<string>();
     }
 
     /// <summary>
-    /// 商家回复评价请求DTO
+    /// Merchant reply to review request DTO
     /// </summary>
     public class ReplyToReviewRequest
     {
-        [Required(ErrorMessage = "回复内容不能为空")]
-        [StringLength(500, ErrorMessage = "回复内容不能超过500个字符")]
+        [Required(ErrorMessage = "Reply content cannot be empty")]
+        [StringLength(500, ErrorMessage = "Reply content cannot exceed 500 characters")]
         public string Reply { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// 评价响应DTO
+    /// Review response DTO
     /// </summary>
     public class ReviewResponse
     {
@@ -55,7 +55,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 评价回复响应DTO
+    /// Review reply response DTO
     /// </summary>
     public class ReviewReplyResponse
     {
@@ -65,17 +65,17 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 评价查询参数DTO
+    /// Review query parameters DTO
     /// </summary>
     public class ReviewQueryParams
     {
-        [Range(1, int.MaxValue, ErrorMessage = "页码必须大于0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Page number must be greater than 0")]
         public int Page { get; set; } = 1;
 
-        [Range(1, 100, ErrorMessage = "每页数量必须在1-100之间")]
+        [Range(1, 100, ErrorMessage = "Page size must be between 1-100")]
         public int PageSize { get; set; } = 10;
 
-        [Range(1, 5, ErrorMessage = "评分筛选必须在1-5之间")]
+        [Range(1, 5, ErrorMessage = "Rating filter must be between 1-5")]
         public int? Rating { get; set; }
 
         public string? Status { get; set; } = "all"; // all, pending, replied
@@ -83,7 +83,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "菜品ID必须大于0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Menu item ID must be greater than 0")]
         public int? MenuItemId { get; set; }
 
         public string? CustomerEmail { get; set; }
@@ -94,7 +94,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 评价统计响应DTO
+    /// Review statistics response DTO
     /// </summary>
     public class ReviewStatsResponse
     {
@@ -102,12 +102,12 @@ namespace CampusCafeOrderingSystem.Models.DTOs
         public int TotalReviews { get; set; }
         public int PendingReviews { get; set; }
         public int RepliedReviews { get; set; }
-        public List<int> RatingBreakdown { get; set; } = new List<int>(); // [1星数量, 2星数量, 3星数量, 4星数量, 5星数量]
+        public List<int> RatingBreakdown { get; set; } = new List<int>(); // [1-star count, 2-star count, 3-star count, 4-star count, 5-star count]
         public List<ReviewTrendData> TrendData { get; set; } = new List<ReviewTrendData>();
     }
 
     /// <summary>
-    /// 评价趋势数据DTO
+    /// Review trend data DTO
     /// </summary>
     public class ReviewTrendData
     {
@@ -117,7 +117,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 菜品评价汇总DTO
+    /// Menu item review summary DTO
     /// </summary>
     public class MenuItemReviewSummary
     {
@@ -131,16 +131,16 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 批量回复评价请求DTO
+    /// Batch reply to reviews request DTO
     /// </summary>
     public class BatchReplyRequest
     {
-        [Required(ErrorMessage = "评价ID列表不能为空")]
-        [MinLength(1, ErrorMessage = "至少需要一个评价ID")]
+        [Required(ErrorMessage = "Review ID list cannot be empty")]
+        [MinLength(1, ErrorMessage = "At least one review ID is required")]
         public List<int> ReviewIds { get; set; } = new List<int>();
 
-        [Required(ErrorMessage = "回复内容不能为空")]
-        [StringLength(500, ErrorMessage = "回复内容不能超过500个字符")]
+        [Required(ErrorMessage = "Reply content cannot be empty")]
+        [StringLength(500, ErrorMessage = "Reply content cannot exceed 500 characters")]
         public string Reply { get; set; } = string.Empty;
     }
 }

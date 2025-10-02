@@ -520,7 +520,7 @@
                 } else {
                     document.getElementById('customDateRange').style.display = 'none';
                     setDateRange(value);
-                    // 选择预设日期范围后，刷新统计
+                    // Refresh statistics after selecting preset date range
                     loadOrderStats();
                 }
             });
@@ -542,7 +542,7 @@
                 
                 currentPage = 1;
                 loadOrders();
-                // 自定义日期范围应用后，刷新统计
+                // Refresh statistics after applying custom date range
                 loadOrderStats();
             });
             
@@ -566,7 +566,7 @@
             loadOrderStats();
         });
 
-        // 设置日期范围
+        // Set date range
         function setDateRange(range) {
             const today = new Date();
             let startDate = new Date();
@@ -623,8 +623,10 @@
             // Reload orders
             currentPage = 1;
             loadOrders();
-            // 预设日期范围变化后刷新统计
-            loadOrderStats();
+            // Refresh statistics after preset date range changes
+            $('#dateRangeSelect').on('change', function() {
+                loadOrderStats();
+            });
         }
 
         // Load order data

@@ -3,8 +3,8 @@ using CampusCafeOrderingSystem.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using CampusCafeOrderingSystem.Hubs;
-using System.Text;
-using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace CampusCafeOrderingSystem.Services
 {
@@ -12,13 +12,15 @@ namespace CampusCafeOrderingSystem.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<OrderHub> _hubContext;
-        private readonly HttpClient _httpClient;
+        private readonly IMemoryCache _memoryCache;
+        private readonly ILogger<OrderService> _logger;
 
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hubContext, HttpClient httpClient)
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hubContext, IMemoryCache memoryCache, ILogger<OrderService> logger)
         {
             _context = context;
             _hubContext = hubContext;
-            _httpClient = httpClient;
+            _memoryCache = memoryCache;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
@@ -33,7 +35,6 @@ namespace CampusCafeOrderingSystem.Services
 
         public async Task<IEnumerable<Order>> GetOrdersByMerchantAsync(string merchantId)
         {
-            // 根据商家邮箱筛选订单
             return await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
@@ -80,15 +81,13 @@ namespace CampusCafeOrderingSystem.Services
 
         public async Task<Order> CreateOrderAsync(Order order)
         {
-            // 生成订单号
-            order.OrderNumber = await GenerateOrderNumberAsync();
+            order.OrderNumber = GenerateOrderNumber();
             order.CreatedAt = DateTime.Now;
             order.UpdatedAt = DateTime.Now;
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // 重新加载订单以获取完整的关联数据
             var createdOrder = await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
@@ -97,39 +96,8 @@ namespace CampusCafeOrderingSystem.Services
 
             if (createdOrder != null)
             {
-                // 发送实时通知给对应商家
-                var orderData = new
-                {
-                    id = createdOrder.Id,
-                    orderNumber = createdOrder.OrderNumber,
-                    customerName = createdOrder.User?.UserName ?? "Unknown",
-                    customerPhone = createdOrder.CustomerPhone,
-                    totalAmount = createdOrder.TotalAmount,
-                    orderTime = createdOrder.OrderDate,
-                    status = createdOrder.Status.ToString(),
-                    deliveryType = createdOrder.DeliveryType.ToString(),
-                    deliveryAddress = createdOrder.DeliveryAddress,
-                    items = createdOrder.OrderItems.Select(oi => new
-                    {
-                        name = oi.MenuItem?.Name ?? "Unknown Item",
-                        quantity = oi.Quantity,
-                        unitPrice = oi.UnitPrice
-                    }).ToList()
-                };
-
-                // 发送给特定商家组
-                if (!string.IsNullOrEmpty(createdOrder.VendorEmail))
-                {
-                    await _hubContext.Clients.Group($"Merchant_{createdOrder.VendorEmail}")
-                        .SendAsync("NewOrder", orderData);
-                    
-                    // 清除报表缓存以确保实时更新
-                    await ClearReportsCacheAsync(createdOrder.VendorEmail);
-                }
-
-                // 发送给客户
-                await _hubContext.Clients.Group($"Customer_{createdOrder.UserId}")
-                    .SendAsync("OrderCreated", orderData);
+                await NotifyMerchantNewOrder(createdOrder);
+                _memoryCache.Remove($"merchant_report_{order.VendorEmail}");
             }
 
             return order;
@@ -140,7 +108,6 @@ namespace CampusCafeOrderingSystem.Services
             order.UpdatedAt = DateTime.Now;
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
-
             return order;
         }
 
@@ -153,47 +120,26 @@ namespace CampusCafeOrderingSystem.Services
             if (order == null)
                 return false;
 
-            var oldStatus = order.Status;
             order.Status = status;
             order.UpdatedAt = DateTime.Now;
 
-            // 设置预计完成时间
             if (status == OrderStatus.Preparing)
             {
-                order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15); // 默认15分钟
+                order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15);
             }
 
-            // 设置/清理完成时间
             if (status == OrderStatus.Completed)
             {
                 order.CompletedTime = DateTime.Now;
             }
-            else if (oldStatus == OrderStatus.Completed && status != OrderStatus.Completed)
+            else if (order.CompletedTime.HasValue)
             {
-                // 如果订单从已完成切换到其他状态，清空完成时间
                 order.CompletedTime = null;
             }
 
             await _context.SaveChangesAsync();
-
-            // 发送状态更新通知给商家
-            if (!string.IsNullOrEmpty(order.VendorEmail))
-            {
-                await _hubContext.Clients.Group($"Merchant_{order.VendorEmail}")
-                    .SendAsync("OrderStatusUpdated", order.Id, status.ToString());
-                
-                // 清除报表缓存以确保实时更新
-                await ClearReportsCacheAsync(order.VendorEmail);
-            }
-
-            // 发送给特定客户
-            await _hubContext.Clients.Group($"Customer_{order.UserId}")
-                .SendAsync("OrderStatusChanged", new
-                {
-                    orderId = order.Id,
-                    status = status.ToString(),
-                    estimatedTime = order.EstimatedCompletionTime
-                });
+            await NotifyOrderStatusUpdate(order);
+            _memoryCache.Remove($"merchant_report_{order.VendorEmail}");
 
             return true;
         }
@@ -298,53 +244,66 @@ namespace CampusCafeOrderingSystem.Services
             return await query.CountAsync();
         }
 
-        private async Task<string> GenerateOrderNumberAsync()
+        private string GenerateOrderNumber()
         {
             var today = DateTime.Now.ToString("yyyyMMdd");
-            var lastOrder = await _context.Orders
-                .Where(o => o.OrderNumber.StartsWith(today))
-                .OrderByDescending(o => o.OrderNumber)
-                .FirstOrDefaultAsync();
-
-            int sequence = 1;
-            if (lastOrder != null)
-            {
-                var lastSequence = lastOrder.OrderNumber.Substring(8);
-                if (int.TryParse(lastSequence, out int lastSeq))
-                {
-                    sequence = lastSeq + 1;
-                }
-            }
-
-            return $"{today}{sequence:D4}";
+            var random = new Random();
+            var sequence = random.Next(1000, 9999);
+            return $"{today}{sequence}";
         }
 
-        private async Task ClearReportsCacheAsync(string vendorEmail)
+        private async Task NotifyMerchantNewOrder(Order order)
         {
             try
             {
-                // 创建一个匿名对象并序列化为JSON
-                var payload = new { vendorEmail };
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                
-                // 使用绝对URL路径
-                var response = await _httpClient.PostAsync("http://localhost:5117/api/ReportsApi/clear-cache", content);
-                
-                if (!response.IsSuccessStatusCode)
+                var orderData = new
                 {
-                    // 记录错误但不影响主流程
-                    Console.WriteLine($"Failed to clear reports cache for vendor {vendorEmail}: {response.StatusCode}");
-                    // 输出响应内容以便调试
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Response content: {responseContent}");
-                }
+                    id = order.Id,
+                    orderNumber = order.OrderNumber,
+                    customerName = order.User?.UserName ?? "Unknown",
+                    customerPhone = order.CustomerPhone,
+                    totalAmount = order.TotalAmount,
+                    orderTime = order.OrderDate,
+                    status = order.Status.ToString(),
+                    deliveryType = order.DeliveryType.ToString(),
+                    deliveryAddress = order.DeliveryAddress,
+                    items = order.OrderItems.Select(oi => new
+                    {
+                        name = oi.MenuItem?.Name ?? "Unknown Item",
+                        quantity = oi.Quantity,
+                        unitPrice = oi.UnitPrice
+                    }).ToList()
+                };
+
+                await _hubContext.Clients.Group($"Merchant_{order.VendorEmail}")
+                    .SendAsync("NewOrder", orderData);
             }
             catch (Exception ex)
             {
-                // 记录错误但不影响主流程
-                Console.WriteLine($"Error clearing reports cache for vendor {vendorEmail}: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error notifying merchant: {Message}", ex.Message);
+            }
+        }
+
+        private async Task NotifyOrderStatusUpdate(Order order)
+        {
+            try
+            {
+                var orderData = new
+                {
+                    orderId = order.Id,
+                    orderNumber = order.OrderNumber,
+                    customerName = order.User?.UserName ?? "Unknown",
+                    totalAmount = order.TotalAmount,
+                    status = order.Status.ToString(),
+                    orderDate = order.OrderDate
+                };
+
+                await _hubContext.Clients.User(order.UserId)
+                    .SendAsync("OrderStatusUpdate", orderData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying order status update: {Message}", ex.Message);
             }
         }
     }
