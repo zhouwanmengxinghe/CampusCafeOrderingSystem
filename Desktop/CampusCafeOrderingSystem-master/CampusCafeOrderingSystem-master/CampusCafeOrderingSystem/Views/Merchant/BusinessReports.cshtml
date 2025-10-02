@@ -253,7 +253,7 @@
     <div class="overview-section">
         <div class="overview-card">
             <div class="overview-card-title">Total Revenue</div>
-            <div class="overview-card-value" id="totalRevenue">$0.00</div>
+            <div class="overview-card-value" id="totalRevenue">NZ$0.00</div>
             <div class="overview-card-subtitle">Total revenue for selected period</div>
         </div>
         <div class="overview-card">
@@ -263,7 +263,7 @@
         </div>
         <div class="overview-card">
             <div class="overview-card-title">Average Order Value</div>
-            <div class="overview-card-value" id="avgOrderValue">$0.00</div>
+            <div class="overview-card-value" id="avgOrderValue">NZ$0.00</div>
             <div class="overview-card-subtitle">Average amount per order</div>
         </div>
         <div class="overview-card">
@@ -661,9 +661,9 @@
             const overview = reportData.overview;
             
             // Format currency
-            const formatCurrency = new Intl.NumberFormat('en-US', {
+            const formatCurrency = new Intl.NumberFormat('en-NZ', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'NZD',
                 minimumFractionDigits: 2
             });
             
@@ -935,9 +935,9 @@
             tableBody.innerHTML = '';
             
             // Format currency
-            const formatCurrency = new Intl.NumberFormat('en-US', {
+            const formatCurrency = new Intl.NumberFormat('en-NZ', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'NZD',
                 minimumFractionDigits: 2
             });
             

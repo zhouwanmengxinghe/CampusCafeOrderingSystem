@@ -32,7 +32,7 @@
                 <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="stat-content">
-                <h3 id="todayRevenue">$0</h3>
+                <h3 id="todayRevenue">NZ$0</h3>
                 <p>Today's Revenue</p>
             </div>
         </div>
@@ -311,7 +311,7 @@ async function loadStats() {
             const avgRating = Number(stats.avgRating) || 0;
             
             document.getElementById('todayOrders').textContent = todayOrders;
-            document.getElementById('todayRevenue').textContent = '$' + todayRevenue.toFixed(2);
+            document.getElementById('todayRevenue').textContent = 'NZ$' + todayRevenue.toFixed(2);
             document.getElementById('totalMenuItems').textContent = totalMenuItems;
             document.getElementById('avgRating').textContent = avgRating.toFixed(1);
         } else {
@@ -321,7 +321,7 @@ async function loadStats() {
         console.error('Error loading dashboard statistics:', error);
         // Fallback to default values if API fails
         document.getElementById('todayOrders').textContent = '0';
-        document.getElementById('todayRevenue').textContent = '$0.00';
+        document.getElementById('todayRevenue').textContent = 'NZ$0.00';
         document.getElementById('totalMenuItems').textContent = '0';
         document.getElementById('avgRating').textContent = '0.0';
     }
@@ -382,7 +382,7 @@ async function loadRecentOrders() {
                 <tr>
                     <td>${order.orderNumber}</td>
                     <td>${order.customerName}</td>
-                    <td>$${Number(order.totalAmount || 0).toFixed(2)}</td>
+                    <td>NZ$${Number(order.totalAmount || 0).toFixed(2)}</td>
                     <td><span class="badge ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span></td>
                     <td>${new Date(order.orderDate).toLocaleTimeString()}</td>
                 </tr>
