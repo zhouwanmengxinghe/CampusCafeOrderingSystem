@@ -30,10 +30,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
-                return Unauthorized(ApiResponse<PagedResult<OrderResponseDto>>.Error("无法获取商家信息", 401));
+                return Unauthorized(ApiResponse<PagedResult<OrderResponseDto>>.Error("Unable to get vendor information", 401));
             }
 
-            // 基础查询：限制为当前商家并包含必要关联
+            // Basic query: limit to current vendor and include necessary associations
             var q = _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
@@ -41,7 +41,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 .Where(o => o.VendorEmail == vendorEmail)
                 .AsQueryable();
 
-            // 状态筛选
+            // Status filtering
             if (!string.IsNullOrWhiteSpace(query.Status))
             {
                 if (Enum.TryParse<OrderStatus>(query.Status, true, out var status))
@@ -50,7 +50,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 }
             }
 
-            // 日期范围筛选（包含结束日）
+            // Date range filtering (including end date)
             if (query.StartDate.HasValue && query.EndDate.HasValue)
             {
                 var start = query.StartDate.Value.Date;
@@ -58,7 +58,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 q = q.Where(o => o.OrderDate >= start && o.OrderDate < endExclusive);
             }
 
-            // 搜索：订单号 / 用户名 / 电话
+            // Search: order number / username / phone
             if (!string.IsNullOrWhiteSpace(query.Search))
             {
                 var term = query.Search.Trim();
@@ -67,10 +67,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                                  (o.CustomerPhone != null && o.CustomerPhone.Contains(term)));
             }
 
-            // 排序（下单时间倒序）
+            // Sort by order date (descending)
             q = q.OrderByDescending(o => o.OrderDate);
 
-            // 分页
+            // Pagination
             var page = query.Page <= 0 ? 1 : query.Page;
             var pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
             var totalCount = await q.CountAsync();
@@ -78,7 +78,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                                  .Take(pageSize)
                                  .ToListAsync();
 
-            // 映射DTO
+            // Map to DTO
             var items = orders.Select(MapToDto).ToList();
             var paged = new PagedResult<OrderResponseDto>(items, totalCount, page, pageSize);
             return ApiResponse<PagedResult<OrderResponseDto>>.SuccessResult(paged);
@@ -91,7 +91,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
-                return Unauthorized(ApiResponse<OrderStatsDto>.Error("无法获取商家信息", 401));
+                return Unauthorized(ApiResponse<OrderStatsDto>.Error("Unable to get vendor information", 401));
             }
 
             var q = _context.Orders.Where(o => o.VendorEmail == vendorEmail);
@@ -102,7 +102,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 q = q.Where(o => o.OrderDate >= start && o.OrderDate < endExclusive);
             }
 
-            // 统计
+            // Statistics
             var totalOrders = await q.CountAsync();
             var pending = await q.Where(o => o.Status == OrderStatus.Pending).CountAsync();
             var preparing = await q.Where(o => o.Status == OrderStatus.Preparing).CountAsync();
@@ -132,7 +132,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
-                return Unauthorized(ApiResponse<OrderResponseDto>.Error("无法获取商家信息", 401));
+                return Unauthorized(ApiResponse<OrderResponseDto>.Error("Unable to get vendor information", 401));
             }
 
             try
@@ -140,7 +140,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var order = await _orderService.GetOrderByIdAsync(id);
                 if (order == null || order.VendorEmail != vendorEmail)
                 {
-                    return NotFound(ApiResponse<OrderResponseDto>.ErrorResult("订单不存在或无权限"));
+                    return NotFound(ApiResponse<OrderResponseDto>.ErrorResult("Order does not exist or no permission"));
                 }
 
                 var dto = MapToDto(order);
@@ -148,7 +148,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<OrderResponseDto>.ErrorResult("获取订单详情失败", ex.Message));
+                return StatusCode(500, ApiResponse<OrderResponseDto>.ErrorResult("Failed to get order details", ex.Message));
             }
         }
 
@@ -159,33 +159,33 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var vendorEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(vendorEmail))
             {
-                return Unauthorized(ApiResponse<object>.Error("无法获取商家信息", 401));
+                return Unauthorized(ApiResponse<object>.Error("Unable to get vendor information", 401));
             }
 
-            // 校验订单归属
+            // Validate order ownership
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
             if (order == null || order.VendorEmail != vendorEmail)
             {
-                return NotFound(ApiResponse<object>.ErrorResult("订单不存在或无权限"));
+                return NotFound(ApiResponse<object>.ErrorResult("Order does not exist or no permission"));
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ApiResponse<object>.ErrorResult("请求参数不合法"));
+                return BadRequest(ApiResponse<object>.ErrorResult("Invalid request parameters"));
             }
 
             if (!Enum.TryParse<OrderStatus>(request.Status, true, out var status))
             {
-                return BadRequest(ApiResponse<object>.ErrorResult("无效的订单状态"));
+                return BadRequest(ApiResponse<object>.ErrorResult("Invalid order status"));
             }
 
             var ok = await _orderService.UpdateOrderStatusAsync(id, status);
             if (!ok)
             {
-                return StatusCode(500, ApiResponse<object>.ErrorResult("更新订单状态失败"));
+                return StatusCode(500, ApiResponse<object>.ErrorResult("Failed to update order status"));
             }
 
-            return Ok(ApiResponse<object>.SuccessResult(new { id, status = status.ToString() }, "状态更新成功"));
+            return Ok(ApiResponse<object>.SuccessResult(new { id, status = status.ToString() }, "Status updated successfully"));
         }
 
         private static OrderResponseDto MapToDto(Order o)

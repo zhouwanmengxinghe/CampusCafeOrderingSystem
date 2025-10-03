@@ -25,57 +25,57 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             {
                 if (file == null || file.Length == 0)
                 {
-                    return BadRequest(new { message = "请选择要上传的图片文件" });
+                    return BadRequest(new { message = "Please select an image file to upload" });
                 }
                 
-                // 验证文件类型
+                // Validate file type
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
                 var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 
                 if (!allowedExtensions.Contains(fileExtension))
                 {
-                    return BadRequest(new { message = "只支持 JPG、PNG、GIF、WEBP 格式的图片文件" });
+                    return BadRequest(new { message = "Only JPG, PNG, GIF, WEBP format image files are supported" });
                 }
                 
-                // 验证文件大小 (最大5MB)
+                // Validate file size (maximum 5MB)
                 if (file.Length > 5 * 1024 * 1024)
                 {
-                    return BadRequest(new { message = "图片文件大小不能超过5MB" });
+                    return BadRequest(new { message = "Image file size cannot exceed 5MB" });
                 }
                 
-                // 创建上传目录
+                // Create upload directory
                 var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "menu-images");
                 if (!Directory.Exists(uploadsPath))
                 {
                     Directory.CreateDirectory(uploadsPath);
                 }
                 
-                // 生成唯一文件名
+                // Generate unique filename
                 var fileName = $"{Guid.NewGuid()}{fileExtension}";
                 var filePath = Path.Combine(uploadsPath, fileName);
                 
-                // 保存文件
+                // Save file
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
                 
-                // 返回文件URL
+                // Return file URL
                 var fileUrl = $"/uploads/menu-images/{fileName}";
                 
-                _logger.LogInformation($"图片上传成功: {fileUrl}");
+                _logger.LogInformation($"Image upload successful: {fileUrl}");
                 
                 return Ok(new 
                 { 
-                    message = "图片上传成功",
+                    message = "Image upload successful",
                     imageUrl = fileUrl,
                     fileName = fileName
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "图片上传失败");
-                return StatusCode(500, new { message = "图片上传失败", error = ex.Message });
+                _logger.LogError(ex, "Image upload failed");
+                return StatusCode(500, new { message = "Image upload failed", error = ex.Message });
             }
         }
         
@@ -86,7 +86,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             {
                 if (string.IsNullOrEmpty(fileName))
                 {
-                    return BadRequest(new { message = "文件名不能为空" });
+                    return BadRequest(new { message = "Filename cannot be empty" });
                 }
                 
                 var filePath = Path.Combine(_environment.WebRootPath, "uploads", "menu-images", fileName);
@@ -94,18 +94,18 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
-                    _logger.LogInformation($"图片删除成功: {fileName}");
-                    return Ok(new { message = "图片删除成功" });
+                    _logger.LogInformation($"Image deleted successfully: {fileName}");
+                    return Ok(new { message = "Image deleted successfully" });
                 }
                 else
                 {
-                    return NotFound(new { message = "图片文件不存在" });
+                    return NotFound(new { message = "Image file does not exist" });
                 }
             }
             catch (Exception ex)
             {
-            _logger.LogError(ex, "图片删除失败");
-                return StatusCode(500, new { message = "图片删除失败", error = ex.Message });
+            _logger.LogError(ex, "Image deletion failed");
+                return StatusCode(500, new { message = "Image deletion failed", error = ex.Message });
             }
         }
     }

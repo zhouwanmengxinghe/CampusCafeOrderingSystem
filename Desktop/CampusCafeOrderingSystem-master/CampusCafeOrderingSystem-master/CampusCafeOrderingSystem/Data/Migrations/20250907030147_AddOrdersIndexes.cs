@@ -20,7 +20,7 @@ namespace CampusCafeOrderingSystem.Data.Migrations
                 table: "Orders",
                 columns: new[] { "Status", "OrderDate" });
 
-            // MenuItemName索引暂时移除，因为可能存在数据类型问题
+            // MenuItemName index temporarily removed due to potential data type issues
             // migrationBuilder.CreateIndex(
             //     name: "IX_OrderItems_MenuItemName",
             //     table: "OrderItems",
@@ -38,7 +38,7 @@ namespace CampusCafeOrderingSystem.Data.Migrations
                 name: "IX_Orders_Status_OrderDate",
                 table: "Orders");
 
-            // 对应的删除索引也注释掉
+            // Corresponding drop index also commented out
             // migrationBuilder.DropIndex(
             //     name: "IX_OrderItems_MenuItemName",
             //     table: "OrderItems");

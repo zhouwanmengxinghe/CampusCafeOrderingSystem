@@ -94,7 +94,7 @@ namespace CampusCafeOrderingSystem.Controllers
             var totalAmount = cartItems.Sum(item => item.Product.Price * item.Quantity);
             var availableCredits = 0m;
             
-            // 获取当前用户的可用积分
+            // Get current user's available credits
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
@@ -136,7 +136,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 return RedirectToAction("Login", "Account");
             }
             
-            // 处理积分使用
+            // Process credit usage
             var finalAmount = totalAmount;
             var creditsUsed = 0m;
             
@@ -145,11 +145,11 @@ namespace CampusCafeOrderingSystem.Controllers
                 var userCredit = await _creditService.GetUserCreditsAsync(user.Id);
                 var availableCredits = userCredit?.CurrentCredits ?? 0;
                 
-                // 验证积分使用金额
+                // Validate credit usage amount
                 creditsUsed = Math.Min(model.CreditsToUse, Math.Min(availableCredits, totalAmount));
                 finalAmount = totalAmount - creditsUsed;
                 
-                // 扣除积分
+                // Deduct credits
                 if (creditsUsed > 0)
                 {
                     await _creditService.SpendCreditsAsync(
@@ -178,7 +178,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 paymentResult = ProcessPaymentMethod(model, finalAmount);
                 if (!paymentResult.IsSuccessful)
                 {
-                    // 如果支付失败且使用了积分，需要退还积分
+                    // If payment fails and credits were used, need to refund credits
                     if (creditsUsed > 0)
                     {
                         await _creditService.AddCreditsAsync(
@@ -193,7 +193,7 @@ namespace CampusCafeOrderingSystem.Controllers
             }
             else
             {
-                // 如果最终金额为0（完全用积分支付），创建成功的支付结果
+                // If final amount is 0 (fully paid with credits), create successful payment result
                 paymentResult = new PaymentResult
                 {
                     IsSuccess = true,
@@ -206,9 +206,9 @@ namespace CampusCafeOrderingSystem.Controllers
             }
 
             // Create order
-            // 重新从数据库查询MenuItem信息以确保VendorEmail正确
+            // Re-query MenuItem information from database to ensure VendorEmail is correct
             var firstMenuItemId = cartItems.FirstOrDefault()?.Product.Id;
-            var vendorEmail = "vendor@campuscafe.com"; // 默认值
+            var vendorEmail = "vendor@campuscafe.com"; // Default value
             
             if (firstMenuItemId.HasValue)
             {
@@ -224,13 +224,13 @@ namespace CampusCafeOrderingSystem.Controllers
                 OrderNumber = GenerateOrderNumber(),
                 UserId = user.Id,
                 OrderDate = DateTime.Now,
-                TotalAmount = totalAmount, // 保持原始总额
+                TotalAmount = totalAmount, // Keep original total amount
                 PaymentMethod = finalAmount > 0 ? model.PaymentMethod : "Credits",
                 TransactionId = paymentResult.TransactionId,
                 Status = OrderStatus.Pending,
                 DeliveryType = model.DeliveryType,
                 DeliveryAddress = model.DeliveryType == DeliveryType.Delivery ? model.DeliveryAddress : null,
-                VendorEmail = vendorEmail, // 设置商家邮箱
+                VendorEmail = vendorEmail, // Set vendor email
                 OrderItems = cartItems.Select(item => new OrderItem
                 {
                     MenuItemId = item.Product.Id,
@@ -240,11 +240,11 @@ namespace CampusCafeOrderingSystem.Controllers
                 }).ToList()
             };
             
-            // 如果使用了积分，在订单备注中记录
+            // If credits were used, record in order notes
             if (creditsUsed > 0)
             {
-                // 这里可以添加一个备注字段到Order模型，或者通过其他方式记录积分使用情况
-                // 暂时通过积分历史记录来追踪
+                // A notes field can be added to the Order model here, or record credit usage through other means
+                // Temporarily track through credit history records
             }
 
             try
@@ -272,6 +272,8 @@ namespace CampusCafeOrderingSystem.Controllers
             }
             catch (Exception ex)
             {
+                // Log the exception for debugging purposes
+                Console.WriteLine($"Error processing order: {ex.Message}");
                 TempData["ErrorMessage"] = "An error occurred while processing your order. Please try again.";
                 return RedirectToAction("Checkout");
             }
@@ -279,7 +281,7 @@ namespace CampusCafeOrderingSystem.Controllers
         
         private PaymentResult ProcessPaymentMethod(PaymentModel model, decimal amount)
         {
-            // 模拟支付处理 - 任何输入都成功
+            // Simulate payment processing - any input succeeds
             var message = model.PaymentMethod switch
             {
                 "CampusCard" => "Payment completed successfully using Campus Card!",
@@ -355,7 +357,7 @@ namespace CampusCafeOrderingSystem.Controllers
         
         private ValidationResult ValidatePayment(PaymentModel model)
         {
-            // 简化验证逻辑 - 只要选择了支付方式就通过
+            // Simplified validation logic - pass as long as payment method is selected
             if (string.IsNullOrWhiteSpace(model.SelectedPaymentMethod))
             {
                 return new ValidationResult { IsValid = false, ErrorMessage = "Please select a payment method" };

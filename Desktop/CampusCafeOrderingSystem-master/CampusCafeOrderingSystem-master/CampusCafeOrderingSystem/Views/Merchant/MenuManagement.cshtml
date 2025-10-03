@@ -95,7 +95,13 @@
                             </div>
                             <div class="mb-3">
                                 <label for="menuImage" class="form-label">Item Image</label>
-                                <input type="file" class="form-control" id="menuImage" accept="image/*" onchange="previewImage(this)">
+                                <div class="custom-file-upload">
+                                    <input type="file" class="form-control" id="menuImage" accept="image/*" onchange="previewImage(this)" style="display: none;">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('menuImage').click()">
+                                        <i class="fas fa-upload"></i> Choose File
+                                    </button>
+                                    <span id="fileNameDisplay" class="file-name-display">No file selected</span>
+                                </div>
                                 <div class="image-preview" id="imagePreview" style="margin-top: 10px;"></div>
                                 <input type="hidden" id="menuImageUrl" value="">
                             </div>
@@ -518,48 +524,41 @@ async function saveMenuItem() {
             });
         }
         
-        // 统一以文本读取并尝试解析为JSON，避免HTML重定向导致的解析异常
-        const contentType = response.headers.get('content-type') || '';
-        const text = await response.text();
+        // Unified text reading and attempt to parse as JSON, avoiding parsing exceptions caused by HTML redirects
+        const responseText = await response.text();
         let result;
+        
         try {
-            result = text ? JSON.parse(text) : null;
-        } catch (e) {
-            console.error('Non-JSON response when saving menu item:', text);
-            const looksLikeHtml = text.includes('<!DOCTYPE') || text.toLowerCase().includes('<html');
-            const msg = looksLikeHtml ? '未登录或登录已过期，请重新登录后再试。' : '服务器返回了非JSON响应';
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            const looksLikeHtml = responseText.trim().startsWith('<');
+            const msg = looksLikeHtml ? 'Not logged in or login has expired, please log in again and try.' : 'Server returned non-JSON response';
             throw new Error(msg);
         }
         
         if (!response.ok) {
-            const msg = result?.message || result?.error || `请求失败(${response.status})`;
+            const msg = result?.message || result?.error || `Request failed (${response.status})`;
             throw new Error(msg);
         }
         
-        // 兼容 ApiResponse<T> 包装与原始对象两种返回
-        let payload = result;
-        if (result && Object.prototype.hasOwnProperty.call(result, 'isSuccess')) {
-            if (!result.isSuccess) {
-                throw new Error(result.message || '保存失败');
-            }
-            payload = result.data;
+        // Compatible with both ApiResponse<T> wrapper and raw object returns
+        const menuItem = result.data || result;
+        
+        if (!menuItem) {
+            throw new Error(result.message || 'Save failed');
         }
         
-        if (!payload) {
-            throw new Error('未收到有效的返回数据');
+        if (!menuItem.id) {
+            throw new Error('Did not receive valid return data');
         }
         
-        // Update local data instead of reloading the entire list
-        if (id) {
-            // Update existing menu item（优先使用后端返回的数据）
-            const index = menuItems.findIndex(item => item.id == id);
-            if (index !== -1) {
-                menuItems[index] = { ...menuItems[index], ...payload, id: parseInt(id) };
-            }
+        // Update existing menu item (prioritize backend returned data)
+        const index = menuItems.findIndex(item => item.id === menuItem.id);
+        if (index !== -1) {
+            menuItems[index] = { ...menuItems[index], ...menuItem };
         } else {
             // Add new menu item - use the returned complete menu item data
-            const newItem = payload;
-            menuItems.push(newItem);
+            menuItems.push(menuItem);
         }
         
         // Reapply filters and render

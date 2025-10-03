@@ -301,7 +301,7 @@ async function loadStats() {
         const payload = await response.json();
         console.log('Dashboard stats API response:', payload);
         
-        // 兼容后端两种返回：直接对象 或 ApiResponse<T> 包装
+        // Compatible with two backend return types: direct object or ApiResponse<T> wrapper
         const stats = (payload && typeof payload === 'object' && 'data' in payload && payload.data) ? payload.data : payload;
         
         if (stats && typeof stats === 'object') {
@@ -365,19 +365,25 @@ async function loadRecentOrders() {
         const payload = await response.json();
         console.log('Recent orders API response:', payload);
         
-        // 兼容 ApiResponse<PagedResult<OrderResponseDto>> 与其他形态
-        const data = (payload && typeof payload === 'object' && 'data' in payload) ? payload.data : payload;
+        // Compatible with both direct object and ApiResponse<T> wrapper returns from backend
+        const ordersData = payload.data || payload;
+        
+        // Compatible with ApiResponse<PagedResult<OrderResponseDto>> and other formats
         let orders = [];
-        if (data && Array.isArray(data.items)) {
-            orders = data.items;
-        } else if (Array.isArray(data?.orders)) {
-            orders = data.orders;
-        } else if (Array.isArray(payload?.items)) {
-            orders = payload.items;
+        if (ordersData && Array.isArray(ordersData.items)) {
+            orders = ordersData.items;
+        } else if (ordersData && Array.isArray(ordersData.data)) {
+            orders = ordersData.data;
+        } else if (Array.isArray(ordersData)) {
+            orders = ordersData;
         }
         
         const tbody = document.getElementById('recentOrdersTable');
-        if (orders.length > 0) {
+        
+        // Show placeholder when no orders
+        if (!orders || orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders available</td></tr>';
+        } else {
             tbody.innerHTML = orders.map(order => `
                 <tr>
                     <td>${order.orderNumber}</td>
@@ -387,9 +393,6 @@ async function loadRecentOrders() {
                     <td>${new Date(order.orderDate).toLocaleTimeString()}</td>
                 </tr>
             `).join('');
-        } else {
-            // 无订单时显示占位
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders available</td></tr>';
         }
     } catch (error) {
         console.error('Error loading recent orders:', error);

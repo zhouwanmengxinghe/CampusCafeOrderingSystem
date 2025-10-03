@@ -28,15 +28,15 @@ namespace CampusCafeOrderingSystem.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 获取或创建用户积分记录
+                // Get or create user credit record
                 var userCredit = await GetOrCreateUserCreditAsync(userId);
                 
-                // 更新积分
+                // Update credits
                 userCredit.CurrentCredits += amount;
                 userCredit.TotalEarned += amount;
                 userCredit.UpdatedAt = DateTime.UtcNow;
                 
-                // 创建积分历史记录
+                // Create credit history record
                 var creditHistory = new CreditHistory
                 {
                     UserId = userId,
@@ -68,21 +68,21 @@ namespace CampusCafeOrderingSystem.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 获取用户积分记录
+                // Get user points record
                 var userCredit = await GetOrCreateUserCreditAsync(userId);
                 
-                // 检查积分是否足够
+                // Check if points are sufficient
                 if (userCredit.CurrentCredits < amount)
                 {
                     return false;
                 }
                 
-                // 扣除积分
+                // Deduct points
                 userCredit.CurrentCredits -= amount;
                 userCredit.TotalSpent += amount;
                 userCredit.UpdatedAt = DateTime.UtcNow;
                 
-                // 创建积分历史记录
+                // Create credit history record
                 var creditHistory = new CreditHistory
                 {
                     UserId = userId,

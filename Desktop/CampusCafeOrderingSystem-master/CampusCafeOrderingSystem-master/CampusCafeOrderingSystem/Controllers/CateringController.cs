@@ -220,7 +220,7 @@ namespace CampusCafeOrderingSystem.Controllers
 
         private (bool IsValid, string ErrorMessage) ValidatePayment(PaymentModel model)
         {
-            // 简化验证逻辑 - 只要选择了支付方式就通过
+            // Simplified validation logic - pass as long as a payment method is selected
             if (string.IsNullOrWhiteSpace(model.SelectedPaymentMethod))
             {
                 return (false, "Please select a payment method.");
@@ -231,7 +231,7 @@ namespace CampusCafeOrderingSystem.Controllers
 
         private PaymentResult ProcessPaymentMethod(PaymentModel model)
         {
-            // 模拟支付处理 - 任何输入都成功
+            // Simulate payment processing - any input succeeds
             var message = model.SelectedPaymentMethod switch
             {
                 "CampusCard" => "Payment completed successfully using Campus Card!",

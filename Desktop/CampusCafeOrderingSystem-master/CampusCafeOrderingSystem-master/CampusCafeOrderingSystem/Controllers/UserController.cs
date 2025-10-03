@@ -219,13 +219,13 @@ namespace CampusCafeOrderingSystem.Controllers
                 return RedirectToAction("Login", "Account", new { area = "Identity" });
             }
             
-            // 获取或创建用户积分记录
+            // Get or create user credit record
             var userCredit = await _context.UserCredits
                 .FirstOrDefaultAsync(uc => uc.UserId == user.Id);
                 
             if (userCredit == null)
             {
-                // 创建新的用户积分记录
+                // Create new user credit record
                 userCredit = new UserCredit
                 {
                     UserId = user.Id,
@@ -237,11 +237,11 @@ namespace CampusCafeOrderingSystem.Controllers
                 await _context.SaveChangesAsync();
             }
             
-            // 获取积分历史记录
+            // Get credit history records
             var creditHistory = await _context.CreditHistories
                 .Where(ch => ch.UserId == user.Id)
                 .OrderByDescending(ch => ch.CreatedAt)
-                .Take(20) // 最近20条记录
+                .Take(20) // Latest 20 records
                 .Select(ch => new CreditTransaction
                 {
                     Id = ch.Id,

@@ -1,5 +1,6 @@
 @using System.Linq
-@model IEnumerable<CampusCafeOrderingSystem.Models.VendorViewModel>
+@model IEnumerable<CampusCafeOrderingSystem.Models.ViewModels.VendorViewModel>
+@using CampusCafeOrderingSystem.Models.ViewModels
 
     @{
     ViewData["Title"] = "Vendor Management";
@@ -122,13 +123,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var v in Model ?? Enumerable.Empty<CampusCafeOrderingSystem.Models.VendorViewModel>())
+                            @foreach (var v in Model ?? Enumerable.Empty<CampusCafeOrderingSystem.Models.ViewModels.VendorViewModel>())
                         {
                             <tr>
-                                <td>@(v.Id ?? "-")</td>
+                                <td>@v.Id</td>
                                 <td>
-                                    <div class="fw-semibold">@((v.Name ?? "-"))</div>
-                                    <div class="small text-muted">@((v.Address ?? "-"))</div>
+                                    <div class="fw-semibold">@(v.Name ?? "-")</div>
+                                    <div class="small text-muted">@(v.Address ?? "-")</div>
                                 </td>
                                 <td>@(v.Email ?? "-")</td>
                                 <td>@(v.Phone ?? "-")</td>
@@ -143,7 +144,7 @@
                                        
                                         <button type="button" 
                                                 class="btn btn-sm toggle-vendor-btn @(v.Status == "Active" ? "btn-warning" : "btn-success")"
-                                                data-vendor-id="@(v.Id ?? string.Empty)"
+                                                data-vendor-id="@v.Id"
                                                 data-current-status="@(v.Status ?? "")">
                                             @(v.Status == "Active" ? "Disable" : "Active")
                                         </button>
@@ -153,7 +154,7 @@
                                                 class="btn btn-info btn-sm"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#vendorModal"
-                                                data-id="@(v.Id ?? "-")"
+                                                data-id="@v.Id"
                                                 data-name="@(v.Name ?? "-")"
                                                 data-email="@(v.Email ?? "-")"
                                                 data-phone="@(v.Phone ?? "-")"

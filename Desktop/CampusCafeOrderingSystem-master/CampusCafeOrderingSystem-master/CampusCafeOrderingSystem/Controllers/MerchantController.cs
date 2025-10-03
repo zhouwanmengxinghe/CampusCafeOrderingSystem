@@ -51,7 +51,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 AllClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList()
             };
 
-            // 检查数据库中的菜单数据
+            // Check menu data in database
             var allMenuItems = await _context.MenuItems.ToListAsync();
             var vendorMenuItems = await _context.MenuItems
                 .Where(m => m.VendorEmail == debugInfo.Email)
@@ -73,17 +73,17 @@ namespace CampusCafeOrderingSystem.Controllers
 
             if (string.IsNullOrEmpty(merchantEmail))
             {
-                TempData["ErrorMessage"] = "无法获取商家信息";
+                TempData["ErrorMessage"] = "Unable to get merchant information";
                 return View();
             }
 
-            // 获取今日订单统计
+            // Get today's order statistics
             var today = DateTime.Today;
             var todayOrders = await _context.Orders
                 .Where(o => o.VendorEmail == merchantEmail && o.OrderDate >= today)
                 .ToListAsync();
 
-            // 获取待处理订单
+            // Get pending orders
             var pendingOrders = await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
@@ -92,7 +92,7 @@ namespace CampusCafeOrderingSystem.Controllers
                 .OrderBy(o => o.OrderDate)
                 .ToListAsync();
 
-            // 获取最近完成的订单
+            // Get recently completed orders
             var recentCompletedOrders = await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
@@ -117,7 +117,7 @@ namespace CampusCafeOrderingSystem.Controllers
 
             if (string.IsNullOrEmpty(merchantEmail))
             {
-                TempData["ErrorMessage"] = "无法获取商家信息";
+                TempData["ErrorMessage"] = "Unable to get merchant information";
                 return View(new List<MenuItem>());
             }
 
@@ -137,7 +137,7 @@ namespace CampusCafeOrderingSystem.Controllers
 
             if (string.IsNullOrEmpty(merchantEmail))
             {
-                TempData["ErrorMessage"] = "无法获取商家信息";
+                TempData["ErrorMessage"] = "Unable to get merchant information";
                 return View(new List<Order>());
             }
 
@@ -161,18 +161,18 @@ namespace CampusCafeOrderingSystem.Controllers
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.VendorEmail == merchantEmail);
             if (order == null)
             {
-                TempData["ErrorMessage"] = "订单不存在或无权限访问";
+                TempData["ErrorMessage"] = "Order does not exist or no permission to access";
                 return RedirectToAction("OrderManagement");
             }
 
             var success = await _orderService.UpdateOrderStatusAsync(orderId, status);
             if (success)
             {
-                TempData["SuccessMessage"] = $"订单 {order.OrderNumber} 状态已更新为 {status}";
+                TempData["SuccessMessage"] = $"Order {order.OrderNumber} status has been updated to {status}";
             }
             else
             {
-                TempData["ErrorMessage"] = "更新订单状态失败";
+                TempData["ErrorMessage"] = "Failed to update order status";
             }
 
             return RedirectToAction("OrderManagement");
@@ -188,14 +188,14 @@ namespace CampusCafeOrderingSystem.Controllers
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.VendorEmail == merchantEmail);
             if (order == null)
             {
-                TempData["ErrorMessage"] = "订单不存在或无权限访问";
+                TempData["ErrorMessage"] = "Order does not exist or no permission to access";
                 return RedirectToAction("OrderManagement");
             }
 
             order.EstimatedCompletionTime = DateTime.Now.AddMinutes(minutes);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"订单 {order.OrderNumber} 预计完成时间已设置为 {minutes} 分钟后";
+            TempData["SuccessMessage"] = $"Order {order.OrderNumber} estimated completion time has been set to {minutes} minutes later";
             return RedirectToAction("OrderManagement");
         }
 
@@ -206,11 +206,11 @@ namespace CampusCafeOrderingSystem.Controllers
 
             if (string.IsNullOrEmpty(merchantEmail))
             {
-                TempData["ErrorMessage"] = "无法获取商家信息";
+                TempData["ErrorMessage"] = "Unable to get merchant information";
                 return View();
             }
 
-            // 获取本月订单统计
+            // Get monthly order statistics
             var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var nextMonth = currentMonth.AddMonths(1);
 
@@ -239,11 +239,11 @@ namespace CampusCafeOrderingSystem.Controllers
 
             if (string.IsNullOrEmpty(merchantEmail))
             {
-                TempData["ErrorMessage"] = "无法获取商家信息";
+                TempData["ErrorMessage"] = "Unable to get merchant information";
                 return View(new List<Review>());
             }
 
-            // 获取该商家的所有评价
+            // Get all reviews for this merchant
             var reviews = await _context.Reviews
                 .Include(r => r.User)
                 .Include(r => r.MenuItem)
@@ -265,24 +265,24 @@ namespace CampusCafeOrderingSystem.Controllers
                     
                 if (order == null)
                 {
-                    return Json(new { success = false, message = "订单未找到" });
+                    return Json(new { success = false, message = "Order not found" });
                 }
 
                 var oldStatus = order.Status;
                 
-                // 将字符串转换为OrderStatus枚举
+                // Convert string to OrderStatus enum
                 if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
                 {
                     order.Status = orderStatus;
                 }
                 else
                 {
-                    return Json(new { success = false, message = "无效的订单状态" });
+                    return Json(new { success = false, message = "Invalid order status" });
                 }
                 
                 order.UpdatedAt = DateTime.Now;
 
-                // 根据状态设置预计完成时间
+                // Set estimated completion time based on status
                 if (order.Status == OrderStatus.Preparing && !order.EstimatedCompletionTime.HasValue)
                 {
                     order.EstimatedCompletionTime = DateTime.Now.AddMinutes(15);
@@ -294,7 +294,7 @@ namespace CampusCafeOrderingSystem.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // 发送SignalR通知给用户
+                // Send SignalR notification to user
                 await _hubContext.Clients.User(order.UserId).SendAsync("OrderStatusUpdated", new
                 {
                     orderId = order.Id,
@@ -304,7 +304,7 @@ namespace CampusCafeOrderingSystem.Controllers
                     completedTime = order.CompletedTime
                 });
 
-                // 发送SignalR通知给管理员
+                // Send SignalR notification to administrators
                 await _hubContext.Clients.Group("Admins").SendAsync("OrderStatusUpdated", new
                 {
                     orderId = order.Id,
@@ -316,11 +316,11 @@ namespace CampusCafeOrderingSystem.Controllers
                     updatedAt = order.UpdatedAt
                 });
 
-                return Json(new { success = true, message = "订单状态更新成功" });
+                return Json(new { success = true, message = "Order status updated successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "更新失败: " + ex.Message });
+                return Json(new { success = false, message = "Update failed: " + ex.Message });
             }
         }
 
