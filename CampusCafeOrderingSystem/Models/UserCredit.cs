@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusCafeOrderingSystem.Models
 {
-    // 用户积分表
+    // User credit table
     public class UserCredit
     {
         [Key]
@@ -25,7 +25,7 @@ namespace CampusCafeOrderingSystem.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
     
-    // 积分历史记录表
+    // Credit history record table
     public class CreditHistory
     {
         [Key]
@@ -48,7 +48,7 @@ namespace CampusCafeOrderingSystem.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal BalanceAfter { get; set; }
         
-        public int? OrderId { get; set; } // 关联的订单ID（可选）
+        public int? OrderId { get; set; } // Associated order ID (optional)
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

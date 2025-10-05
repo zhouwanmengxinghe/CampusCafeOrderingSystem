@@ -25,7 +25,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    return Unauthorized(new { error = "用户未登录" });
+                    return Unauthorized(new { error = "User not logged in" });
                 }
 
                 var roles = await _userManager.GetRolesAsync(user);
@@ -40,7 +40,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "获取用户信息失败", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to get user information", details = ex.Message });
             }
         }
     }

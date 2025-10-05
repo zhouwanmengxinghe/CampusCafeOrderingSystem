@@ -33,5 +33,5 @@ namespace CampusCafeOrderingSystem.Models
         public UserPreference? UserPreference { get; set; }
     }
 
-    // 已从此文件删除重复定义
+    // Removed duplicate definition from this file
 }

@@ -19,6 +19,7 @@
             <div class="col-12 col-md-3">
                 <button id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
             </div>
+            
         </div>
     </div>
 </div>
@@ -34,13 +35,13 @@
     <div class="col-md-3 col-6">
         <div class="card shadow-sm text-center p-3">
             <div class="text-muted small">Total Revenue (GMV)</div>
-            <div id="kpiRevenue" class="fs-2 fw-bold text-success">$0</div>
+            <div id="kpiRevenue" class="fs-2 fw-bold text-success">NZ$0</div>
         </div>
     </div>
     <div class="col-md-3 col-6">
         <div class="card shadow-sm text-center p-3">
             <div class="text-muted small">Avg Order Value</div>
-            <div id="kpiUsers" class="fs-2 fw-bold text-warning">$0</div>
+            <div id="kpiUsers" class="fs-2 fw-bold text-warning">NZ$0</div>
         </div>
     </div>
     <div class="col-md-3 col-6">
@@ -145,51 +146,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Feature flags
-        const ENABLE_DATATABLES = false; // keep disabled
-        const SCRIPT_BUILD_ID = 'reports-debug-2025-09-21T01:00Z';
+        // Feature flags (DataTables disabled by default)
+        const ENABLE_DATATABLES = false;
 
-        // Early diagnostics for DT presence and versioning
-        try {
-            console.error('[Reports] Build:', SCRIPT_BUILD_ID, 'ENABLE_DATATABLES:', ENABLE_DATATABLES, 'jQuery:', !!window.jQuery, 'DataTablesFn:', !!(window.jQuery && jQuery.fn && (jQuery.fn.DataTable || jQuery.fn.dataTable)));
-        } catch (e) { /* no-op */ }
-
-        // -------- Cache Management --------
-        const CACHE_PREFIX = 'reports_cache_';
-        const CACHE_DURATION = 5 * 60 * 1000; // 5-minute cache
-        
-        function getCacheKey(startDate, endDate) {
-            return `${CACHE_PREFIX}${startDate}_${endDate}`;
-        }
-        
-        function getFromCache(key) {
-            try {
-                const cached = localStorage.getItem(key);
-                if (cached) {
-                    const data = JSON.parse(cached);
-                    if (Date.now() - data.timestamp < CACHE_DURATION) {
-                        return data.value;
-                    } else {
-                        localStorage.removeItem(key);
-                    }
-                }
-            } catch (e) {
-                console.warn('Cache read failed:', e);
-            }
-            return null;
-        }
-        
-        function setToCache(key, value) {
-            try {
-                const data = {
-                    value: value,
-                    timestamp: Date.now()
-                };
-                localStorage.setItem(key, JSON.stringify(data));
-            } catch (e) {
-                console.warn('Cache storage failed:', e);
-            }
-        }
+        // -------- Cache Management (removed: always fetch fresh for admin reports) --------
+        function getCacheKey() { return null; }
+        function getFromCache() { return null; }
+        function setToCache() { /* no-op */ }
+        function clearAllCache() { /* no-op */ }
         
         // -------- Lazy Loading Management --------
         let isLoading = false;
@@ -227,7 +191,7 @@
         }
         
         // -------- Data (Single Source of Truth) --------
-        const currency = 'USD'; // Or change to NZD: 'NZD'
+        const currency = 'NZD'; // Or change to NZD: 'NZD'
         let reportData = null;
 
         // -------- Async Data Loading --------
@@ -236,12 +200,7 @@
             
             const cacheKey = getCacheKey(startDate || '', endDate || '');
             
-            // Try cache
-            const cachedData = getFromCache(cacheKey);
-            if (cachedData) {
-                console.error('[Reports] Using cached data');
-                return cachedData;
-            }
+            // Always fetch fresh for admin reports
             
             isLoading = true;
             try {
@@ -250,15 +209,28 @@
                 if (endDate) params.append('endDate', endDate);
                 
                 console.error('[Reports] Fetch start', `/api/ReportsApi/admin-dashboard-data?${params}`);
-                const response = await fetch(`/api/ReportsApi/admin-dashboard-data?${params}`);
+                const response = await fetch(`/api/ReportsApi/admin-dashboard-data?${params}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 console.error('[Reports] Fetch done status', response.status);
                 if (!response.ok) {
                     const text = await response.text().catch(() => '');
+                    if (response.status === 401) {
+                        throw new Error(`Access denied: You need Admin privileges to view reports. Please log in as an Admin user (e.g., 1234@qq.com with Admin123!)`);
+                    }
                     throw new Error(`HTTP ${response.status} ${response.statusText} ${text}`);
                 }
                 
-                const data = await response.json();
-                console.error('[Reports] Data keys', Object.keys(data || {}));
+                const response_data = await response.json();
+                console.error('[Reports] Raw response keys', Object.keys(response_data || {}));
+                console.error('[Reports] Raw response data:', response_data);
+                
+                // Handle wrapped API response format
+                const data = response_data.data || response_data;
+                console.error('[Reports] Actual data keys', Object.keys(data || {}));
+                console.error('[Reports] Actual data content:', data);
                 
                 // Cache it
                 setToCache(cacheKey, data);
@@ -266,6 +238,7 @@
                 return data;
             } catch (error) {
                 console.error('[Reports] loadReportData error:', error);
+                alert(`Failed to load report data: ${error.message}`);
                 return null;
             } finally {
                 isLoading = false;
@@ -651,10 +624,8 @@
                     initDailyDataTable();
                     console.error('[Reports] step:initDailyDataTable:doneOrSkipped');
                     
-                    // Charts
-                    await lazyLoadSection('charts-section', async () => {
-                        await renderCharts(reportData);
-                    });
+                    // Charts (force redraw every refresh)
+                    await renderCharts(reportData);
 
                     // Vendors (no lazy load to ensure visible immediately)
                     renderVendorsSection(reportData);
@@ -677,41 +648,19 @@
             }
         }
 
-        // -------- Intersection Observer (lazy for charts) --------
-        function setupIntersectionObserver() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const sectionId = entry.target.id;
-                        if (sectionId === 'charts-section' && reportData) {
-                            lazyLoadSection(sectionId, async () => {
-                                await renderCharts(reportData);
-                            });
-                        }
-                    }
-                });
-            }, {
-                threshold: 0.1
-            });
-            
-            // Observe chart section
-            const chartsSection = document.getElementById('charts-section');
-            if (chartsSection) {
-                observer.observe(chartsSection);
-            }
-        }
+        // -------- Intersection Observer (removed) --------
+        function setupIntersectionObserver() { /* no-op */ }
         
         // -------- Page Init --------
         $(document).ready(async function() {
-            console.error('[Reports] DOM ready:', SCRIPT_BUILD_ID);
+            console.error('[Reports] DOM ready');
             // Set default dates (last 7 days)
             const today = new Date();
             const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
             document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
             document.getElementById('toDate').value = today.toISOString().split('T')[0];
 
-            // Setup intersection observer
-            setupIntersectionObserver();
+            // Intersection observer removed
 
             // Bind events
             document.getElementById('fromDate').addEventListener('change', refreshAll);
@@ -722,7 +671,7 @@
                 refreshAll();
             });
 
-            // Defensive: teardown possible DT on initial load too
+            // Defensive: teardown possible DT on initial load too (kept minimal)
             try {
                 if (window.jQuery && $.fn && $.fn.DataTable) {
                     ['#reportsTable', '#vendorsTable'].forEach(sel => {
@@ -732,20 +681,43 @@
                         }
                     });
                 }
-                ['reportsTable', 'vendorsTable'].forEach(id => {
-                    const wrapper = document.getElementById(id + '_wrapper');
-                    if (wrapper) {
-                        const table = wrapper.querySelector('table');
-                        if (table && wrapper.parentNode) {
-                            wrapper.parentNode.insertBefore(table, wrapper);
-                        }
-                        wrapper.remove();
-                    }
-                });
-            } catch (e) { console.error('[Reports] initial teardown failed', e); }
+            } catch (e) { /* no-op */ }
 
             // Initial load
             await refreshAll();
         });
+        
+        // Removed debug functions
+        async function debugAuth() {
+            try {
+                console.warn('debugAuth removed');
+            } catch (error) {
+                /* no-op */
+            }
+        }
+        
+        async function debugData() {
+            try {
+                console.warn('debugData removed');
+            } catch (error) {
+                /* no-op */
+            }
+        }
+        
+        async function createSampleData() {
+            try {
+                console.warn('createSampleData removed');
+            } catch (error) {
+                /* no-op */
+            }
+        }
+        
+        async function debugTest() {
+            try {
+                console.warn('debugTest removed');
+            } catch (error) {
+                /* no-op */
+            }
+        }
     </script>
 }

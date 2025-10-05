@@ -24,7 +24,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         private readonly IMemoryCache _cache;
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromHours(1);
         private readonly Random _random = new Random();
-        private readonly bool _useDemoData = false; // 强制使用真实数据
+        private readonly bool _useDemoData = false; // Force use of real data
 
         public ReportsApiController(ApplicationDbContext context, IOrderService orderService, IMemoryCache cache)
         {
@@ -33,21 +33,21 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             _cache = cache;
         }
         
-        #region 生成演示数据的辅助方法
+        #region Helper methods for generating demo data
         
         private object GenerateDemoOverviewData(DateTime startDate, DateTime endDate)
         {
-            // 生成总收入（5000-15000之间的随机值）
+            // Generate total revenue (random value between 5000-15000)
             decimal totalRevenue = _random.Next(5000, 15000) + (decimal)_random.NextDouble();
             totalRevenue = Math.Round(totalRevenue, 2);
             
-            // 生成总订单数（100-300之间的随机值）
+            // Generate total orders (random value between 100-300)
             int totalOrders = _random.Next(100, 300);
             
-            // 计算平均订单价值
+            // Calculate average order value
             decimal avgOrderValue = totalOrders > 0 ? Math.Round(totalRevenue / totalOrders, 2) : 0;
             
-            // 生成最热销商品
+            // Generate most popular items
             string[] popularItems = new[] { "Latte", "Americano", "Cappuccino", "Espresso", "Croissant", "Caesar Salad", "Chocolate Cookie" };
             string topProduct = popularItems[_random.Next(popularItems.Length)];
             
@@ -67,20 +67,20 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var revenueData = new List<decimal>();
             var ordersData = new List<int>();
             
-            // 生成每日数据
+            // Generate daily data
             for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
             {
-                // 生成当日收入（200-1000之间的随机值）
+                // Generate daily revenue (random value between 200-1000)
                 decimal revenue = _random.Next(200, 1000) + (decimal)_random.NextDouble();
                 revenue = Math.Round(revenue, 2);
                 
-                // 生成当日订单数（10-50之间的随机值）
+                // Generate daily orders (random value between 10-50)
                 int orders = _random.Next(10, 50);
                 
-                // 计算平均订单价值
+                // Calculate average order value
                 decimal avgOrderValue = orders > 0 ? Math.Round(revenue / orders, 2) : 0;
                 
-                // 生成增长率（-10%到20%之间的随机值）
+                // Generate growth rate (random value between -10% to 20%)
                 decimal growth = (_random.Next(-10, 20) + (decimal)_random.NextDouble());
                 growth = Math.Round(growth, 1);
                 
@@ -117,19 +117,19 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var ordersData = new List<int>();
             var revenueData = new List<decimal>();
             
-            // 生成每小时数据
+            // Generate hourly data
             for (int hour = 0; hour < 24; hour++)
             {
-                // 早上和下午的高峰时段订单量更高
+                // Morning and afternoon peak hours have higher order volumes
                 int orderMultiplier = 1;
                 if (hour >= 7 && hour <= 9) orderMultiplier = 3; // Morning peak
                 if (hour >= 11 && hour <= 13) orderMultiplier = 4; // Lunch peak
                 if (hour >= 17 && hour <= 19) orderMultiplier = 3; // Evening peak
                 
-                // 生成当小时订单数
+                // Generate current hour order count
                 int orders = _random.Next(1, 10) * orderMultiplier;
                 
-                // 生成当小时收入
+                // Generate current hour revenue
                 decimal revenue = orders * (_random.Next(20, 50) + (decimal)_random.NextDouble());
                 revenue = Math.Round(revenue, 2);
                 
@@ -178,17 +178,17 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var quantityData = new List<int>();
             var revenueData = new List<decimal>();
             
-            // 为每个产品生成销量和收入数据
+            // Generate sales and revenue data for each product
             foreach (var product in products)
             {
-                // 生成销量（10-100之间的随机值）
+                // Generate sales quantity (random value between 10-100)
                 int quantity = _random.Next(10, 100);
                 
-                // 生成单价（20-50之间的随机值）
+                // Generate unit price (random value between 20-50)
                 decimal unitPrice = _random.Next(20, 50) + (decimal)_random.NextDouble();
                 unitPrice = Math.Round(unitPrice, 2);
                 
-                // 计算总收入
+                // Calculate total revenue
                 decimal revenue = quantity * unitPrice;
                 revenue = Math.Round(revenue, 2);
                 
@@ -206,10 +206,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 revenueData.Add(revenue);
             }
             
-            // 按销量排序
+            // Sort by sales quantity
             productRanking = productRanking.OrderByDescending(p => ((dynamic)p).quantity).ToList();
             
-            // 获取前5名产品的数据用于图表
+            // Get top 5 products data for chart
             var top5Products = productRanking.Take(5).ToList();
             var top5Labels = top5Products.Select(p => ((dynamic)p).name).ToList();
             var top5Quantity = top5Products.Select(p => (int)((dynamic)p).quantity).ToList();
@@ -237,10 +237,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             
             decimal totalSales = 0;
             
-            // 为每个类别生成销售数据
+            // Generate sales data for each category
             foreach (var category in categories)
             {
-                // 生成销售额（500-2000之间的随机值）
+                // Generate sales amount (random value between 500-2000)
                 decimal sales = _random.Next(500, 2000) + (decimal)_random.NextDouble();
                 sales = Math.Round(sales, 2);
                 
@@ -250,14 +250,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 {
                     category,
                     sales,
-                    percentage = 0m // 先设为0，后面再计算
+                    percentage = 0m // Set to 0 first, calculate later
                 });
                 
                 labels.Add(category);
                 salesData.Add(sales);
             }
             
-            // 计算每个类别的百分比
+            // Calculate percentage for each category
             if (totalSales > 0)
             {
                 for (int i = 0; i < categoryData.Count; i++)
@@ -265,7 +265,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     var item = (dynamic)categoryData[i];
                     decimal percentage = Math.Round(item.sales / totalSales * 100, 1);
                     
-                    // 创建新对象替换原来的对象
+                    // Create new object to replace the original object
                     categoryData[i] = new
                     {
                         category = item.category,
@@ -295,23 +295,23 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var customerNames = new[] { "John Smith", "Emma Johnson", "Michael Brown", "Sophia Davis", "William Wilson", "Olivia Taylor", "James Anderson", "Emily Thomas" };
             var recentOrders = new List<object>();
             
-            // 生成10个最近订单
+            // Generate 10 recent orders
             for (int i = 0; i < 10; i++)
             {
-                // 生成订单号
+                // Generate order number
                 string orderNumber = $"ORD{DateTime.Now.ToString("yyyyMMdd")}{_random.Next(1000, 9999)}";
                 
-                // 随机选择客户名
+                // Randomly select customer name
                 string customerName = customerNames[_random.Next(customerNames.Length)];
                 
-                // 生成订单金额（50-200之间的随机值）
+                // Generate order amount (random value between 50-200)
                 decimal totalAmount = _random.Next(50, 200) + (decimal)_random.NextDouble();
                 totalAmount = Math.Round(totalAmount, 2);
                 
-                // 随机选择订单状态
+                // Randomly select order status
                 string status = statuses[_random.Next(statuses.Length)];
                 
-                // 生成订单创建时间（过去24小时内的随机时间）
+                // Generate order creation time (random time within the past 24 hours)
                 DateTime createdAt = DateTime.Now.AddHours(-_random.Next(0, 24)).AddMinutes(-_random.Next(0, 60));
                 
                 recentOrders.Add(new
@@ -324,29 +324,29 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 });
             }
             
-            // 按创建时间排序，最新的排在前面
+            // Sort by creation time, newest first
             return recentOrders.OrderByDescending(o => ((dynamic)o).createdAt).ToList();
         }
         
         #endregion
 
         [HttpPost("clear-cache")]
-        // 注意：此端点故意不添加[Authorize]特性，允许内部服务调用
-        // 用于系统内部服务间通信，清除缓存
+        // Note: This endpoint intentionally does not add [Authorize] attribute, allowing internal service calls
+        // Used for inter-service communication within the system, clearing cache
         public IActionResult ClearCache([FromBody] JsonElement requestBody)
         {
             try
             {
-                // 从请求体中提取vendorEmail
+                // Extract vendorEmail from request body
                 string vendorEmail = null;
                 
-                // 尝试从JSON对象中获取vendorEmail属性
+                // Try to get vendorEmail property from JSON object
                 if (requestBody.TryGetProperty("vendorEmail", out JsonElement vendorEmailElement) && 
                     vendorEmailElement.ValueKind == JsonValueKind.String)
                 {
                     vendorEmail = vendorEmailElement.GetString();
                 }
-                // 如果没有vendorEmail属性，尝试将整个请求体作为字符串
+                // If no vendorEmail property, try to use the entire request body as string
                 else if (requestBody.ValueKind == JsonValueKind.String)
                 {
                     vendorEmail = requestBody.GetString();
@@ -357,7 +357,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return BadRequest(new { message = "Invalid vendor email" });
                 }
 
-                // 清除指定商家的所有报表缓存
+                // Clear all report cache for the specified vendor
                 var today = DateTime.Today;
                 var patterns = new[]
                 {
@@ -369,7 +369,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     $"popular_items_{vendorEmail}_"
                 };
 
-                // 由于IMemoryCache没有直接的模式匹配删除方法，我们需要清除可能的日期范围
+                // Since IMemoryCache doesn't have direct pattern matching deletion method, we need to clear possible date ranges
                 for (int i = -30; i <= 30; i++)
                 {
                     var date = today.AddDays(i);
@@ -377,11 +377,11 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     
                     foreach (var pattern in patterns)
                     {
-                        // 清除单日缓存
+                        // Clear single day cache
                         _cache.Remove($"{pattern}{dateStr}_{dateStr}");
-                        _cache.Remove($"{pattern}{dateStr}"); // popular_items_键只包含单日日期
+                        _cache.Remove($"{pattern}{dateStr}"); // popular_items_ key only contains single day date
                         
-                        // 清除可能的日期范围缓存
+                        // Clear possible date range cache
                         for (int j = i; j <= 30; j++)
                         {
                             var endDate = today.AddDays(j);
@@ -405,7 +405,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                // 如果启用了演示数据，则返回演示数据
+                // If demo data is enabled, return demo data
                 if (_useDemoData)
                 {
                     var demoOverviewData = GenerateDemoOverviewData(startDate, endDate);
@@ -433,7 +433,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Ok(demoResult);
                 }
                 
-                // 以下是原有的实际数据获取逻辑
+                // The following is the original actual data retrieval logic
                 // Get current vendor email
                 var vendorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (string.IsNullOrEmpty(vendorEmail))
@@ -441,26 +441,26 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Unauthorized();
                 }
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"dashboard_data_{vendorEmail}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
                 }
 
-                // 获取当前商家的相关订单数据（包括所有状态）
+                // Get current vendor's related order data (including all statuses)
                 var orders = await _context.Orders
                     .Where(o => o.VendorEmail == vendorEmail && o.OrderDate >= startDate && o.OrderDate <= endDate)
                     .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.MenuItem)
                     .ToListAsync();
 
-                // 只使用已完成的订单进行统计计算
+                // Only use completed orders for statistical calculations
                 var completedOrders = orders.Where(o => o.Status == OrderStatus.Completed).ToList();
 
-                // 1. 概览数据
+                // 1. Overview data
                 var totalRevenue = completedOrders.Sum(o => o.TotalAmount);
                 var totalOrders = completedOrders.Count;
                 var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -479,7 +479,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     topProduct
                 };
 
-                // 2. 每日数据
+                // 2. Daily data
                 var dailyDataTemp = completedOrders
                     .GroupBy(o => o.OrderDate.Date)
                     .Select(g => new
@@ -492,7 +492,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .OrderBy(d => d.date)
                     .ToList();
 
-                // 计算增长率并创建最终数据
+                // Calculate growth rate and create final data
                 var dailyData = new List<object>();
                 for (int i = 0; i < dailyDataTemp.Count; i++)
                 {
@@ -517,7 +517,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     });
                 }
 
-                // 3. 小时分析数据
+                // 3. Hourly analysis data
                 var hourlyData = completedOrders
                     .GroupBy(o => o.OrderDate.Hour)
                     .Select(g => new
@@ -529,7 +529,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .OrderBy(h => h.hour)
                     .ToList();
 
-                // 4. 商品排行数据
+                // 4. Product ranking data
                 var productRanking = completedOrders
                     .SelectMany(o => o.OrderItems)
                     .GroupBy(oi => oi.MenuItemName)
@@ -543,7 +543,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .Take(10)
                     .ToList();
 
-                // 5. 分类数据
+                // 5. Category data
                 var categoryData = completedOrders
                     .SelectMany(o => o.OrderItems)
                     .GroupBy(oi => GetCategoryByName(oi.MenuItemName))
@@ -564,14 +564,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     categoryData
                 };
 
-                // 将结果存入缓存
+                // Store result in cache
                 _cache.Set(cacheKey, result, _cacheExpiration);
 
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "获取报表数据失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to get report data", error = ex.Message });
             }
         }
 
@@ -581,14 +581,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                // 如果启用了演示数据，则返回演示数据
+                // If demo data is enabled, return demo data
                 if (_useDemoData)
                 {
                     var demoOverview = GenerateDemoOverviewData(startDate, endDate);
                     return Ok(demoOverview);
                 }
                 
-                // 以下是原有的实际数据获取逻辑
+                // The following is the original actual data retrieval logic
                 // Get current vendor email
                 var vendorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (string.IsNullOrEmpty(vendorEmail))
@@ -596,10 +596,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Unauthorized();
                 }
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"overview_{vendorEmail}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
@@ -614,7 +614,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var totalOrders = orders.Count;
                 var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-                // 获取最热销商品
+                // Get best-selling product
                 var topProduct = await _context.OrderItems
                     .Where(oi => orders.Select(o => o.Id).Contains(oi.OrderId))
                     .GroupBy(oi => oi.MenuItemName)
@@ -627,17 +627,17 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     totalRevenue,
                     totalOrders,
                     avgOrderValue,
-                    topProduct = topProduct ?? "暂无数据"
+                    topProduct = topProduct ?? "No data available"
                 };
 
-                // 将结果存入缓存
+                // Store result in cache
                 _cache.Set(cacheKey, overview, _cacheExpiration);
 
                 return Ok(overview);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "获取报表概览失败", error = ex.Message });
+                return BadRequest(new { message = "Failed to get report overview", error = ex.Message });
             }
         }
 
@@ -647,14 +647,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                // 如果启用了演示数据，则返回演示数据
+                // If demo data is enabled, return demo data
                 if (_useDemoData)
                 {
                     var demoDailyData = GenerateDemoDailyData(startDate, endDate);
                     return Ok(demoDailyData);
                 }
                 
-                // 以下是原有的实际数据获取逻辑
+                // The following is the original actual data retrieval logic
                 // Get current vendor email
                 var vendorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (string.IsNullOrEmpty(vendorEmail))
@@ -662,22 +662,22 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Unauthorized();
                 }
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"daily_data_{vendorEmail}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
                 }
 
-                // 优化：使用单个查询获取所有数据，避免循环查询
+                // Optimization: Use single query to get all data, avoid loop queries
                 var orders = await _context.Orders
                     .Where(o => o.VendorEmail == vendorEmail && o.OrderDate >= startDate && o.OrderDate <= endDate && o.Status == OrderStatus.Completed)
                     .Select(o => new { o.OrderDate, o.TotalAmount })
                     .ToListAsync();
 
-                // 按日期分组计算每日数据
+                // Group by date to calculate daily data
                 var dailyStats = orders
                     .GroupBy(o => o.OrderDate.Date)
                     .ToDictionary(g => g.Key, g => new
@@ -696,7 +696,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                         ? dailyStats[currentDate.Date] 
                         : new { orders = 0, revenue = 0m, avgOrder = 0m };
 
-                    // 计算增长率（与前一天比较）
+                    // Calculate growth rate (compared to previous day)
                     var previousDay = currentDate.AddDays(-1).Date;
                     var previousStats = dailyStats.ContainsKey(previousDay) 
                         ? dailyStats[previousDay] 
@@ -718,14 +718,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     currentDate = currentDate.AddDays(1);
                 }
 
-                // 将结果存入缓存
+                // Store result in cache
                 _cache.Set(cacheKey, dailyData, _cacheExpiration);
 
                 return Ok(dailyData);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "获取日销售数据失败", error = ex.Message });
+                return BadRequest(new { message = "Failed to get daily sales data", error = ex.Message });
             }
         }
 
@@ -735,14 +735,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                // 如果启用了演示数据，则返回演示数据
+                // If demo data is enabled, return demo data
                 if (_useDemoData)
                 {
                     var demoProductRanking = GenerateDemoProductRanking();
                     return Ok(demoProductRanking);
                 }
                 
-                // 以下是原有的实际数据获取逻辑
+                // The following is the original actual data retrieval logic
                 // Get current vendor email
                 var vendorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (string.IsNullOrEmpty(vendorEmail))
@@ -750,10 +750,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Unauthorized();
                 }
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"product_ranking_{vendorEmail}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
@@ -789,14 +789,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     p.percentage
                 });
 
-                // 将结果存入缓存
+                // Store result in cache
                 _cache.Set(cacheKey, rankedProducts, _cacheExpiration);
 
                 return Ok(rankedProducts);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "获取商品排行失败", error = ex.Message });
+                return BadRequest(new { message = "Failed to get product ranking", error = ex.Message });
             }
         }
 
@@ -806,14 +806,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                // 如果启用了演示数据，则返回演示数据
+                // If demo data is enabled, return demo data
                 if (_useDemoData)
                 {
                     var hourlyData = GenerateDemoHourlyData();
                     return Ok(hourlyData);
                 }
                 
-                // 以下是原有的实际数据获取逻辑
+                // The following is the original actual data retrieval logic
                 // Get current vendor email
                 var vendorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (string.IsNullOrEmpty(vendorEmail))
@@ -821,10 +821,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Unauthorized();
                 }
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"hourly_analysis_{vendorEmail}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
@@ -848,7 +848,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                             >= 14 and < 16 => "14:00-16:00",
                             >= 16 and < 18 => "16:00-18:00",
                             >= 18 and < 20 => "18:00-20:00",
-                            _ => "其他时段"
+                            _ => "Other time periods"
                         }
                     })
                     .Select(g => new
@@ -861,14 +861,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .OrderBy(h => h.hour)
                     .ToList();
 
-                // 将结果存入缓存
+                // Store result in cache
                 _cache.Set(cacheKey, hourlyAnalysis, _cacheExpiration);
 
                 return Ok(hourlyAnalysis);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "获取时段分析失败", error = ex.Message });
+                return BadRequest(new { message = "Failed to get time period analysis", error = ex.Message });
             }
         }
 
@@ -878,14 +878,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
         {
             try
             {
-                // 如果启用了演示数据，则返回演示数据
+                // If demo data is enabled, return demo data
                 if (_useDemoData)
                 {
                     var demoCategoryData = GenerateDemoCategoryData();
                     return Ok(demoCategoryData);
                 }
                 
-                // 以下是原有的实际数据获取逻辑
+                // The following is the original actual data retrieval logic
                 // Get current vendor email
                 var vendorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (string.IsNullOrEmpty(vendorEmail))
@@ -893,10 +893,10 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     return Unauthorized();
                 }
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"category_data_{vendorEmail}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
@@ -909,7 +909,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
 
                 var totalRevenue = orders.Sum(o => o.TotalAmount);
 
-                // 通过菜品名称推断分类（简化处理）
+                // Infer category by menu item name (simplified processing)
                 var categoryData = await _context.OrderItems
                     .Where(oi => orders.Select(o => o.Id).Contains(oi.OrderId))
                     .ToListAsync();
@@ -925,27 +925,27 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .OrderByDescending(c => c.revenue)
                     .ToList();
 
-                // 将结果存入缓存
+                // Store result in cache
                 _cache.Set(cacheKey, categoryRevenue, _cacheExpiration);
 
                 return Ok(categoryRevenue);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "获取分类数据失败", error = ex.Message });
+                return BadRequest(new { message = "Failed to get category data", error = ex.Message });
             }
         }
 
         private string GetCategoryByName(string menuItemName)
         {
-            // 简化的分类逻辑，实际项目中应该从MenuItem表获取分类
-            if (menuItemName.Contains("咖啡") || menuItemName.Contains("拿铁") || menuItemName.Contains("美式") || menuItemName.Contains("卡布奇诺"))
-                return "咖啡";
-            if (menuItemName.Contains("蛋糕") || menuItemName.Contains("甜品") || menuItemName.Contains("提拉米苏"))
-                return "甜品";
-            if (menuItemName.Contains("茶") || menuItemName.Contains("奶茶"))
-                return "茶饮";
-            return "小食";
+            // Simplified category logic, in actual projects should get category from MenuItem table
+            if (menuItemName.Contains("Coffee") || menuItemName.Contains("Latte") || menuItemName.Contains("Americano") || menuItemName.Contains("Cappuccino"))
+                return "Coffee";
+            if (menuItemName.Contains("Cake") || menuItemName.Contains("Dessert") || menuItemName.Contains("Tiramisu"))
+                return "Desserts";
+            if (menuItemName.Contains("Tea") || menuItemName.Contains("Milk Tea"))
+                return "Tea";
+            return "Snacks";
         }
         
         [HttpGet("export-excel")]
@@ -970,57 +970,57 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 
                 using var package = new ExcelPackage();
                 
-                // 创建营业概览工作表
-                var overviewSheet = package.Workbook.Worksheets.Add("营业概览");
+                // Create business overview worksheet
+                var overviewSheet = package.Workbook.Worksheets.Add("Business Overview");
                 
-                // 设置标题
-                overviewSheet.Cells[1, 1].Value = "校园咖啡厅营业报表";
+                // Set title
+                overviewSheet.Cells[1, 1].Value = "Campus Cafe Business Report";
                 overviewSheet.Cells[1, 1, 1, 4].Merge = true;
                 overviewSheet.Cells[1, 1].Style.Font.Size = 16;
                 overviewSheet.Cells[1, 1].Style.Font.Bold = true;
                 overviewSheet.Cells[1, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 
-                overviewSheet.Cells[2, 1].Value = $"报表期间：{startDate:yyyy-MM-dd} 至 {endDate:yyyy-MM-dd}";
+                overviewSheet.Cells[2, 1].Value = $"Report Period: {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}";
                 overviewSheet.Cells[2, 1, 2, 4].Merge = true;
                 overviewSheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 
-                // 营业概览数据
+                // Business overview data
                 var totalRevenue = orders.Sum(o => o.TotalAmount);
                 var totalOrders = orders.Count;
                 var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
                 
-                overviewSheet.Cells[4, 1].Value = "指标";
-                overviewSheet.Cells[4, 2].Value = "数值";
-                overviewSheet.Cells[5, 1].Value = "总营业额";
+                overviewSheet.Cells[4, 1].Value = "Metric";
+                overviewSheet.Cells[4, 2].Value = "Value";
+                overviewSheet.Cells[5, 1].Value = "Total Revenue";
                 overviewSheet.Cells[5, 2].Value = totalRevenue;
-                overviewSheet.Cells[6, 1].Value = "订单总数";
+                overviewSheet.Cells[6, 1].Value = "Total Orders";
                 overviewSheet.Cells[6, 2].Value = totalOrders;
-                overviewSheet.Cells[7, 1].Value = "平均订单金额";
+                overviewSheet.Cells[7, 1].Value = "Average Order Amount";
                 overviewSheet.Cells[7, 2].Value = avgOrderValue;
                 
-                // 设置格式
+                // Set formatting
                 overviewSheet.Cells[4, 1, 4, 2].Style.Font.Bold = true;
                 overviewSheet.Cells[5, 2].Style.Numberformat.Format = "¥#,##0.00";
                 overviewSheet.Cells[7, 2].Style.Numberformat.Format = "¥#,##0.00";
                 
-                // 创建订单详情工作表
-                var ordersSheet = package.Workbook.Worksheets.Add("订单详情");
+                // Create order details worksheet
+                var ordersSheet = package.Workbook.Worksheets.Add("Order Details");
                 
-                // 设置表头
-                ordersSheet.Cells[1, 1].Value = "订单号";
-                ordersSheet.Cells[1, 2].Value = "下单时间";
-                ordersSheet.Cells[1, 3].Value = "客户电话";
-                ordersSheet.Cells[1, 4].Value = "商品";
-                ordersSheet.Cells[1, 5].Value = "数量";
-                ordersSheet.Cells[1, 6].Value = "单价";
-                ordersSheet.Cells[1, 7].Value = "小计";
-                ordersSheet.Cells[1, 8].Value = "订单总额";
+                // Set table headers
+                ordersSheet.Cells[1, 1].Value = "Order Number";
+                ordersSheet.Cells[1, 2].Value = "Order Time";
+                ordersSheet.Cells[1, 3].Value = "Customer Phone";
+                ordersSheet.Cells[1, 4].Value = "Item";
+                ordersSheet.Cells[1, 5].Value = "Quantity";
+                ordersSheet.Cells[1, 6].Value = "Unit Price";
+                ordersSheet.Cells[1, 7].Value = "Subtotal";
+                ordersSheet.Cells[1, 8].Value = "Order Total";
                 
                 ordersSheet.Cells[1, 1, 1, 8].Style.Font.Bold = true;
                 ordersSheet.Cells[1, 1, 1, 8].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                 ordersSheet.Cells[1, 1, 1, 8].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 
-                // 填充订单数据
+                // Fill order data
                 int row = 2;
                 foreach (var order in orders.OrderByDescending(o => o.OrderDate))
                 {
@@ -1044,7 +1044,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     }
                 }
                 
-                // 自动调整列宽
+                // Auto-adjust column width
                 overviewSheet.Cells.AutoFitColumns();
                 ordersSheet.Cells.AutoFitColumns();
                 
@@ -1052,12 +1052,12 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 package.SaveAs(stream);
                 stream.Position = 0;
                 
-                var fileName = $"营业报表_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.xlsx";
+                var fileName = $"Business_Report_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.xlsx";
                 return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "导出Excel失败", details = ex.Message });
+                return StatusCode(500, new { error = "Excel export failed", details = ex.Message });
             }
         }
         
@@ -1084,29 +1084,29 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 
                 document.Open();
                 
-                // 设置中文字体
+                // Set font for PDF generation
                 var baseFont = BaseFont.CreateFont("STSong-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
                 var titleFont = new Font(baseFont, 18, Font.BOLD);
                 var headerFont = new Font(baseFont, 14, Font.BOLD);
                 var normalFont = new Font(baseFont, 10, Font.NORMAL);
                 
-                // 添加标题
-                var title = new Paragraph("校园咖啡厅营业报表", titleFont)
+                // Add title
+                var title = new Paragraph("Campus Cafe Business Report", titleFont)
                 {
                     Alignment = Element.ALIGN_CENTER,
                     SpacingAfter = 10
                 };
                 document.Add(title);
                 
-                var dateRange = new Paragraph($"报表期间：{startDate:yyyy年MM月dd日} 至 {endDate:yyyy年MM月dd日}", normalFont)
+                var dateRange = new Paragraph($"Report Period: {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}", normalFont)
                 {
                     Alignment = Element.ALIGN_CENTER,
                     SpacingAfter = 20
                 };
                 document.Add(dateRange);
                 
-                // 营业概览
-                var overviewTitle = new Paragraph("营业概览", headerFont)
+                // Business overview
+                var overviewTitle = new Paragraph("Business Overview", headerFont)
                 {
                     SpacingAfter = 10
                 };
@@ -1123,17 +1123,17 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 };
                 overviewTable.SetWidths(new float[] { 1, 1 });
                 
-                overviewTable.AddCell(new PdfPCell(new Phrase("总营业额", normalFont)));
+                overviewTable.AddCell(new PdfPCell(new Phrase("Total Revenue", normalFont)));
                 overviewTable.AddCell(new PdfPCell(new Phrase($"¥{totalRevenue:F2}", normalFont)));
-                overviewTable.AddCell(new PdfPCell(new Phrase("订单总数", normalFont)));
+                overviewTable.AddCell(new PdfPCell(new Phrase("Total Orders", normalFont)));
                 overviewTable.AddCell(new PdfPCell(new Phrase(totalOrders.ToString(), normalFont)));
-                overviewTable.AddCell(new PdfPCell(new Phrase("平均订单金额", normalFont)));
+                overviewTable.AddCell(new PdfPCell(new Phrase("Average Order Amount", normalFont)));
                 overviewTable.AddCell(new PdfPCell(new Phrase($"¥{avgOrderValue:F2}", normalFont)));
                 
                 document.Add(overviewTable);
                 
-                // 订单详情
-                var ordersTitle = new Paragraph("订单详情", headerFont)
+                // Order details
+                var ordersTitle = new Paragraph("Order Details", headerFont)
                 {
                     SpacingAfter = 10
                 };
@@ -1145,16 +1145,16 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 };
                 ordersTable.SetWidths(new float[] { 1.5f, 1.5f, 1f, 2f, 0.8f, 1f });
                 
-                // 表头
-                ordersTable.AddCell(new PdfPCell(new Phrase("订单号", headerFont)));
-                ordersTable.AddCell(new PdfPCell(new Phrase("下单时间", headerFont)));
-                ordersTable.AddCell(new PdfPCell(new Phrase("客户电话", headerFont)));
-                ordersTable.AddCell(new PdfPCell(new Phrase("商品", headerFont)));
-                ordersTable.AddCell(new PdfPCell(new Phrase("数量", headerFont)));
-                ordersTable.AddCell(new PdfPCell(new Phrase("金额", headerFont)));
+                // Table headers
+                ordersTable.AddCell(new PdfPCell(new Phrase("Order Number", headerFont)));
+                ordersTable.AddCell(new PdfPCell(new Phrase("Order Time", headerFont)));
+                ordersTable.AddCell(new PdfPCell(new Phrase("Customer Phone", headerFont)));
+                ordersTable.AddCell(new PdfPCell(new Phrase("Items", headerFont)));
+                ordersTable.AddCell(new PdfPCell(new Phrase("Quantity", headerFont)));
+                ordersTable.AddCell(new PdfPCell(new Phrase("Amount", headerFont)));
                 
-                // 数据行
-                foreach (var order in orders.OrderByDescending(o => o.OrderDate).Take(50)) // 限制显示前50个订单
+                // Data rows
+                foreach (var order in orders.OrderByDescending(o => o.OrderDate).Take(50)) // Limit to first 50 orders
                 {
                     var itemsText = string.Join(", ", order.OrderItems.Select(oi => $"{oi.MenuItemName}×{oi.Quantity}"));
                     
@@ -1170,7 +1170,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 
                 if (orders.Count > 50)
                 {
-                    var note = new Paragraph($"注：仅显示前50个订单，总共{orders.Count}个订单", normalFont)
+                    var note = new Paragraph($"Note: Only showing first 50 orders, total {orders.Count} orders", normalFont)
                     {
                         Alignment = Element.ALIGN_CENTER,
                         SpacingBefore = 10
@@ -1180,46 +1180,47 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 
                 document.Close();
                 
-                var fileName = $"营业报表_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.pdf";
+                var fileName = $"Business_Report_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.pdf";
                 return File(stream.ToArray(), "application/pdf", fileName);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "导出PDF失败", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to export PDF", details = ex.Message });
             }
         }
 
-        // 管理员端专用的仪表板数据接口
+        // Admin dashboard data interface
         [HttpGet("admin-dashboard-data")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAdminDashboardData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
             {
-                // 设置默认日期范围（如果未提供）
-                var start = startDate ?? DateTime.Now.AddDays(-30);
-                var end = endDate ?? DateTime.Now;
+                // Set default date range (if not provided)
+                // Normalize: start at 00:00 of the day, end at 23:59:59.9999999 of the day to ensure full day data is included
+                var start = (startDate ?? DateTime.Now.AddDays(-30)).Date;
+                var end = ((endDate ?? DateTime.Now).Date).AddDays(1).AddTicks(-1);
 
-                // 生成缓存键
+                // Generate cache key
                 var cacheKey = $"admin_dashboard_data_{start:yyyyMMdd}_{end:yyyyMMdd}";
                 
-                // 尝试从缓存获取数据
+                // Try to get data from cache
                 if (_cache.TryGetValue(cacheKey, out var cachedResult))
                 {
                     return Ok(cachedResult);
                 }
 
-                // 获取所有订单数据（不限制商家）
+                // Get all order data (no merchant restriction)
                 var allOrders = await _context.Orders
                     .Where(o => o.OrderDate >= start && o.OrderDate <= end)
                     .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.MenuItem)
                     .ToListAsync();
 
-                // 只使用已完成的订单进行统计计算
+                // Only use completed orders for statistical calculations
                 var completedOrders = allOrders.Where(o => o.Status == OrderStatus.Completed).ToList();
 
-                // 1. 概览数据
+                // 1. Overview data
                 var totalRevenue = completedOrders.Sum(o => o.TotalAmount);
                 var totalOrders = completedOrders.Count;
                 var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -1238,7 +1239,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     topProduct
                 };
 
-                // 2. 每日数据
+                // 2. Daily data
                 var dailyDataTemp = completedOrders
                     .GroupBy(o => o.OrderDate.Date)
                     .Select(g => new
@@ -1251,7 +1252,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .OrderBy(d => d.date)
                     .ToList();
 
-                // 计算增长率并创建最终数据
+                // Calculate growth rate and create final data
                 var dailyData = new List<object>();
                 for (int i = 0; i < dailyDataTemp.Count; i++)
                 {
@@ -1272,7 +1273,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     });
                 }
 
-                // 3. 小时数据（当天的订单分布）
+                // 3. Hourly data (today's order distribution)
                 var todayOrders = completedOrders.Where(o => o.OrderDate.Date == DateTime.Today).ToList();
                 var hourlyData = new List<object>();
                 for (int hour = 0; hour < 24; hour++)
@@ -1286,7 +1287,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     });
                 }
 
-                // 4. 商品排行
+                // 4. Product ranking
                 var productRanking = completedOrders
                     .SelectMany(o => o.OrderItems)
                     .GroupBy(oi => oi.MenuItemName)
@@ -1300,7 +1301,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .Take(10)
                     .ToList();
 
-                // 5. 商家表现数据
+                // 5. Vendor performance data
                 var vendorPerformance = completedOrders
                     .GroupBy(o => o.VendorEmail)
                     .Select(g => new
@@ -1348,7 +1349,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     }
                 };
 
-                // 缓存结果
+                // Cache result
                 _cache.Set(cacheKey, result, _cacheExpiration);
 
                 return Ok(result);
@@ -1358,5 +1359,6 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 return StatusCode(500, new { error = "Failed to load dashboard data", details = ex.Message });
             }
         }
+        
     }
 }

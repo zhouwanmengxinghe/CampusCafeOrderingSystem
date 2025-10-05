@@ -29,7 +29,7 @@ namespace CampusCafeOrderingSystem.Controllers
             
             var menuItems = await query.OrderBy(m => m.Category).ThenBy(m => m.Name).ToListAsync();
             
-            // 如果数据库为空，添加示例数据
+            // If database is empty, add sample data
             if (!menuItems.Any())
             {
                 await SeedSampleMenuItems();

@@ -12,25 +12,26 @@ namespace CampusCafeOrderingSystem.Models
         
         public IdentityUser? User { get; set; }
         
-        // 通知偏好
+        // Notification preferences
         public bool EmailNotifications { get; set; } = true;
         public bool SmsNotifications { get; set; } = false;
+        public bool PushNotifications { get; set; } = true;
         public bool OrderStatusNotifications { get; set; } = true;
-        public bool PromotionNotifications { get; set; } = true;
-        
-        // 饮食偏好
+        public bool PromotionNotifications { get; set; } = false;
+
+        // Dietary preferences
         public string? DietaryRestrictions { get; set; }
         public string? FavoriteCategories { get; set; }
         public string? AllergyInformation { get; set; }
-        
-        // 界面偏好
-        public string Theme { get; set; } = "light";
-        public string Language { get; set; } = "en";
-        
-        // 支付偏好
-        public string PreferredPaymentMethod { get; set; } = "CampusCard";
-        
-        // 配送偏好
+
+        // Interface preferences
+        public string Theme { get; set; } = "Light";
+        public string Language { get; set; } = "zh-CN";
+
+        // Payment preferences
+        public string? PreferredPaymentMethod { get; set; }
+
+        // Delivery preferences
         public string? DefaultDeliveryAddress { get; set; }
         public string? DeliveryInstructions { get; set; }
         

@@ -139,6 +139,11 @@
         color: #4CAF50;
         margin-bottom: 1rem;
     }
+    .item-vendor {
+        color: #888;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
     
     .add-to-cart-btn {
         width: 100%;
@@ -224,6 +229,13 @@
 </div>
 
 <div class="container">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            alert('@TempData["ErrorMessage"]');
+        </script>
+        <div class="alert alert-warning">@TempData["ErrorMessage"]</div>
+    }
     <!-- Search and Filter Section -->
     <div class="search-filter-section">
         <div class="row align-items-center">
@@ -284,6 +296,7 @@
                             <h3 class="item-name">@item.Name</h3>
                             <p class="item-description">@item.Description</p>
                             <div class="item-price">$@item.Price.ToString("0.00")</div>
+                            <div class="item-vendor"><i class="fas fa-store me-1"></i> Vendor: @item.VendorEmail</div>
                             <form asp-controller="Cart" asp-action="Add" method="post">
                                 <input type="hidden" name="id" value="@item.Id" />
                                 <button type="submit" class="add-to-cart-btn">

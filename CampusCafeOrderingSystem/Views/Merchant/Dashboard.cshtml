@@ -8,12 +8,7 @@
 <div class="dashboard-container">
     <div class="dashboard-header">
         <h1>Merchant Dashboard</h1>
-        <div class="date-range">
-            <input type="date" id="startDate" class="form-control">
-            <span>to</span>
-            <input type="date" id="endDate" class="form-control">
-            <button class="btn btn-primary" onclick="refreshDashboard()">Refresh</button>
-        </div>
+        
     </div>
 
     <!-- Statistics Cards -->
@@ -32,7 +27,7 @@
                 <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="stat-content">
-                <h3 id="todayRevenue">$0</h3>
+                <h3 id="todayRevenue">NZ$0</h3>
                 <p>Today's Revenue</p>
             </div>
         </div>
@@ -58,14 +53,6 @@
 
     <!-- Charts Area -->
     <div class="charts-grid">
-        <div class="chart-container">
-            <h3>Sales Trend</h3>
-            <canvas id="salesChart"></canvas>
-        </div>
-        <div class="chart-container">
-            <h3>Popular Items</h3>
-            <canvas id="popularItemsChart"></canvas>
-        </div>
     </div>
 
     <!-- Recent Orders -->
@@ -109,11 +96,7 @@
     border: 1px solid #e0e0e0;
 }
 
-.date-range {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+
 
 .stats-grid {
     display: grid;
@@ -172,18 +155,17 @@
     margin-bottom: 30px;
 }
 
-.chart-container {
+.charts-grid h3 {
+    margin: 0 0 10px;
+}
+
+.charts-grid canvas {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     border: 1px solid #e0e0e0;
-    transition: transform 0.3s ease;
-}
-
-.chart-container:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
 .recent-orders {
@@ -217,63 +199,62 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDashboard() {
-    // Set default date range
-    const today = new Date();
-    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    
-    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
-    document.getElementById('endDate').value = today.toISOString().split('T')[0];
-    
     // Initialize charts
     initializeCharts();
 }
 
 function initializeCharts() {
-    // Sales trend chart
-    const salesCtx = document.getElementById('salesChart').getContext('2d');
-    salesChart = new Chart(salesCtx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Sales',
-                data: [],
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
+    // Sales trend chart (guard if canvas missing)
+    const salesCanvas = document.getElementById('salesChart');
+    if (salesCanvas) {
+        const salesCtx = salesCanvas.getContext('2d');
+        salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Sales',
+                    data: [],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
+        });
+    }
     
-    // Popular items chart
-    const popularCtx = document.getElementById('popularItemsChart').getContext('2d');
-    popularItemsChart = new Chart(popularCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF'
-                ]
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+    // Popular items chart (guard if canvas missing)
+    const popularCanvas = document.getElementById('popularItemsChart');
+    if (popularCanvas) {
+        const popularCtx = popularCanvas.getContext('2d');
+        popularItemsChart = new Chart(popularCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    }
 }
 
 async function loadDashboardData() {
@@ -301,7 +282,7 @@ async function loadStats() {
         const payload = await response.json();
         console.log('Dashboard stats API response:', payload);
         
-        // 兼容后端两种返回：直接对象 或 ApiResponse<T> 包装
+        // Compatible with two backend return types: direct object or ApiResponse<T> wrapper
         const stats = (payload && typeof payload === 'object' && 'data' in payload && payload.data) ? payload.data : payload;
         
         if (stats && typeof stats === 'object') {
@@ -311,7 +292,7 @@ async function loadStats() {
             const avgRating = Number(stats.avgRating) || 0;
             
             document.getElementById('todayOrders').textContent = todayOrders;
-            document.getElementById('todayRevenue').textContent = '$' + todayRevenue.toFixed(2);
+            document.getElementById('todayRevenue').textContent = 'NZ$' + todayRevenue.toFixed(2);
             document.getElementById('totalMenuItems').textContent = totalMenuItems;
             document.getElementById('avgRating').textContent = avgRating.toFixed(1);
         } else {
@@ -321,32 +302,34 @@ async function loadStats() {
         console.error('Error loading dashboard statistics:', error);
         // Fallback to default values if API fails
         document.getElementById('todayOrders').textContent = '0';
-        document.getElementById('todayRevenue').textContent = '$0.00';
+        document.getElementById('todayRevenue').textContent = 'NZ$0.00';
         document.getElementById('totalMenuItems').textContent = '0';
         document.getElementById('avgRating').textContent = '0.0';
     }
 }
 
 async function loadChartData() {
-    // Use fake sales data
+    // Use fake sales data (only update if chart exists)
     const fakeSalesData = {
         labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         data: [320, 450, 380, 520, 680, 890, 750]
     };
+    if (salesChart) {
+        salesChart.data.labels = fakeSalesData.labels;
+        salesChart.data.datasets[0].data = fakeSalesData.data;
+        salesChart.update();
+    }
     
-    salesChart.data.labels = fakeSalesData.labels;
-    salesChart.data.datasets[0].data = fakeSalesData.data;
-    salesChart.update();
-    
-    // Use fake popular items data
+    // Use fake popular items data (only update if chart exists)
     const fakePopularData = {
         labels: ['Cappuccino', 'Latte', 'Americano', 'Espresso', 'Mocha'],
         data: [35, 28, 22, 18, 15]
     };
-    
-    popularItemsChart.data.labels = fakePopularData.labels;
-    popularItemsChart.data.datasets[0].data = fakePopularData.data;
-    popularItemsChart.update();
+    if (popularItemsChart) {
+        popularItemsChart.data.labels = fakePopularData.labels;
+        popularItemsChart.data.datasets[0].data = fakePopularData.data;
+        popularItemsChart.update();
+    }
 }
 
 async function loadRecentOrders() {
@@ -365,31 +348,34 @@ async function loadRecentOrders() {
         const payload = await response.json();
         console.log('Recent orders API response:', payload);
         
-        // 兼容 ApiResponse<PagedResult<OrderResponseDto>> 与其他形态
-        const data = (payload && typeof payload === 'object' && 'data' in payload) ? payload.data : payload;
+        // Compatible with both direct object and ApiResponse<T> wrapper returns from backend
+        const ordersData = payload.data || payload;
+        
+        // Compatible with ApiResponse<PagedResult<OrderResponseDto>> and other formats
         let orders = [];
-        if (data && Array.isArray(data.items)) {
-            orders = data.items;
-        } else if (Array.isArray(data?.orders)) {
-            orders = data.orders;
-        } else if (Array.isArray(payload?.items)) {
-            orders = payload.items;
+        if (ordersData && Array.isArray(ordersData.items)) {
+            orders = ordersData.items;
+        } else if (ordersData && Array.isArray(ordersData.data)) {
+            orders = ordersData.data;
+        } else if (Array.isArray(ordersData)) {
+            orders = ordersData;
         }
         
         const tbody = document.getElementById('recentOrdersTable');
-        if (orders.length > 0) {
+        
+        // Show placeholder when no orders
+        if (!orders || orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders available</td></tr>';
+        } else {
             tbody.innerHTML = orders.map(order => `
                 <tr>
                     <td>${order.orderNumber}</td>
                     <td>${order.customerName}</td>
-                    <td>$${Number(order.totalAmount || 0).toFixed(2)}</td>
+                    <td>NZ$${Number(order.totalAmount || 0).toFixed(2)}</td>
                     <td><span class="badge ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span></td>
                     <td>${new Date(order.orderDate).toLocaleTimeString()}</td>
                 </tr>
             `).join('');
-        } else {
-            // 无订单时显示占位
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders available</td></tr>';
         }
     } catch (error) {
         console.error('Error loading recent orders:', error);
@@ -405,9 +391,7 @@ function refreshDashboard() {
 // API call functions
 async function fetchSalesData() {
     try {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        const response = await fetch(`/api/MerchantApi/sales-data?startDate=${startDate}&endDate=${endDate}`);
+        const response = await fetch('/api/MerchantApi/sales-data');
         if (response.ok) {
             return await response.json();
         }

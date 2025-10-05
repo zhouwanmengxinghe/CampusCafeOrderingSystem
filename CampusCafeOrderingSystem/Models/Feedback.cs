@@ -12,8 +12,8 @@ namespace CampusCafeOrderingSystem.Models
 
         public IdentityUser? User { get; set; }
 
-        // 新增：便于展示/联系
-        public string? UserEmail { get; set; }   // ★ 新增
+        // New: for display/contact purposes
+        public string? UserEmail { get; set; }   // ★ New
 
         [Required]
         [StringLength(100)]
@@ -26,12 +26,12 @@ namespace CampusCafeOrderingSystem.Models
         [Required]
         public FeedbackCategory Category { get; set; }
 
-        // 评分（保留）
+        // Rating (retained)
         [Range(1, 5)]
         public int? Rating { get; set; }
 
-        // 新增：优先级
-        public FeedbackPriority Priority { get; set; } = FeedbackPriority.Medium; // ★ 新增
+        // New: priority
+        public FeedbackPriority Priority { get; set; } = FeedbackPriority.Medium; // ★ New
 
         public FeedbackStatus Status { get; set; } = FeedbackStatus.Open;
 
@@ -55,7 +55,7 @@ namespace CampusCafeOrderingSystem.Models
         TechnicalSupport = 5,
         Suggestion = 6,
         Complaint = 7,
-        Contact = 8 // 可选：用于“Contact”表单
+        Contact = 8 // Optional: for "Contact" form
     }
 
     public enum FeedbackStatus
@@ -66,7 +66,7 @@ namespace CampusCafeOrderingSystem.Models
         Closed = 3
     }
 
-    // ★ 新增
+    // ★ New
     public enum FeedbackPriority
     {
         Low = 0,

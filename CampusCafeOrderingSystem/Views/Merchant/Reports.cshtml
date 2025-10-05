@@ -61,7 +61,7 @@
                 <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="card-content">
-                <h3 id="totalRevenue">$0</h3>
+                <h3 id="totalRevenue">$0.00</h3>
                 <p>Total Revenue</p>
                 <small class="text-muted">Last updated: <span id="lastUpdate">Never</span></small>
             </div>
@@ -81,7 +81,7 @@
                 <i class="fas fa-calculator"></i>
             </div>
             <div class="card-content">
-                <h3 id="avgOrderValue">$0</h3>
+                <h3 id="avgOrderValue">$0.00</h3>
                 <p>Average Order Value</p>
                 <small class="text-muted">Per order</small>
             </div>
@@ -91,7 +91,7 @@
                 <i class="fas fa-trophy"></i>
             </div>
             <div class="card-content">
-                <h3 id="topProduct">-</h3>
+                <h3 id="topProduct">No sales</h3>
                 <p>Best Selling Item</p>
                 <small class="text-muted">Most popular</small>
             </div>
@@ -651,18 +651,31 @@ async function generateReport() {
     }
 }
 
-// Load report data (using sample data for now)
+// Load report data from API
 async function loadReportData(startDate, endDate) {
     try {
         console.log('Loading report data...');
         
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const params = new URLSearchParams({
+            startDate: startDate,
+            endDate: endDate
+        });
         
-        // Generate comprehensive sample data
-        reportData = generateSampleReportData(startDate, endDate);
+        const response = await fetch(`/api/MerchantApi/business-report?${params}`, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         
-        console.log('Report data loaded successfully');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // Handle wrapped API response format
+        reportData = data.data || data;
+        
+        console.log('Report data loaded successfully:', reportData);
         
     } catch (error) {
         console.error('Failed to load report data:', error);
@@ -670,106 +683,23 @@ async function loadReportData(startDate, endDate) {
     }
 }
 
-// Generate comprehensive sample data
-function generateSampleReportData(startDate, endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    const maxDays = Math.min(days, 30);
-    
-    console.log('Generating sample data for', maxDays, 'days');
-    
-    // Generate daily data
-    const dailyData = [];
-    for (let i = 0; i < maxDays; i++) {
-        const currentDate = new Date(start);
-        currentDate.setDate(start.getDate() + i);
-        
-        const orders = Math.floor(Math.random() * 50) + 20;
-        const revenue = orders * (Math.random() * 30 + 15);
-        const avgOrder = revenue / orders;
-        const growth = (Math.random() - 0.5) * 20;
-        
-        dailyData.push({
-            date: currentDate.toISOString().split('T')[0],
-            orders: orders,
-            revenue: revenue,
-            avgOrder: avgOrder,
-            growth: growth
-        });
-    }
-    
-    // Calculate totals
-    const totalOrders = dailyData.reduce((sum, day) => sum + day.orders, 0);
-    const totalRevenue = dailyData.reduce((sum, day) => sum + day.revenue, 0);
-    const avgOrderValue = totalRevenue / totalOrders;
-    
-    // Sample product data
-    const products = [
-        { name: 'Cappuccino', quantity: 156, revenue: 780 },
-        { name: 'Latte', quantity: 134, revenue: 670 },
-        { name: 'Americano', quantity: 98, revenue: 490 },
-        { name: 'Espresso', quantity: 87, revenue: 435 },
-        { name: 'Mocha', quantity: 76, revenue: 456 },
-        { name: 'Macchiato', quantity: 65, revenue: 390 },
-        { name: 'Frappuccino', quantity: 54, revenue: 324 }
-    ];
-    
-    // Calculate percentages
-    const totalProductRevenue = products.reduce((sum, p) => sum + p.revenue, 0);
-    const productRanking = products.map((product, index) => ({
-        rank: index + 1,
-        name: product.name,
-        quantity: product.quantity,
-        revenue: product.revenue,
-        percentage: ((product.revenue / totalProductRevenue) * 100).toFixed(1)
-    }));
-    
-    // Sample category data
-    const categories = [
-        { name: 'Coffee', revenue: 2500, percentage: 45.5 },
-        { name: 'Tea', revenue: 1200, percentage: 21.8 },
-        { name: 'Pastries', revenue: 800, percentage: 14.5 },
-        { name: 'Sandwiches', revenue: 600, percentage: 10.9 },
-        { name: 'Desserts', revenue: 400, percentage: 7.3 }
-    ];
-    
-    // Sample hourly data
-    const hourlyData = [
-        { hour: '08:00-09:00', orders: 45, revenue: 225, percentage: 15.2 },
-        { hour: '09:00-10:00', orders: 38, revenue: 190, percentage: 12.8 },
-        { hour: '10:00-11:00', orders: 42, revenue: 210, percentage: 14.2 },
-        { hour: '11:00-12:00', orders: 35, revenue: 175, percentage: 11.8 },
-        { hour: '12:00-13:00', orders: 55, revenue: 275, percentage: 18.6 },
-        { hour: '13:00-14:00', orders: 48, revenue: 240, percentage: 16.2 },
-        { hour: '14:00-15:00', orders: 32, revenue: 160, percentage: 10.8 }
-    ];
-    
-    return {
-        overview: {
-            totalRevenue: totalRevenue,
-            totalOrders: totalOrders,
-            avgOrderValue: avgOrderValue,
-            topProduct: productRanking[0].name
-        },
-        dailyData: dailyData,
-        productRanking: productRanking,
-        categories: categories,
-        hourlyAnalysis: hourlyData
-    };
-}
 
 // Update overview cards
 function updateOverviewCards() {
     console.log('Updating overview cards...');
     
     try {
+        if (!reportData || !reportData.overview) {
+            console.warn('No report data available for overview cards');
+            return;
+        }
+        
         const overview = reportData.overview;
         
-        document.getElementById('totalRevenue').textContent = '$' + overview.totalRevenue.toFixed(2);
-        document.getElementById('totalOrders').textContent = overview.totalOrders;
-        document.getElementById('avgOrderValue').textContent = '$' + overview.avgOrderValue.toFixed(2);
-        document.getElementById('topProduct').textContent = overview.topProduct;
+        document.getElementById('totalRevenue').textContent = '$' + (overview.totalRevenue || 0).toFixed(2);
+        document.getElementById('totalOrders').textContent = overview.totalOrders || 0;
+        document.getElementById('avgOrderValue').textContent = '$' + (overview.avgOrderValue || 0).toFixed(2);
+        document.getElementById('topProduct').textContent = overview.topProduct || 'No sales';
         
         console.log('Overview cards updated successfully');
     } catch (error) {
@@ -777,34 +707,87 @@ function updateOverviewCards() {
     }
 }
 
-// Update all charts
-function updateCharts() {
+// Update all charts with real data
+async function updateCharts() {
     console.log('Updating charts...');
     
     try {
-        // Use fake sales data (same as Dashboard)
-        const fakeSalesData = {
-            labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-            data: [320, 450, 380, 520, 680, 890, 750]
-        };
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
         
-        salesChart.data.labels = fakeSalesData.labels;
-        salesChart.data.datasets[0].data = fakeSalesData.data;
-        salesChart.update();
+        // Update sales trend chart
+        await updateSalesChart(startDate, endDate);
         
-        // Use fake popular items data (same as Dashboard)
-        const fakePopularData = {
-            labels: ['Cappuccino', 'Latte', 'Americano', 'Espresso', 'Mocha'],
-            data: [35, 28, 22, 18, 15]
-        };
-        
-        popularItemsChart.data.labels = fakePopularData.labels;
-        popularItemsChart.data.datasets[0].data = fakePopularData.data;
-        popularItemsChart.update();
+        // Update popular items chart
+        await updatePopularItemsChart(startDate, endDate);
         
         console.log('Charts updated successfully');
     } catch (error) {
         console.error('Failed to update charts:', error);
+    }
+}
+
+// Update sales trend chart
+async function updateSalesChart(startDate, endDate) {
+    try {
+        const params = new URLSearchParams({
+            startDate: startDate,
+            endDate: endDate
+        });
+        
+        const response = await fetch(`/api/MerchantApi/sales-trend?${params}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const salesData = data.data || data;
+        
+        // Format dates for display
+        const formattedLabels = salesData.labels.map(date => {
+            const d = new Date(date);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        
+        salesChart.data.labels = formattedLabels;
+        salesChart.data.datasets[0].data = salesData.data;
+        salesChart.update();
+        
+    } catch (error) {
+        console.error('Failed to update sales chart:', error);
+        // Use empty data as fallback
+        salesChart.data.labels = [];
+        salesChart.data.datasets[0].data = [];
+        salesChart.update();
+    }
+}
+
+// Update popular items chart
+async function updatePopularItemsChart(startDate, endDate) {
+    try {
+        const params = new URLSearchParams({
+            startDate: startDate,
+            endDate: endDate
+        });
+        
+        const response = await fetch(`/api/MerchantApi/popular-items?${params}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const popularData = data.data || data;
+        
+        popularItemsChart.data.labels = popularData.labels;
+        popularItemsChart.data.datasets[0].data = popularData.data;
+        popularItemsChart.update();
+        
+    } catch (error) {
+        console.error('Failed to update popular items chart:', error);
+        // Use empty data as fallback
+        popularItemsChart.data.labels = [];
+        popularItemsChart.data.datasets[0].data = [];
+        popularItemsChart.update();
     }
 }
 
@@ -857,44 +840,54 @@ function exportToExcel() {
     console.log('Exporting to Excel...');
     
     try {
+        // Check if reportData exists and has required properties
+        if (!reportData || !reportData.overview) {
+            alert('No report data available. Please generate a report first.');
+            return;
+        }
+        
         const wb = XLSX.utils.book_new();
         
-        // Create overview sheet
+        // Create overview sheet with safe property access
+        const overview = reportData.overview;
         const overviewData = [
             ['Metric', 'Value'],
-            ['Total Revenue', '$' + reportData.overview.totalRevenue.toFixed(2)],
-            ['Total Orders', reportData.overview.totalOrders],
-            ['Average Order Value', '$' + reportData.overview.avgOrderValue.toFixed(2)],
-            ['Top Product', reportData.overview.topProduct]
+            ['Total Revenue', '$' + (overview.totalRevenue || 0).toFixed(2)],
+            ['Total Orders', overview.totalOrders || 0],
+            ['Average Order Value', '$' + (overview.avgOrderValue || 0).toFixed(2)],
+            ['Top Product', overview.topProduct || 'No sales']
         ];
         const overviewWS = XLSX.utils.aoa_to_sheet(overviewData);
         XLSX.utils.book_append_sheet(wb, overviewWS, 'Overview');
         
-        // Create daily data sheet
-        const dailyData = [['Date', 'Orders', 'Revenue', 'Avg Order Value', 'Growth Rate']];
-        reportData.dailyData.forEach(day => {
-            dailyData.push([
-                day.date,
-                day.orders,
-                day.revenue.toFixed(2),
-                day.avgOrder.toFixed(2),
-                day.growth.toFixed(1) + '%'
-            ]);
-        });
+        // Create daily data sheet with safe property access
+        const dailyData = [['Date', 'Orders', 'Revenue', 'Avg Order Value']];
+        if (reportData.dailyData && Array.isArray(reportData.dailyData)) {
+            reportData.dailyData.forEach(day => {
+                dailyData.push([
+                    day.date || '',
+                    day.orders || 0,
+                    (day.revenue || 0).toFixed(2),
+                    (day.avgOrder || 0).toFixed(2)
+                ]);
+            });
+        }
         const dailyWS = XLSX.utils.aoa_to_sheet(dailyData);
         XLSX.utils.book_append_sheet(wb, dailyWS, 'Daily Data');
         
-        // Create product ranking sheet
+        // Create product ranking sheet with safe property access
         const productData = [['Rank', 'Product Name', 'Quantity Sold', 'Sales Amount', 'Percentage']];
-        reportData.productRanking.forEach(product => {
-            productData.push([
-                product.rank,
-                product.name,
-                product.quantity,
-                product.revenue.toFixed(2),
-                product.percentage + '%'
-            ]);
-        });
+        if (reportData.productRanking && Array.isArray(reportData.productRanking)) {
+            reportData.productRanking.forEach(product => {
+                productData.push([
+                    product.rank || 0,
+                    product.name || '',
+                    product.quantity || 0,
+                    (product.revenue || 0).toFixed(2),
+                    (product.percentage || '0.0') + '%'
+                ]);
+            });
+        }
         const productWS = XLSX.utils.aoa_to_sheet(productData);
         XLSX.utils.book_append_sheet(wb, productWS, 'Product Ranking');
         
@@ -916,6 +909,12 @@ function exportToPDF() {
     console.log('Exporting to PDF...');
     
     try {
+        // Check if reportData exists and has required properties
+        if (!reportData || !reportData.overview) {
+            alert('No report data available. Please generate a report first.');
+            return;
+        }
+        
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
@@ -929,31 +928,39 @@ function exportToPDF() {
         doc.setFontSize(12);
         doc.text(`Period: ${startDate} to ${endDate}`, 20, 45);
         
-        // Add overview data
+        // Add overview data with safe property access
         doc.setFontSize(16);
         doc.text('Overview', 20, 65);
         
         doc.setFontSize(12);
         let yPos = 80;
-        doc.text(`Total Revenue: $${reportData.overview.totalRevenue.toFixed(2)}`, 20, yPos);
+        const overview = reportData.overview;
+        doc.text(`Total Revenue: $${(overview.totalRevenue || 0).toFixed(2)}`, 20, yPos);
         yPos += 10;
-        doc.text(`Total Orders: ${reportData.overview.totalOrders}`, 20, yPos);
+        doc.text(`Total Orders: ${overview.totalOrders || 0}`, 20, yPos);
         yPos += 10;
-        doc.text(`Average Order Value: $${reportData.overview.avgOrderValue.toFixed(2)}`, 20, yPos);
+        doc.text(`Average Order Value: $${(overview.avgOrderValue || 0).toFixed(2)}`, 20, yPos);
         yPos += 10;
-        doc.text(`Top Product: ${reportData.overview.topProduct}`, 20, yPos);
+        doc.text(`Top Product: ${overview.topProduct || 'No sales'}`, 20, yPos);
         
-        // Add product ranking
+        // Add product ranking with safe property access
         yPos += 30;
         doc.setFontSize(16);
         doc.text('Top Products', 20, yPos);
         
         yPos += 15;
         doc.setFontSize(10);
-        reportData.productRanking.slice(0, 5).forEach((product, index) => {
-            doc.text(`${index + 1}. ${product.name} - ${product.quantity} units - $${product.revenue.toFixed(2)}`, 20, yPos);
-            yPos += 8;
-        });
+        if (reportData.productRanking && Array.isArray(reportData.productRanking)) {
+            reportData.productRanking.slice(0, 5).forEach((product, index) => {
+                const name = product.name || 'Unknown';
+                const quantity = product.quantity || 0;
+                const revenue = (product.revenue || 0).toFixed(2);
+                doc.text(`${index + 1}. ${name} - ${quantity} units - $${revenue}`, 20, yPos);
+                yPos += 8;
+            });
+        } else {
+            doc.text('No product data available', 20, yPos);
+        }
         
         // Save PDF
         const fileName = `Business_Report_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -968,23 +975,11 @@ function exportToPDF() {
     }
 }
 
-// Auto-refresh every 5 minutes (disabled to prevent table growth)
-// setInterval(() => {
-//     console.log('Auto-refreshing report data...');
-//     generateReport();
-// }, 5 * 60 * 1000);
 
 // Manual refresh function
 function refreshData() {
     console.log('Manually refreshing report data...');
-    showLoading(true);
-    
-    // Simulate loading delay
-    setTimeout(() => {
-        generateReport();
-        showLoading(false);
-        updateLastUpdateTime();
-    }, 1000);
+    generateReport();
 }
 
 console.log('Reports page script loaded successfully');

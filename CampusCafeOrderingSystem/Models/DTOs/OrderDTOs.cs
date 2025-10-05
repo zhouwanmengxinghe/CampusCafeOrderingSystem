@@ -3,64 +3,64 @@ using System.ComponentModel.DataAnnotations;
 namespace CampusCafeOrderingSystem.Models.DTOs
 {
     /// <summary>
-    /// 创建订单请求DTO
+    /// Create order request DTO
     /// </summary>
     public class CreateOrderRequest
     {
-        [Required(ErrorMessage = "订单项不能为空")]
-        [MinLength(1, ErrorMessage = "至少需要一个订单项")]
+        [Required(ErrorMessage = "Order items cannot be empty")]
+        [MinLength(1, ErrorMessage = "At least one order item is required")]
         public List<CreateOrderItemRequest> Items { get; set; } = new List<CreateOrderItemRequest>();
 
-        [Required(ErrorMessage = "配送方式不能为空")]
+        [Required(ErrorMessage = "Delivery type cannot be empty")]
         public string DeliveryType { get; set; } = string.Empty;
 
-        [MaxLength(500, ErrorMessage = "配送地址不能超过500个字符")]
+        [MaxLength(500, ErrorMessage = "Delivery address cannot exceed 500 characters")]
         public string? DeliveryAddress { get; set; }
 
-        [Required(ErrorMessage = "支付方式不能为空")]
+        [Required(ErrorMessage = "Payment method cannot be empty")]
         public string PaymentMethod { get; set; } = string.Empty;
 
-        [MaxLength(1000, ErrorMessage = "备注不能超过1000个字符")]
+        [MaxLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters")]
         public string? Notes { get; set; }
 
-        [Required(ErrorMessage = "商家邮箱不能为空")]
-        [EmailAddress(ErrorMessage = "商家邮箱格式不正确")]
+        [Required(ErrorMessage = "Vendor email cannot be empty")]
+        [EmailAddress(ErrorMessage = "Vendor email format is incorrect")]
         public string VendorEmail { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// 创建订单项请求DTO
+    /// Create order item request DTO
     /// </summary>
     public class CreateOrderItemRequest
     {
-        [Required(ErrorMessage = "菜品ID不能为空")]
-        [Range(1, int.MaxValue, ErrorMessage = "菜品ID必须大于0")]
+        [Required(ErrorMessage = "Menu item ID cannot be empty")]
+        [Range(1, int.MaxValue, ErrorMessage = "Menu item ID must be greater than 0")]
         public int MenuItemId { get; set; }
 
-        [Required(ErrorMessage = "数量不能为空")]
-        [Range(1, 100, ErrorMessage = "数量必须在1-100之间")]
+        [Required(ErrorMessage = "Quantity cannot be empty")]
+        [Range(1, 100, ErrorMessage = "Quantity must be between 1-100")]
         public int Quantity { get; set; }
 
-        [MaxLength(500, ErrorMessage = "特殊要求不能超过500个字符")]
+        [MaxLength(500, ErrorMessage = "Special instructions cannot exceed 500 characters")]
         public string? SpecialInstructions { get; set; }
     }
 
     /// <summary>
-    /// 更新订单状态请求DTO
+    /// Update order status request DTO
     /// </summary>
     public class UpdateOrderStatusRequest
     {
-        [Required(ErrorMessage = "订单状态不能为空")]
+        [Required(ErrorMessage = "Order status cannot be empty")]
         public string Status { get; set; } = string.Empty;
 
         public DateTime? EstimatedCompletionTime { get; set; }
 
-        [MaxLength(500, ErrorMessage = "备注不能超过500个字符")]
+        [MaxLength(500, ErrorMessage = "Notes cannot exceed 500 characters")]
         public string? Notes { get; set; }
     }
 
     /// <summary>
-    /// 订单响应DTO
+    /// Order response DTO
     /// </summary>
     public class OrderResponse
     {
@@ -80,7 +80,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单项响应DTO
+    /// Order item response DTO
     /// </summary>
     public class OrderItemResponse
     {
@@ -94,7 +94,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单统计响应DTO
+    /// Order statistics response DTO
     /// </summary>
     public class OrderStatsResponse
     {
@@ -110,14 +110,14 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单查询参数DTO
+    /// Order query parameters DTO
     /// </summary>
     public class OrderQueryParams
     {
-        [Range(1, int.MaxValue, ErrorMessage = "页码必须大于0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Page number must be greater than 0")]
         public int Page { get; set; } = 1;
 
-        [Range(1, 100, ErrorMessage = "每页数量必须在1-100之间")]
+        [Range(1, 100, ErrorMessage = "Page size must be between 1-100")]
         public int PageSize { get; set; } = 10;
 
         public string? Status { get; set; }
@@ -129,14 +129,14 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单查询DTO
+    /// Order query DTO
     /// </summary>
     public class OrderQueryDto
     {
-        [Range(1, int.MaxValue, ErrorMessage = "页码必须大于0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Page number must be greater than 0")]
         public int Page { get; set; } = 1;
 
-        [Range(1, 100, ErrorMessage = "每页数量必须在1-100之间")]
+        [Range(1, 100, ErrorMessage = "Page size must be between 1-100")]
         public int PageSize { get; set; } = 10;
 
         public string? Search { get; set; }
@@ -149,7 +149,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单响应DTO
+    /// Order response DTO
     /// </summary>
     public class OrderResponseDto
     {
@@ -169,7 +169,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单项响应DTO
+    /// Order item response DTO
     /// </summary>
     public class OrderItemResponseDto
     {
@@ -183,7 +183,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 订单统计DTO
+    /// Order statistics DTO
     /// </summary>
     public class OrderStatsDto
     {
@@ -199,16 +199,16 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 更新订单状态DTO
+    /// Update order status DTO
     /// </summary>
     public class UpdateOrderStatusDto
     {
-        [Required(ErrorMessage = "订单状态不能为空")]
+        [Required(ErrorMessage = "Order status cannot be empty")]
         public string Status { get; set; } = string.Empty;
 
         public DateTime? EstimatedCompletionTime { get; set; }
 
-        [MaxLength(500, ErrorMessage = "备注不能超过500个字符")]
+        [MaxLength(500, ErrorMessage = "Notes cannot exceed 500 characters")]
         public string? Notes { get; set; }
     }
 }

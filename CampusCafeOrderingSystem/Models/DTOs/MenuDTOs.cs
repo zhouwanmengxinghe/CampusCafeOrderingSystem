@@ -70,7 +70,7 @@ namespace CampusCafeOrderingSystem.Models.DTOs
     }
 
     /// <summary>
-    /// 菜品响应DTO
+    /// Menu item response DTO
     /// </summary>
     public class MenuItemResponse
     {

@@ -47,10 +47,18 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 
                 if (!string.IsNullOrEmpty(status))
                 {
-                    if (status == "pending")
-                        query = query.Where(r => r.Status == ReviewStatus.Pending);
-                    else if (status == "replied")
-                        query = query.Where(r => r.Status == ReviewStatus.Replied);
+                    switch (status.ToLower())
+                    {
+                        case "pending":
+                            query = query.Where(r => r.Status == ReviewStatus.Pending);
+                            break;
+                        case "replied":
+                            query = query.Where(r => r.Status == ReviewStatus.Replied);
+                            break;
+                        case "hidden":
+                            query = query.Where(r => r.Status == ReviewStatus.Hidden);
+                            break;
+                    }
                 }
                 
                 if (!string.IsNullOrEmpty(product))
@@ -73,7 +81,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     .Select(r => new ReviewDto
                     {
                         Id = r.Id,
-                        CustomerName = r.User.UserName ?? "匿名用户",
+                        CustomerName = r.User.UserName ?? "Anonymous",
                         CustomerAvatar = r.User.UserName != null ? r.User.UserName.Substring(0, 1).ToUpper() : "A",
                         Rating = r.Rating,
                         Product = r.MenuItem.Name,
@@ -85,9 +93,11 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                         {
                             Content = r.MerchantReply,
                             Date = r.RepliedAt ?? DateTime.Now,
-                            Author = "店长"
+                            Author = "Manager"
                         } : null,
-                        Status = r.Status == ReviewStatus.Pending ? "pending" : "replied"
+                        Status = r.Status == ReviewStatus.Pending ? "pending" :
+                                r.Status == ReviewStatus.Replied ? "replied" :
+                                r.Status == ReviewStatus.Hidden ? "hidden" : "pending"
                     })
                     .ToListAsync();
                 
@@ -101,7 +111,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "获取评价列表失败", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to get review list", details = ex.Message });
             }
         }
         
@@ -143,7 +153,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "获取评价统计失败", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to get review statistics", details = ex.Message });
             }
         }
         
@@ -156,7 +166,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { error = "用户未登录" });
+                    return Unauthorized(new { error = "User not logged in" });
                 }
                 
                 // Verify the order belongs to the user
@@ -166,12 +176,12 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     
                 if (order == null)
                 {
-                    return NotFound(new { error = "订单不存在或无权限" });
+                    return NotFound(new { error = "Order not found or no permission" });
                 }
                 
                 if (order.Status != OrderStatus.Completed)
                 {
-                    return BadRequest(new { error = "只能对已完成的订单进行评价" });
+                    return BadRequest(new { error = "Only completed orders can be reviewed" });
                 }
                 
                 // Check if reviews already exist for this order
@@ -181,7 +191,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     
                 if (existingReviews.Any())
                 {
-                    return BadRequest(new { error = "该订单已经评价过了" });
+                    return BadRequest(new { error = "This order has already been reviewed" });
                 }
                 
                 // Create reviews for each item
@@ -226,7 +236,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                             var reviewData = new
                             {
                                 id = review.Id,
-                                customerName = order.User?.UserName ?? "匿名用户",
+                                customerName = order.User?.UserName ?? "Anonymous",
                                 rating = review.Rating,
                                 product = menuItem.Name,
                                 comment = review.Comment,
@@ -241,11 +251,11 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     }
                 }
                 
-                return Ok(new { message = "评价提交成功", reviewCount = reviews.Count });
+                return Ok(new { message = "Review submitted successfully", reviewCount = reviews.Count });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "提交评价失败", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to submit review", details = ex.Message });
             }
         }
         
@@ -261,7 +271,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                     
                 if (review == null)
                 {
-                    return NotFound(new { error = "评价不存在" });
+                    return NotFound(new { error = "Review not found" });
                 }
                 
                 review.MerchantReply = request.ReplyContent;
@@ -282,11 +292,11 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 await _hubContext.Clients.Group($"Customer_{review.UserId}")
                     .SendAsync("ReviewReply", replyData);
                 
-                return Ok(new { message = "回复成功" });
+                return Ok(new { message = "Reply successful" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "回复失败", details = ex.Message });
+                return StatusCode(500, new { error = "Reply failed", details = ex.Message });
             }
         }
         
@@ -298,17 +308,17 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var review = await _context.Reviews.FindAsync(id);
                 if (review == null)
                 {
-                    return NotFound(new { error = "评价不存在" });
+                    return NotFound(new { error = "Review not found" });
                 }
                 
                 review.Status = ReviewStatus.Hidden;
                 await _context.SaveChangesAsync();
                 
-                return Ok(new { message = "评价已隐藏" });
+                return Ok(new { message = "Review hidden" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "删除失败", details = ex.Message });
+                return StatusCode(500, new { error = "Delete failed", details = ex.Message });
             }
         }
     }

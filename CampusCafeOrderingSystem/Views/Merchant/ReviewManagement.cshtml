@@ -4,20 +4,23 @@
     ViewData["Title"] = "Review Management";
 }
 
+@* Add anti-forgery token for API calls *@
+@Html.AntiForgeryToken()
+
 <div class="review-management-container">
     <div class="page-header">
         <h1>Review Management</h1>
         <div class="header-stats">
             <span class="stat-item">
-                <strong id="avgRating">4.5</strong>
+                <strong id="avgRating">0.0</strong>
                 <small>Average Rating</small>
             </span>
             <span class="stat-item">
-                <strong id="totalReviews">128</strong>
+                <strong id="totalReviews">0</strong>
                 <small>Total Reviews</small>
             </span>
             <span class="stat-item">
-                <strong id="pendingReviews">5</strong>
+                <strong id="pendingReviews">0</strong>
                 <small>Pending Replies</small>
             </span>
         </div>
@@ -27,15 +30,15 @@
     <div class="rating-overview">
         <div class="rating-summary">
             <div class="overall-rating">
-                <div class="rating-number">4.5</div>
+                <div class="rating-number">0.0</div>
                 <div class="rating-stars">
-                    <span class="star filled">★</span>
-                    <span class="star filled">★</span>
-                    <span class="star filled">★</span>
-                    <span class="star filled">★</span>
-                    <span class="star half">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
-                <div class="rating-count">Based on 128 reviews</div>
+                <div class="rating-count">Based on 0 reviews</div>
             </div>
         </div>
         
@@ -43,37 +46,37 @@
             <div class="rating-bar">
                 <span class="rating-label">5 Stars</span>
                 <div class="bar-container">
-                    <div class="bar" style="width: 65%"></div>
+                    <div class="bar" style="width: 0%"></div>
                 </div>
-                <span class="rating-count">83</span>
+                <span class="rating-count">0</span>
             </div>
             <div class="rating-bar">
                 <span class="rating-label">4 Stars</span>
                 <div class="bar-container">
-                    <div class="bar" style="width: 20%"></div>
+                    <div class="bar" style="width: 0%"></div>
                 </div>
-                <span class="rating-count">26</span>
+                <span class="rating-count">0</span>
             </div>
             <div class="rating-bar">
                 <span class="rating-label">3 Stars</span>
                 <div class="bar-container">
-                    <div class="bar" style="width: 10%"></div>
+                    <div class="bar" style="width: 0%"></div>
                 </div>
-                <span class="rating-count">13</span>
+                <span class="rating-count">0</span>
             </div>
             <div class="rating-bar">
                 <span class="rating-label">2 Stars</span>
                 <div class="bar-container">
-                    <div class="bar" style="width: 3%"></div>
+                    <div class="bar" style="width: 0%"></div>
                 </div>
-                <span class="rating-count">4</span>
+                <span class="rating-count">0</span>
             </div>
             <div class="rating-bar">
                 <span class="rating-label">1 Star</span>
                 <div class="bar-container">
-                    <div class="bar" style="width: 2%"></div>
+                    <div class="bar" style="width: 0%"></div>
                 </div>
-                <span class="rating-count">2</span>
+                <span class="rating-count">0</span>
             </div>
         </div>
     </div>
@@ -97,16 +100,13 @@
                 <option value="">All Status</option>
                 <option value="replied">Replied</option>
                 <option value="pending">Pending Reply</option>
+                <option value="hidden">Hidden</option>
             </select>
         </div>
         <div class="filter-group">
             <label>Product Filter:</label>
             <select id="productFilter" class="form-select" onchange="filterReviews()">
                 <option value="">All Products</option>
-                <option value="Latte">Latte</option>
-                <option value="Americano">Americano</option>
-                <option value="Cappuccino">Cappuccino</option>
-                <option value="Tiramisu">Tiramisu</option>
             </select>
         </div>
         <div class="filter-group">
@@ -515,6 +515,11 @@
     color: #856404;
 }
 
+.status-hidden {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -590,10 +595,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadCategoriesForProductFilter() {
     try {
-        const res = await fetch('/api/MenuApi/categories', { headers: { 'Accept': 'application/json' } });
+        const res = await fetch('/api/MerchantApi/product-categories', { headers: { 'Accept': 'application/json' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        const categories = Array.isArray(json) ? json : (json?.data ?? json?.items ?? json?.categories ?? []);
+        const data = await res.json();
+        
+        // Handle wrapped API response format
+        const categories = data.data || data;
+        
         const select = document.getElementById('productFilter');
         if (!select) return;
         // Preserve current selected value if any
@@ -624,22 +632,26 @@ async function loadReviews() {
             status: currentFilter.status || 'all'
         });
         if (currentFilter.rating) params.append('rating', currentFilter.rating);
-        if (currentFilter.category) params.append('category', currentFilter.category);
+        if (currentFilter.category) params.append('product', currentFilter.category);
         
-        const response = await fetch(`/api/ReviewApi/list?${params}`);
+        const response = await fetch(`/api/MerchantApi/reviews?${params}`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         const data = await response.json();
         
-        reviews = data.reviews || [];
+        // Handle wrapped API response format
+        const actualData = data.data || data;
+        reviews = actualData.reviews || [];
         filteredReviews = [...reviews];
+        
         renderReviews();
         await loadReviewStats();
     } catch (error) {
         console.error('Error loading reviews:', error);
-        // Use mock data as fallback
-        loadMockReviews();
+        reviews = [];
+        filteredReviews = [];
+        renderReviews();
     }
 }
 
@@ -730,120 +742,48 @@ function showNewReviewNotification(reviewData) {
 
 async function loadReviewStats() {
     try {
-        const response = await fetch('/api/ReviewApi/stats');
+        const response = await fetch('/api/MerchantApi/review-stats');
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         const data = await response.json();
         
-        // Update header stats
-        document.getElementById('avgRating').textContent = data.avgRating || '0.0';
-        document.getElementById('totalReviews').textContent = data.totalReviews || '0';
-        document.getElementById('pendingReviews').textContent = data.pendingReviews || '0';
+        // Handle wrapped API response format
+        const actualData = data.data || data;
         
-        // Update rating breakdown
-        updateRatingBreakdown(data.ratingBreakdown || [0, 0, 0, 0, 0]);
+        // Update header stats
+        document.getElementById('avgRating').textContent = actualData.avgRating || '0.0';
+        document.getElementById('totalReviews').textContent = actualData.totalReviews || '0';
+        document.getElementById('pendingReviews').textContent = actualData.pendingReviews || '0';
+        
+        // Update rating breakdown (actualData.ratingBreakdown is [1star, 2star, 3star, 4star, 5star])
+        updateRatingBreakdown(actualData.ratingBreakdown || [0, 0, 0, 0, 0]);
         
         // Update overall rating display
         const overallRating = document.querySelector('.rating-number');
         const ratingStars = document.querySelector('.rating-stars');
         const ratingCount = document.querySelector('.rating-count');
         
-        if (overallRating) overallRating.textContent = data.avgRating || '0.0';
-        if (ratingStars) ratingStars.innerHTML = generateStars(Math.round(data.avgRating || 0));
-        if (ratingCount) ratingCount.textContent = `Based on ${data.totalReviews || 0} reviews`;
+        if (overallRating) overallRating.textContent = actualData.avgRating || '0.0';
+        if (ratingStars) ratingStars.innerHTML = generateStars(Math.round(actualData.avgRating || 0));
+        if (ratingCount) ratingCount.textContent = `Based on ${actualData.totalReviews || 0} reviews`;
     } catch (error) {
         console.error('Error loading review stats:', error);
+        // Use default values on error
+        document.getElementById('avgRating').textContent = '0.0';
+        document.getElementById('totalReviews').textContent = '0';
+        document.getElementById('pendingReviews').textContent = '0';
+        updateRatingBreakdown([0, 0, 0, 0, 0]);
     }
 }
 
-function loadMockReviews() {
-    // Mock review data as fallback
-    reviews = [
-        {
-            id: 1,
-            customerName: 'John Smith',
-            customerAvatar: 'Z',
-            rating: 5,
-            product: 'Latte Coffee',
-            comment: 'The coffee is very fragrant, the milk foam is delicate, and the service attitude is great! Will come again.',
-            createdAt: '2024-01-15T14:30:00',
-            images: [],
-            reply: {
-                content: 'Thank you for your positive review! We will continue to strive to provide quality coffee and service.',
-                date: '2024-01-15T16:00:00',
-                author: 'Manager'
-            },
-            status: 'replied'
-        },
-        {
-            id: 2,
-            customerName: 'Mike Johnson',
-            customerAvatar: 'L',
-            rating: 4,
-            product: 'Americano Coffee',
-            comment: 'The coffee tastes good, but it is a bit bitter. Hope you can provide more sugar packets.',
-            createdAt: '2024-01-15T13:20:00',
-            images: [],
-            reply: null,
-            status: 'pending'
-        },
-        {
-            id: 3,
-            customerName: 'David Wilson',
-            customerAvatar: 'W',
-            rating: 5,
-            product: 'Tiramisu',
-            comment: 'The dessert is exquisitely made, with rich taste layers and beautiful packaging. Highly recommended!',
-            createdAt: '2024-01-15T12:45:00',
-            images: [],
-            reply: {
-                content: 'Thank you for your recommendation! Our pastry chef will be happy to hear your praise.',
-                date: '2024-01-15T15:30:00',
-                author: 'Manager'
-            },
-            status: 'replied'
-        },
-        {
-            id: 4,
-            customerName: 'Robert Brown',
-            customerAvatar: 'Z',
-            rating: 3,
-            product: 'Cappuccino',
-            comment: 'The coffee is average, the milk foam is a bit rough, but the environment is okay.',
-            createdAt: '2024-01-15T11:15:00',
-            images: [],
-            reply: null,
-            status: 'pending'
-        },
-        {
-            id: 5,
-            customerName: 'Steven Davis',
-            customerAvatar: 'S',
-            rating: 2,
-            product: 'Latte Coffee',
-            comment: 'Waited a long time for the coffee, and the temperature was not hot enough. A bit disappointed.',
-            createdAt: '2024-01-15T10:30:00',
-            images: [],
-            reply: {
-                content: 'We are very sorry for the poor experience. We have strengthened our service speed and temperature control. Welcome to visit again.',
-                date: '2024-01-15T17:00:00',
-                author: 'Manager'
-            },
-            status: 'replied'
-        }
-    ];
-    
-    filteredReviews = [...reviews];
-    renderReviews();
-    updateStats();
-}
 
 
 
 function updateRatingBreakdown(breakdown) {
     const total = breakdown.reduce((sum, count) => sum + count, 0);
     
+    // breakdown is [1star, 2star, 3star, 4star, 5star], but UI shows 5star first
     for (let i = 0; i < 5; i++) {
         const count = breakdown[4 - i]; // Reverse order (5 stars first)
         const percentage = total > 0 ? (count / total) * 100 : 0;
@@ -913,7 +853,9 @@ function renderReviews() {
             
             <div class="review-actions">
                 <span class="status-badge status-${review.status}">
-                    ${review.status === 'replied' ? 'Replied' : 'Pending Reply'}
+                    ${review.status === 'replied' ? 'Replied' : 
+                      review.status === 'pending' ? 'Pending Reply' : 
+                      review.status === 'hidden' ? 'Hidden' : 'Unknown'}
                 </span>
                 ${review.status === 'pending' ? `
                     <button class="btn btn-sm btn-primary" onclick="showReplyModal(${review.id})">
@@ -954,15 +896,6 @@ function formatDateTime(date) {
     });
 }
 
-function updateStats() {
-    const totalReviews = reviews.length;
-    const pendingReviews = reviews.filter(r => r.status === 'pending').length;
-    const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
-    
-    document.getElementById('totalReviews').textContent = totalReviews;
-    document.getElementById('pendingReviews').textContent = pendingReviews;
-    document.getElementById('avgRating').textContent = avgRating.toFixed(1);
-}
 
 function showReplyModal(reviewId) {
     const review = reviews.find(r => r.id === reviewId);
@@ -1008,7 +941,8 @@ async function submitReply() {
         const response = await fetch(`/api/MerchantApi/reply-review/${selectedReviewId}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
             },
             body: JSON.stringify({
                 reply: replyContent
@@ -1030,7 +964,7 @@ async function submitReply() {
             }
             
             // Re-render
-            filterReviews();
+            renderReviews();
             await loadReviewStats();
             
             // Close modal
@@ -1038,7 +972,9 @@ async function submitReply() {
             
             showToast('Reply sent successfully!');
         } else {
-            alert('Reply failed: ' + (result.error || 'Unknown error'));
+            // Handle wrapped API response format for error
+            const errorMsg = result.message || result.error || 'Unknown error';
+            alert('Reply failed: ' + errorMsg);
         }
     } catch (error) {
         console.error('Reply to review error:', error);
@@ -1112,6 +1048,7 @@ function showToast(message) {
         toast.remove();
     }, 3000);
 }
+
 
 // Add CSS animation
 const style = document.createElement('style');

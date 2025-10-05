@@ -40,7 +40,7 @@ namespace CampusCafeOrderingSystem.Models
         public string? PhoneNumber { get; set; }
     public string? MobileNumber { get; set; }
     
-    // 积分相关字段
+    // Points related fields
     [Display(Name = "Use Credits")]
     public bool UseCredits { get; set; } = false;
     
@@ -51,7 +51,7 @@ namespace CampusCafeOrderingSystem.Models
     
     public decimal FinalAmount { get; set; } = 0;
     
-    // 配送相关字段
+    // Delivery related fields
     [Display(Name = "Delivery Type")]
     public DeliveryType DeliveryType { get; set; } = DeliveryType.Pickup;
     
@@ -68,7 +68,31 @@ public class ValidationResult
     public class PaymentResult
     {
         public bool IsSuccess { get; set; }
-        public bool IsSuccessful => IsSuccess; // 为了向后兼容性
+        public string Status { get; set; } = string.Empty;
+        // Points related fields
+        public int? CreditUsed { get; set; }
+        public int? CreditEarned { get; set; }
+        public int? CreditBalance { get; set; }
+        
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        
+        // Delivery related fields
+        public string? DeliveryAddress { get; set; }
+        public string? DeliveryInstructions { get; set; }
+        public DateTime? EstimatedDeliveryTime { get; set; }
+        public DateTime? ActualDeliveryTime { get; set; }
+        
+        // Navigation properties
+        public Order? Order { get; set; }
+        
+        // Calculated properties
+        public bool IsCompleted => Status == "Completed";
+        public bool IsPending => Status == "Pending";
+        public bool IsFailed => Status == "Failed";
+        public bool IsRefunded => Status == "Refunded";
+        
+        public bool IsSuccessful => IsSuccess; // For backward compatibility
         public string Message { get; set; } = string.Empty;
         public string TransactionId { get; set; } = string.Empty;
         public DateTime TransactionTime { get; set; }

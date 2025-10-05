@@ -26,7 +26,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             var vendorEmail = User.Identity?.Name;
             if (string.IsNullOrEmpty(vendorEmail))
             {
-                return ApiResponse<PagedResult<MenuItemResponseDto>>.Error("无法获取商家信息", 401);
+                return ApiResponse<PagedResult<MenuItemResponseDto>>.Error("Unable to get vendor information", 401);
             }
 
             IEnumerable<MenuItem> items;
@@ -97,19 +97,19 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var vendorEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
-                    return Unauthorized(new { message = "无法获取商家信息" });
+                    return Unauthorized(new { message = "Unable to get vendor information" });
                 }
 
                 var item = await _menuService.GetMenuItemByIdAsync(id);
                 if (item == null || item.VendorEmail != vendorEmail)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
                 return Ok(item);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "获取菜品详情失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to get menu item details", error = ex.Message });
             }
         }
 
@@ -126,7 +126,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var vendorEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
-                    return Unauthorized(new { message = "无法获取商家信息" });
+                    return Unauthorized(new { message = "Unable to get vendor information" });
                 }
 
                 var menuItem = new MenuItem
@@ -145,7 +145,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "创建菜品失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to create menu item", error = ex.Message });
             }
         }
 
@@ -162,14 +162,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var vendorEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
-                    return Unauthorized(new { message = "无法获取商家信息" });
+                    return Unauthorized(new { message = "Unable to get vendor information" });
                 }
 
-                // 先检查菜品是否属于当前商家
+                // First check if the menu item belongs to the current vendor
                 var existingItem = await _menuService.GetMenuItemByIdAsync(id);
                 if (existingItem == null || existingItem.VendorEmail != vendorEmail)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
 
                 var menuItem = new MenuItem
@@ -186,14 +186,14 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var updatedItem = await _menuService.UpdateMenuItemAsync(id, menuItem);
                 if (updatedItem == null)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
 
                 return Ok(updatedItem);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "更新菜品失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to update menu item", error = ex.Message });
             }
         }
 
@@ -205,27 +205,27 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var vendorEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
-                    return Unauthorized(new { message = "无法获取商家信息" });
+                    return Unauthorized(new { message = "Unable to get vendor information" });
                 }
 
-                // 先检查菜品是否属于当前商家
+                // First check if the menu item belongs to the current vendor
                 var existingItem = await _menuService.GetMenuItemByIdAsync(id);
                 if (existingItem == null || existingItem.VendorEmail != vendorEmail)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
 
                 var success = await _menuService.DeleteMenuItemAsync(id);
                 if (!success)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
 
-                return Ok(new { message = "菜品删除成功" });
+                return Ok(new { message = "Menu item deleted successfully" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "删除菜品失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to delete menu item", error = ex.Message });
             }
         }
 
@@ -237,27 +237,27 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var vendorEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
-                    return Unauthorized(new { message = "无法获取商家信息" });
+                    return Unauthorized(new { message = "Unable to get vendor information" });
                 }
 
-                // 先检查菜品是否属于当前商家
+                // First check if the menu item belongs to the current vendor
                 var existingItem = await _menuService.GetMenuItemByIdAsync(id);
                 if (existingItem == null || existingItem.VendorEmail != vendorEmail)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
 
                 var success = await _menuService.ToggleMenuItemStatusAsync(id);
                 if (!success)
                 {
-                    return NotFound(new { message = "菜品不存在" });
+                    return NotFound(new { message = "Menu item not found" });
                 }
 
-                return Ok(new { message = "菜品状态更新成功" });
+                return Ok(new { message = "Menu item status updated successfully" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "更新菜品状态失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to update menu item status", error = ex.Message });
             }
         }
 
@@ -269,7 +269,7 @@ namespace CampusCafeOrderingSystem.Controllers.Api
                 var vendorEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(vendorEmail))
                 {
-                    return Unauthorized(new { message = "无法获取商家信息" });
+                    return Unauthorized(new { message = "Unable to get vendor information" });
                 }
 
                 var items = await _menuService.GetMenuItemsByVendorAsync(vendorEmail);
@@ -284,29 +284,29 @@ namespace CampusCafeOrderingSystem.Controllers.Api
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "获取分类列表失败", error = ex.Message });
+                return StatusCode(500, new { message = "Failed to get category list", error = ex.Message });
             }
         }
     }
 
     public class CreateMenuItemRequest
     {
-        [Required(ErrorMessage = "菜品名称不能为空")]
-        [StringLength(100, ErrorMessage = "菜品名称不能超过100个字符")]
+        [Required(ErrorMessage = "Menu item name cannot be empty")]
+        [StringLength(100, ErrorMessage = "Menu item name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "价格不能为空")]
-        [Range(0.01, 999.99, ErrorMessage = "价格必须在0.01到999.99之间")]
+        [Required(ErrorMessage = "Price cannot be empty")]
+        [Range(0.01, 999.99, ErrorMessage = "Price must be between 0.01 and 999.99")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "分类不能为空")]
-        [StringLength(50, ErrorMessage = "分类不能超过50个字符")]
+        [Required(ErrorMessage = "Category cannot be empty")]
+        [StringLength(50, ErrorMessage = "Category cannot exceed 50 characters")]
         public string Category { get; set; } = string.Empty;
 
-        [StringLength(200, ErrorMessage = "图片URL不能超过200个字符")]
+        [StringLength(200, ErrorMessage = "Image URL cannot exceed 200 characters")]
         public string? ImageUrl { get; set; }
 
         public bool IsAvailable { get; set; } = true;
@@ -314,22 +314,22 @@ namespace CampusCafeOrderingSystem.Controllers.Api
 
     public class UpdateMenuItemRequest
     {
-        [Required(ErrorMessage = "菜品名称不能为空")]
-        [StringLength(100, ErrorMessage = "菜品名称不能超过100个字符")]
+        [Required(ErrorMessage = "Menu item name cannot be empty")]
+        [StringLength(100, ErrorMessage = "Menu item name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "价格不能为空")]
-        [Range(0.01, 999.99, ErrorMessage = "价格必须在0.01到999.99之间")]
+        [Required(ErrorMessage = "Price cannot be empty")]
+        [Range(0.01, 999.99, ErrorMessage = "Price must be between 0.01 and 999.99")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "分类不能为空")]
-        [StringLength(50, ErrorMessage = "分类不能超过50个字符")]
+        [Required(ErrorMessage = "Category cannot be empty")]
+        [StringLength(50, ErrorMessage = "Category cannot exceed 50 characters")]
         public string Category { get; set; } = string.Empty;
 
-        [StringLength(200, ErrorMessage = "图片URL不能超过200个字符")]
+        [StringLength(200, ErrorMessage = "Image URL cannot exceed 200 characters")]
         public string? ImageUrl { get; set; }
 
         public bool IsAvailable { get; set; } = true;

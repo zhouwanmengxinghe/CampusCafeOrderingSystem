@@ -1,5 +1,5 @@
-﻿/* ---------------------------
-   全局链接样式
+/* ---------------------------
+   Global Link Styles
 --------------------------- */
 a {
     color: #4CAF50;
@@ -13,7 +13,7 @@ a {
     }
 
     /* ---------------------------
-   导航栏品牌 Logo
+   Navbar Brand Logo
 --------------------------- */
     a.navbar-brand {
         white-space: normal;
@@ -24,7 +24,7 @@ a {
     }
 
 /* ---------------------------
-   按钮样式（主按钮绿色主题）
+   Button Styles (Primary Button Green Theme)
 --------------------------- */
 .btn-primary {
     color: #fff;
@@ -44,7 +44,7 @@ a {
 }
 
 /* ---------------------------
-   导航选中状态
+   Navigation Selected State
 --------------------------- */
 .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
@@ -54,7 +54,7 @@ a {
 }
 
 /* ---------------------------
-   边框与阴影
+   Borders and Shadows
 --------------------------- */
 .border-top {
     border-top: 1px solid #e5e5e5;
@@ -69,7 +69,7 @@ a {
 }
 
 /* ---------------------------
-   卡片样式
+   Card Styles
 --------------------------- */
 .card {
     border-radius: 12px;
@@ -77,7 +77,7 @@ a {
 }
 
 /* ---------------------------
-   表格样式（自适应小屏）
+   Table Styles (Responsive for Small Screens)
 --------------------------- */
 .table-responsive {
     overflow-x: auto;
@@ -92,7 +92,7 @@ a {
     }
 
 /* ---------------------------
-   页脚
+   Footer
 --------------------------- */
 footer,
 .footer {
@@ -115,7 +115,7 @@ footer,
         }
 
 /* ---------------------------
-   接受政策按钮
+   Accept Policy Button
 --------------------------- */
 button.accept-policy {
     font-size: 1rem;
@@ -123,7 +123,7 @@ button.accept-policy {
 }
 
 /* ---------------------------
-   响应式优化
+   Responsive Optimization
 --------------------------- */
 @media (max-width: 576px) {
     .navbar .nav-link {
