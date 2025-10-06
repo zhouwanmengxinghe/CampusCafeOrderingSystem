@@ -295,7 +295,7 @@
                         <div class="item-content">
                             <h3 class="item-name">@item.Name</h3>
                             <p class="item-description">@item.Description</p>
-                            <div class="item-price">$@item.Price.ToString("0.00")</div>
+                            <div class="item-price">NZ$@item.Price.ToString("0.00")</div>
                             <div class="item-vendor"><i class="fas fa-store me-1"></i> Vendor: @item.VendorEmail</div>
                             <form asp-controller="Cart" asp-action="Add" method="post">
                                 <input type="hidden" name="id" value="@item.Id" />

@@ -181,7 +181,7 @@
                         
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-success btn-lg" id="payButton" disabled>
-                                <i class="fas fa-lock"></i> Pay Now ¥@Model.TotalAmount.ToString("F2")
+                                <i class="fas fa-lock"></i> Pay Now $@Model.TotalAmount.ToString("F2")
                             </button>
                         </div>
                     </form>
@@ -204,7 +204,7 @@
                                 <br>
                                 <small class="text-muted">Quantity: @item.Quantity</small>
                             </div>
-                            <span>¥@((item.Price * item.Quantity).ToString("F2"))</span>
+                            <span>$@((item.Price * item.Quantity).ToString("F2"))</span>
                         </div>
                         <hr>
                     }
@@ -220,11 +220,11 @@
                                 </label>
                             </div>
                             <div class="credits-info mt-2">
-                                <small class="text-muted">Available Credits: <strong>¥@Model.AvailableCredits.ToString("F2")</strong></small>
+                                <small class="text-muted">Available Credits: <strong>$@Model.AvailableCredits.ToString("F2")</strong></small>
                             </div>
                             <div class="credits-input mt-2" id="creditsInput" style="display: none;">
                                 <div class="input-group input-group-sm">
-                                    <span class="input-group-text">¥</span>
+                                    <span class="input-group-text">$</span>
                                     <input type="number" class="form-control" id="creditsToUse" name="CreditsToUse" 
                                            min="0" max="@Math.Min(Model.AvailableCredits, Model.TotalAmount)" 
                                            step="0.01" placeholder="0.00">
@@ -239,17 +239,17 @@
                     
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Subtotal:</span>
-                        <span>¥@Model.TotalAmount.ToString("F2")</span>
+                        <span>$@Model.TotalAmount.ToString("F2")</span>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center mb-2" id="creditsDiscount" style="display: none;">
                         <span class="text-warning">Credits Used:</span>
-                        <span class="text-warning">-¥<span id="creditsAmount">0.00</span></span>
+                        <span class="text-warning">-$<span id="creditsAmount">0.00</span></span>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center">
                         <strong>Total:</strong>
-                        <strong class="text-success" id="finalTotal">¥@Model.TotalAmount.ToString("F2")</strong>
+                        <strong class="text-success" id="finalTotal">$@Model.TotalAmount.ToString("F2")</strong>
                     </div>
                 </div>
             </div>
@@ -533,11 +533,9 @@ $(document).ready(function() {
             $('#creditsDiscount').hide();
         }
         
-        $('#finalTotal').text('¥' + finalAmount.toFixed(2));
+        $('#finalTotal').text('NZ$' + finalAmount.toFixed(2));
         
-        // Update payment button text
-        $('#payButton').html('<i class="fas fa-lock"></i> Pay Now ¥' + finalAmount.toFixed(2));
-    }
-});
+        $('#payButton').html('<i class="fas fa-lock"></i> Pay Now NZ$' + finalAmount.toFixed(2));
+    });
 </script>
 }

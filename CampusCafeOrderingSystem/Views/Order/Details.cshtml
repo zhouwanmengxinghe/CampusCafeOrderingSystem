@@ -256,7 +256,7 @@ body {
                                 <i class="fas fa-dollar-sign text-success"></i>
                                 <div class="info-content">
                                     <strong>Total Amount</strong>
-                                    <p class="amount">¥@Model.TotalAmount.ToString("F2")</p>
+                                    <p class="amount">$@Model.TotalAmount.ToString("F2")</p>
                                 </div>
                             </div>
                         </div>
@@ -321,15 +321,15 @@ body {
                                         <td class="text-center">
                                             <span class="badge badge-secondary">@item.Quantity</span>
                                         </td>
-                                        <td class="text-end">¥@item.UnitPrice.ToString("F2")</td>
-                                        <td class="text-end font-weight-bold">¥@item.TotalPrice.ToString("F2")</td>
+                                        <td class="text-end">$@item.UnitPrice.ToString("F2")</td>
+                                        <td class="text-end font-weight-bold">$@item.TotalPrice.ToString("F2")</td>
                                     </tr>
                                 }
                             </tbody>
                             <tfoot class="table-light">
                                 <tr>
                                     <th colspan="3" class="text-end">Total Amount:</th>
-                                    <th class="text-end text-success">¥@Model.TotalAmount.ToString("F2")</th>
+                                    <th class="text-end text-success">$@Model.TotalAmount.ToString("F2")</th>
                                 </tr>
                             </tfoot>
                         </table>

@@ -49,6 +49,10 @@
                                             <i class="fas fa-dollar-sign text-success"></i>
                                             <strong>NZ$@order.TotalAmount.ToString("F2")</strong>
                                         </p>
+                                        <div class="order-total">
+                                            <span>Total:</span>
+                                            <span class="total-amount">NZ$@order.TotalAmount.ToString("F2")</span>
+                                        </div>
                                     </div>
                                     
                                     <div class="order-items">
@@ -620,7 +624,7 @@ function renderReviewItems(orderItems) {
     container.innerHTML = orderItems.map((item, index) => `
         <div class="review-item">
             <h6>${item.menuItem?.name || item.itemName}</h6>
-            <span class="price">¥${item.unitPrice.toFixed(2)} × ${item.quantity}</span>
+            <span class="price">NZ${item.unitPrice.toFixed(2)} × ${item.quantity}</span>
             <div class="rating-stars" data-item-index="${index}">
                 ${[1, 2, 3, 4, 5].map(star => 
                     `<span class="star" data-rating="${star}" onclick="setRating(${index}, ${star})">★</span>`

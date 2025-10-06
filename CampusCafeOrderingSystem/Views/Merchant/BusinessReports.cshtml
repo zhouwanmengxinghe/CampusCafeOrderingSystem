@@ -882,7 +882,7 @@
                         borderColor: 'rgba(28, 200, 138, 1)',
                         borderWidth: 1
                     }, {
-                        label: 'Revenue ($)',
+                        label: 'Revenue (NZ$)',
                         data: reportData.topProducts.revenueData,
                         backgroundColor: 'rgba(54, 185, 204, 0.7)',
                         borderColor: 'rgba(54, 185, 204, 1)',
@@ -916,7 +916,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Revenue ($)'
+                                text: 'Revenue (NZ$)'
                             }
                         }
                     }
@@ -1052,9 +1052,9 @@
         // Clear data display
         function clearDataDisplay() {
             // Clear overview cards
-            document.getElementById('totalRevenue').textContent = '$0.00';
+            document.getElementById('totalRevenue').textContent = 'NZ$0.00';
             document.getElementById('totalOrders').textContent = '0';
-            document.getElementById('avgOrderValue').textContent = '$0.00';
+            document.getElementById('avgOrderValue').textContent = 'NZ$0.00';
             document.getElementById('topProduct').textContent = '-';
             
             // Clear charts

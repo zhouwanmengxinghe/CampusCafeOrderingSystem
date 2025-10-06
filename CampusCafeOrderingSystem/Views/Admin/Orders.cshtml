@@ -110,7 +110,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <strong>¥@order.TotalAmount.ToString("F2")</strong>
+                                                <strong>NZ$@order.TotalAmount.ToString("F2")</strong>
                                             </td>
                                             <td>
                                                 <span class="badge bg-@GetStatusColor(order.Status)">
@@ -297,8 +297,8 @@ function updateStatus(orderId, status) {
     });
 }
 
-// Initialize button visibility when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+// 初始化每行按钮的显示/隐藏
+function initializeRowActionButtons() {
     const rows = document.querySelectorAll('#ordersTable tbody tr');
     rows.forEach(row => {
         const id = row.getAttribute('data-order-id');
@@ -308,6 +308,13 @@ document.addEventListener('DOMContentLoaded', function() {
         applyOrderStatusChange(id, status);
     });
 }
+
+// DOMContentLoaded 时初始化按钮可见性
+document.addEventListener('DOMContentLoaded', function(){
+    if (document.getElementById('ordersTable')) {
+        initializeRowActionButtons();
+    }
+});
 
 function setEstimatedTime(orderId) {
     document.getElementById('orderIdInput').value = orderId;

@@ -53,8 +53,8 @@
                                             </td>
                                             <td>@(app.EventDate?.ToString("yyyy-MM-dd HH:mm") ?? "Not set")</td>
                                             <td>@app.NumberOfPeople</td>
-                                            <td>¥@((app.BudgetPerPerson ?? 0).ToString("F2"))</td>
-                                            <td>¥@(((app.BudgetPerPerson ?? 0) * app.NumberOfPeople).ToString("F2"))</td>
+                                            <td>$@((app.BudgetPerPerson ?? 0).ToString("F2"))</td>
+                                            <td>$@(((app.BudgetPerPerson ?? 0) * app.NumberOfPeople).ToString("F2"))</td>
                                             <td>
                                                 @switch (app.Status)
                                                 {
