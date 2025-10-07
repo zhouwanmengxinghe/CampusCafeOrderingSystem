@@ -232,45 +232,6 @@
                     <i class="fas fa-arrow-left"></i> Start Shopping
                 </a>
            </div>
-
-@section Scripts {
-    <script>
-        function increaseQuantity(button) {
-            const form = button.closest('form');
-            const input = form.querySelector('input[name="quantity"]');
-            const currentValue = parseInt(input.value);
-            if (currentValue < 99) {
-                input.value = currentValue + 1;
-                form.submit();
-            }
-        }
-
-        function decreaseQuantity(button) {
-            const form = button.closest('form');
-            const input = form.querySelector('input[name="quantity"]');
-            const currentValue = parseInt(input.value);
-            if (currentValue > 1) {
-                input.value = currentValue - 1;
-                form.submit();
-            }
-        }
-
-        // Add confirmation for remove buttons
-        document.querySelectorAll('.remove-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (!confirm('Are you sure you want to remove this item from your cart?')) {
-                    e.preventDefault();
-                }
-            });
-        });
-
-        // Add loading state for checkout button
-        document.querySelector('.checkout-btn')?.addEventListener('click', function() {
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-            this.disabled = true;
-        });
-    </script>
-}
       </div>
     }
     else
@@ -353,4 +314,48 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        function increaseQuantity(button) {
+            const form = button.closest('form');
+            const input = form.querySelector('input[name="quantity"]');
+            const currentValue = parseInt(input.value);
+            if (currentValue < 99) {
+                input.value = currentValue + 1;
+                form.submit();
+            }
+        }
+
+        function decreaseQuantity(button) {
+            const form = button.closest('form');
+            const input = form.querySelector('input[name="quantity"]');
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                form.submit();
+            }
+        }
+
+        // Add confirmation for remove buttons
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Add loading state for checkout button
+            const checkoutBtn = document.querySelector('.checkout-btn');
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener('click', function () {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+                    this.setAttribute('disabled', 'disabled');
+                });
+            }
+        });
+    </script>
+}
 
