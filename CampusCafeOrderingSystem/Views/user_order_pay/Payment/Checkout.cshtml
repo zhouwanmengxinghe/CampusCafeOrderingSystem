@@ -181,7 +181,7 @@
                         
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-success btn-lg" id="payButton" disabled>
-                                <i class="fas fa-lock"></i> Pay Now $@Model.TotalAmount.ToString("F2")
+    <i class="fas fa-lock"></i> Pay Now NZ$@Model.TotalAmount.ToString("F2")
                             </button>
                         </div>
                     </form>
@@ -189,7 +189,7 @@
             </div>
         </div>
         
-        <!-- Order Summary -->
+   
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -204,12 +204,12 @@
                                 <br>
                                 <small class="text-muted">Quantity: @item.Quantity</small>
                             </div>
-                            <span>$@((item.Price * item.Quantity).ToString("F2"))</span>
+            <span>NZ$@((item.Price * item.Quantity).ToString("F2"))</span>
                         </div>
                         <hr>
                     }
                     
-                    <!-- Points Usage Option -->
+                    
                     @if (Model.AvailableCredits > 0)
                     {
                         <div class="credits-section mb-3">
@@ -220,11 +220,11 @@
                                 </label>
                             </div>
                             <div class="credits-info mt-2">
-                                <small class="text-muted">Available Credits: <strong>$@Model.AvailableCredits.ToString("F2")</strong></small>
+        <small class="text-muted">Available Credits: <strong>NZ$@Model.AvailableCredits.ToString("F2")</strong></small>
                             </div>
                             <div class="credits-input mt-2" id="creditsInput" style="display: none;">
                                 <div class="input-group input-group-sm">
-                                    <span class="input-group-text">$</span>
+        <span class="input-group-text">NZ$</span>
                                     <input type="number" class="form-control" id="creditsToUse" name="CreditsToUse" 
                                            min="0" max="@Math.Min(Model.AvailableCredits, Model.TotalAmount)" 
                                            step="0.01" placeholder="0.00">
@@ -239,17 +239,17 @@
                     
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Subtotal:</span>
-                        <span>$@Model.TotalAmount.ToString("F2")</span>
+        <span>NZ$@Model.TotalAmount.ToString("F2")</span>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center mb-2" id="creditsDiscount" style="display: none;">
                         <span class="text-warning">Credits Used:</span>
-                        <span class="text-warning">-$<span id="creditsAmount">0.00</span></span>
+        <span class="text-warning">-NZ$<span id="creditsAmount">0.00</span></span>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center">
                         <strong>Total:</strong>
-                        <strong class="text-success" id="finalTotal">$@Model.TotalAmount.ToString("F2")</strong>
+        <strong class="text-success" id="finalTotal">NZ$@Model.TotalAmount.ToString("F2")</strong>
                     </div>
                 </div>
             </div>
@@ -498,7 +498,7 @@ $(document).ready(function() {
         $(this).val($(this).val().replace(/[^0-9]/g, ''));
     });
     
-    // Points usage logic
+   
     const totalAmount = @Model.TotalAmount;
     const availableCredits = @Model.AvailableCredits;
     
@@ -533,9 +533,11 @@ $(document).ready(function() {
             $('#creditsDiscount').hide();
         }
         
-        $('#finalTotal').text('NZ$' + finalAmount.toFixed(2));
+$('#finalTotal').text('NZ$' + finalAmount.toFixed(2));
         
-        $('#payButton').html('<i class="fas fa-lock"></i> Pay Now NZ$' + finalAmount.toFixed(2));
-    });
+      
+$('#payButton').html('<i class="fas fa-lock"></i> Pay Now NZ$' + finalAmount.toFixed(2));
+    }
+});
 </script>
 }
