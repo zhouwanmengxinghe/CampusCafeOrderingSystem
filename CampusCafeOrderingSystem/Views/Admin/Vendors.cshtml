@@ -300,21 +300,20 @@
                     $.ajax({
                         url: '@Url.Action("ToggleVendor", "Admin")',
                         type: 'POST',
+                        dataType: 'json',
+                        cache: false,
                         data: {
                             id: vendorId,
                             __RequestVerificationToken: token
                         },
                         success: function(response) {
-                            if (response.success) {
-                                // Show success message
-                                showToast(response.message, 'success');
-                                
-                                // Refresh page to update status
-                                setTimeout(function() {
-                                    location.reload();
-                                }, 1000);
+                            const isSuccess = response && (response.success === true || response.success === 'true' || response.success == true);
+                            if (isSuccess) {
+                               
+                                showToast(response.message || 'Operation succeeded', 'success');
+                                window.location.reload();
                             } else {
-                                showToast(response.message || 'Operation failed', 'error');
+                                showToast(response?.message || 'Operation failed', 'error');
                                 btn.prop('disabled', false);
                                 btn.text(originalText);
                             }
@@ -323,6 +322,12 @@
                             showToast('Network error, please try again later', 'error');
                             btn.prop('disabled', false);
                             btn.text(originalText);
+                        },
+                        complete: function() {
+                            
+                            setTimeout(function() {
+                                try { if (!document.hidden) window.location.reload(); } catch (_) { /* noop */ }
+                            }, 800);
                         }
                     });
                 });
