@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\campusecafesystem\\1\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj": {}
+    "D:\\学习\\Massey\\159333Programming project\\Group 12\\CampusCafeOrderingSystem-master6\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj": {}
   },
   "projects": {
-    "D:\\campusecafesystem\\1\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj": {
+    "D:\\学习\\Massey\\159333Programming project\\Group 12\\CampusCafeOrderingSystem-master6\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\campusecafesystem\\1\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
+        "projectUniqueName": "D:\\学习\\Massey\\159333Programming project\\Group 12\\CampusCafeOrderingSystem-master6\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
         "projectName": "CampusCafeOrderingSystem",
-        "projectPath": "D:\\campusecafesystem\\1\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
-        "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
-        "outputPath": "D:\\campusecafesystem\\1\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem\\obj\\",
+        "projectPath": "D:\\学习\\Massey\\159333Programming project\\Group 12\\CampusCafeOrderingSystem-master6\\CampusCafeOrderingSystem\\CampusCafeOrderingSystem.csproj",
+        "packagesPath": "C:\\Users\\Kevin\\.nuget\\packages\\",
+        "outputPath": "D:\\学习\\Massey\\159333Programming project\\Group 12\\CampusCafeOrderingSystem-master6\\CampusCafeOrderingSystem\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\LENOVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Kevin\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -112,7 +111,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

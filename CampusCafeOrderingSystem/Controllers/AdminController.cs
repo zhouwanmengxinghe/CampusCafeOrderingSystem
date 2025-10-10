@@ -593,8 +593,7 @@ namespace CampusCafeOrderingSystem.Controllers
         public async Task<IActionResult> MenuManagement()
         {
             var menuItems = await _context.MenuItems
-                .OrderBy(m => m.Category)
-                .ThenBy(m => m.Name)
+                .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
 
             return View(menuItems);
